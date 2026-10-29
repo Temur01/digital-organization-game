@@ -37,7 +37,7 @@ export function App() {
   const reducedMotion = useReducedMotion(settings.reducedMotion);
   const initAuth = useAuthStore((s) => s.init);
 
-  // Supabase sessiyasi: magic link’dan qaytish, token yangilanishi, chiqish
+  // Supabase sessiyasi: kirish, token yangilanishi, chiqish
   useEffect(() => initAuth(), [initAuth]);
 
   useEffect(() => {

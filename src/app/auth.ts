@@ -5,7 +5,7 @@ import { hashForScreen } from './router';
 import { useGameStore } from './store';
 import { flushPending, pullServerBest } from './sync';
 
-/** Magic link yuborilgandan keyin profil ma’lumotlarini tiklash uchun (trigger ishlamasa ham) */
+/** Ro‘yxatdan o‘tishda kiritilgan profil ma’lumotlari (trigger ishlamasa ham profil yaratish uchun) */
 const PENDING_PROFILE_KEY = 'raqamli-qalqon:pending-profile';
 const PROFILE_COLUMNS = 'id, full_name, email, age, gender, department, position';
 
@@ -28,7 +28,9 @@ interface AuthStore {
   profile: Profile | null;
   syncing: boolean;
   init(): () => void;
-  sendMagicLink(mode: 'register' | 'login', input: RegisterInput): Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Email + parol bilan ro‘yxatdan o‘tish. `needsConfirm` — Supabase’da email tasdiqlash yoqilgan bo‘lsa */
+  register(input: RegisterInput, password: string): Promise<{ ok: true; needsConfirm: boolean } | { ok: false; error: string }>;
+  signIn(email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }>;
   saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'age' | 'gender' | 'department' | 'position'>>): Promise<{ ok: boolean; error?: string }>;
   signOut(): Promise<void>;
 }
@@ -39,14 +41,20 @@ export function authErrorText(error: AuthError | Error | { message?: string; sta
   const msg = (e.message ?? '').toLowerCase();
   if (e.status === 429 || e.code === 'over_email_send_rate_limit' || msg.includes('rate limit'))
     return 'Juda ko‘p urinish. Bir necha daqiqadan so‘ng qayta urinib ko‘ring.';
-  if (e.code === 'otp_disabled' || msg.includes('signups not allowed'))
-    return 'Bu email bilan hisob topilmadi. «Ro‘yxatdan o‘tish» bo‘limini tanlang.';
+  if (e.code === 'invalid_credentials' || msg.includes('invalid login credentials')) return 'Email yoki parol noto‘g‘ri.';
+  if (e.code === 'user_already_exists' || e.code === 'email_exists' || msg.includes('already registered'))
+    return 'Bu email bilan hisob allaqachon bor. «Kirish» bo‘limini tanlang.';
+  if (e.code === 'weak_password' || msg.includes('password should'))
+    return 'Parol juda oddiy. Kamida 6 ta belgi: harf va raqamlarni aralashtiring.';
+  if (e.code === 'email_not_confirmed' || msg.includes('email not confirmed'))
+    return 'Email hali tasdiqlanmagan. Administrator Supabase’da email tasdiqlashni o‘chirishi kerak.';
+  if (e.code === 'signup_disabled' || msg.includes('signups not allowed')) return 'Ro‘yxatdan o‘tish hozircha yopiq.';
   if (msg.includes('invalid') && msg.includes('email')) return 'Email manzil noto‘g‘ri ko‘rinadi.';
   if (msg.includes('fetch') || msg.includes('network')) return 'Serverga ulanib bo‘lmadi. Internetni tekshiring.';
   return 'Nimadir xato ketdi. Keyinroq qayta urinib ko‘ring.';
 }
 
-/** Havoladan keyin foydalanuvchi kirishdan oldingi sahifaga qaytadi */
+/** Email tasdiqlash yoqilgan bo‘lsa — havoladan keyin foydalanuvchi kirishdan oldingi sahifaga qaytadi */
 function redirectUrl(): string {
   return `${window.location.origin}${window.location.pathname}${hashForScreen(useGameStore.getState().auxReturnTo)}`;
 }
@@ -126,32 +134,35 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
       return () => data.subscription.unsubscribe();
     },
 
-    sendMagicLink: async (mode, input) => {
+    register: async (input, password) => {
       if (!supabase) return { ok: false, error: 'Server ulanmagan (Supabase sozlanmagan).' };
-      if (mode === 'register') {
-        try {
-          localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(input));
-        } catch {
-          /* e’tiborsiz */
-        }
+      try {
+        localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify(input));
+      } catch {
+        /* e’tiborsiz */
       }
-      const { error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signUp({
         email: input.email.trim(),
+        password,
         options: {
           emailRedirectTo: redirectUrl(),
-          shouldCreateUser: mode === 'register',
-          data:
-            mode === 'register'
-              ? {
-                  full_name: input.fullName.trim(),
-                  age: input.age ?? '',
-                  gender: input.gender ?? '',
-                  department: input.department.trim(),
-                  position: input.position.trim(),
-                }
-              : undefined,
+          data: {
+            full_name: input.fullName.trim(),
+            age: input.age ?? '',
+            gender: input.gender ?? '',
+            department: input.department.trim(),
+            position: input.position.trim(),
+          },
         },
       });
+      if (error) return { ok: false, error: authErrorText(error) };
+      // Email tasdiqlash o‘chirilgan bo‘lsa sessiya darhol keladi (onAuthStateChange → SIGNED_IN)
+      return { ok: true, needsConfirm: !data.session };
+    },
+
+    signIn: async (email, password) => {
+      if (!supabase) return { ok: false, error: 'Server ulanmagan (Supabase sozlanmagan).' };
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       return error ? { ok: false, error: authErrorText(error) } : { ok: true };
     },
 

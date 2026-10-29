@@ -11,21 +11,22 @@ import { CharacterArt } from '../ui/CharacterArt';
 import styles from './aux.module.css';
 
 type Mode = 'register' | 'login';
-type Field = 'name' | 'department' | 'position' | 'email' | 'age';
+type Field = 'name' | 'department' | 'position' | 'email' | 'password' | 'age';
 type Errors = Partial<Record<Field, string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const RESEND_SECONDS = 60;
+export const MIN_PASSWORD = 6;
 
 export function validate(
   mode: Mode,
-  v: { name: string; department?: string; position?: string; email: string; age: string },
+  v: { name: string; department?: string; position?: string; email: string; password?: string; age: string },
 ): Errors {
   const errors: Errors = {};
   if (mode === 'register' && v.name.trim().length < 2) errors.name = t.errors.name;
   if (mode === 'register' && !v.department?.trim()) errors.department = t.errors.department;
   if (mode === 'register' && !v.position?.trim()) errors.position = t.errors.position;
   if (!EMAIL_RE.test(v.email.trim())) errors.email = t.errors.email;
+  if ((v.password ?? '').length < MIN_PASSWORD) errors.password = t.errors.password;
   if (mode === 'register' && v.age.trim() !== '') {
     const n = Number(v.age);
     if (!Number.isInteger(n) || n < 10 || n > 100) errors.age = t.errors.age;
@@ -36,7 +37,8 @@ export function validate(
 export function AuthScreen() {
   const configured = useAuthStore((s) => s.configured);
   const status = useAuthStore((s) => s.status);
-  const sendMagicLink = useAuthStore((s) => s.sendMagicLink);
+  const register = useAuthStore((s) => s.register);
+  const signIn = useAuthStore((s) => s.signIn);
   const closeAux = useGameStore((s) => s.closeAux);
   const heading = useScreenHeading<HTMLHeadingElement>();
   const ids = useId();
@@ -47,47 +49,45 @@ export function AuthScreen() {
   const [department, setDepartment] = useState<string>(defaults.department);
   const [position, setPosition] = useState<string>(defaults.position);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [age, setAge] = useState(String(defaults.age));
   const [gender, setGender] = useState<RegisterInput['gender']>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [sentTo, setSentTo] = useState<string | null>(null);
-  const [cooldown, setCooldown] = useState(0);
+  const [confirmTo, setConfirmTo] = useState<string | null>(null);
 
-  // Havola orqali kirilgach — avvalgi ekranga qaytamiz
+  // Kirilgach — avvalgi ekranga qaytamiz
   useEffect(() => {
     if (status === 'signedIn') closeAux();
   }, [status, closeAux]);
 
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const id = window.setTimeout(() => setCooldown((c) => c - 1), 1000);
-    return () => window.clearTimeout(id);
-  }, [cooldown]);
-
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    const found = validate(mode, { name, department, position, email, age });
+    const found = validate(mode, { name, department, position, email, password, age });
     setErrors(found);
     setServerError(null);
     if (Object.keys(found).length > 0) return;
     setSending(true);
-    const res = await sendMagicLink(mode, {
-      fullName: name.trim(),
-      department: department.trim(),
-      position: position.trim(),
-      email: email.trim().toLowerCase(),
-      age: age.trim() === '' ? null : Number(age),
-      gender,
-    });
+    const cleanEmail = email.trim().toLowerCase();
+    const res =
+      mode === 'register'
+        ? await register(
+            {
+              fullName: name.trim(),
+              department: department.trim(),
+              position: position.trim(),
+              email: cleanEmail,
+              age: age.trim() === '' ? null : Number(age),
+              gender,
+            },
+            password,
+          )
+        : await signIn(cleanEmail, password);
     setSending(false);
-    if (res.ok) {
-      setSentTo(email.trim().toLowerCase());
-      setCooldown(RESEND_SECONDS);
-    } else {
-      setServerError(res.error);
-    }
+    if (!res.ok) setServerError(res.error);
+    else if ('needsConfirm' in res && res.needsConfirm) setConfirmTo(cleanEmail);
   };
 
   const field = (key: Field) => ({
@@ -135,20 +135,22 @@ export function AuthScreen() {
             </div>
           ) : (
             <AnimatePresence mode="wait">
-              {sentTo ? (
+              {confirmTo ? (
                 <motion.div key="sent" className={styles.sent} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                   <div className={styles.envelope} aria-hidden="true">
                     <span>✉️</span>
                   </div>
-                  <h2>{t.sentTitle}</h2>
-                  <p role="status">{t.sentText(sentTo)}</p>
-                  <p className={styles.muted}>{t.sentHint}</p>
+                  <h2>{t.confirmTitle}</h2>
+                  <p role="status">{t.confirmText(confirmTo)}</p>
                   <div className={styles.row}>
-                    <Button variant="secondary" disabled={cooldown > 0 || sending} onClick={() => void submit()}>
-                      {cooldown > 0 ? t.resendIn(cooldown) : t.resend}
-                    </Button>
-                    <Button variant="ghost" onClick={() => setSentTo(null)}>
-                      {t.changeEmail}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setConfirmTo(null);
+                        setMode('login');
+                      }}
+                    >
+                      {t.tabs.login}
                     </Button>
                   </div>
                 </motion.div>
@@ -260,6 +262,40 @@ export function AuthScreen() {
                     {errors.email && (
                       <p id={`${ids}-email-err`} className={styles.error}>
                         {errors.email}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className={styles.field}>
+                    <label htmlFor={`${ids}-password`}>
+                      {t.password} <span className={styles.req}>· {t.required}</span>
+                    </label>
+                    <div className={styles.passwordRow}>
+                      <input
+                        id={`${ids}-password`}
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                        minLength={MIN_PASSWORD}
+                        maxLength={72}
+                        placeholder={mode === 'register' ? t.passwordHint : ''}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        {...field('password')}
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        aria-pressed={showPassword}
+                        aria-label={showPassword ? t.hidePassword : t.showPassword}
+                        title={showPassword ? t.hidePassword : t.showPassword}
+                        onClick={() => setShowPassword((v) => !v)}
+                      >
+                        <span aria-hidden="true">{showPassword ? '🙈' : '👁️'}</span>
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p id={`${ids}-password-err`} className={styles.error}>
+                        {errors.password}
                       </p>
                     )}
                   </div>

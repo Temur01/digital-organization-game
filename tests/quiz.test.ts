@@ -103,17 +103,19 @@ describe('ro‘yxatdan o‘tish formasi', () => {
       department: expect.any(String),
       position: expect.any(String),
       email: expect.any(String),
+      password: expect.any(String),
     });
     expect(
-      validate('register', { name: 'Ali Valiyev', department: 'AKT', position: 'dasturchi', email: 'ali@kompaniya.uz', age: '' }),
+      validate('register', { name: 'Ali Valiyev', department: 'AKT', position: 'dasturchi', email: 'ali@kompaniya.uz', password: 'parol123', age: '' }),
     ).toEqual({});
     expect(validate('register', { name: 'Ali Valiyev', department: '  ', position: 'dasturchi', email: 'ali@kompaniya.uz', age: '' })).toHaveProperty(
       'department',
     );
     expect(validate('register', { name: 'Ali', email: 'ali@kompaniya.uz', age: '7' })).toHaveProperty('age');
     expect(validate('register', { name: 'Ali', email: 'ali@kompaniya.uz', age: '25.5' })).toHaveProperty('age');
-    // Kirishda faqat email
-    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', age: '' })).toEqual({});
+    // Kirishda faqat email va parol
+    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: 'parol123', age: '' })).toEqual({});
+    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: '123', age: '' })).toHaveProperty('password');
   });
 });
 
