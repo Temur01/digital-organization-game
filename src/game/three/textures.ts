@@ -98,6 +98,176 @@ export function wallPaint(base: string, key: string) {
   );
 }
 
+/** Silliq tosh plitkalar (qabulxona): katta formatli, nozik tomirli */
+export function stoneTiles() {
+  return make(
+    'floor-stone',
+    1024,
+    1024,
+    (g, w, h) => {
+      const r = rng(19);
+      const n = 4;
+      const size = w / n;
+      for (let y = 0; y < n; y++)
+        for (let x = 0; x < n; x++) {
+          const tone = 226 + Math.floor(r() * 14);
+          g.fillStyle = `rgb(${tone},${tone - 4},${tone - 10})`;
+          g.fillRect(x * size, y * size, size, size);
+          // Marmar tomirlari
+          g.strokeStyle = `rgba(150,140,128,${0.12 + r() * 0.1})`;
+          g.lineWidth = 1 + r() * 1.5;
+          for (let k = 0; k < 3; k++) {
+            g.beginPath();
+            const sx = x * size + r() * size;
+            g.moveTo(sx, y * size);
+            g.bezierCurveTo(
+              sx + (r() - 0.5) * 120,
+              y * size + size * 0.3,
+              sx + (r() - 0.5) * 120,
+              y * size + size * 0.7,
+              sx + (r() - 0.5) * 80,
+              (y + 1) * size,
+            );
+            g.stroke();
+          }
+        }
+      g.fillStyle = 'rgba(120,110,100,0.35)';
+      for (let i = 0; i <= n; i++) {
+        g.fillRect(i * size - 1, 0, 2, h);
+        g.fillRect(0, i * size - 1, w, 2);
+      }
+    },
+    [3, 2],
+  );
+}
+
+/** Gilam plitkalari (ofis/majlis xonasi): har xil yo‘nalishdagi tola */
+export function carpet(base: string) {
+  return make(
+    `floor-carpet-${base}`,
+    512,
+    512,
+    (g, w, h) => {
+      g.fillStyle = base;
+      g.fillRect(0, 0, w, h);
+      const r = rng(23);
+      const n = 4;
+      const size = w / n;
+      for (let y = 0; y < n; y++)
+        for (let x = 0; x < n; x++) {
+          const horizontal = (x + y) % 2 === 0;
+          for (let i = 0; i < 260; i++) {
+            g.strokeStyle = `rgba(${r() > 0.5 ? '255,255,255' : '0,0,0'},${0.03 + r() * 0.05})`;
+            g.lineWidth = 1;
+            const px = x * size + r() * size;
+            const py = y * size + r() * size;
+            g.beginPath();
+            g.moveTo(px, py);
+            g.lineTo(px + (horizontal ? 10 : 0), py + (horizontal ? 0 : 10));
+            g.stroke();
+          }
+          g.strokeStyle = 'rgba(0,0,0,0.08)';
+          g.strokeRect(x * size, y * size, size, size);
+        }
+    },
+    [6, 4],
+  );
+}
+
+/** Terrazzo (kafe burchagi): och asos va rangli toshchalar */
+export function terrazzo() {
+  return make(
+    'floor-terrazzo',
+    1024,
+    1024,
+    (g, w, h) => {
+      g.fillStyle = '#efe8dc';
+      g.fillRect(0, 0, w, h);
+      const r = rng(31);
+      const chips = ['#c9b79c', '#9b8f7e', '#d98e6a', '#7fa99b', '#e6d3b3', '#6f6a63'];
+      for (let i = 0; i < 2600; i++) {
+        g.fillStyle = chips[Math.floor(r() * chips.length)]!;
+        const cx = r() * w;
+        const cy = r() * h;
+        const rad = 2 + r() * 7;
+        g.beginPath();
+        for (let k = 0; k < 5; k++) {
+          const a = (k / 5) * Math.PI * 2 + r();
+          const rr = rad * (0.6 + r() * 0.5);
+          if (k === 0) g.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+          else g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+        }
+        g.closePath();
+        g.fill();
+      }
+    },
+    [3, 2],
+  );
+}
+
+/** Oq doska: marker yozuvlari va sxemalar (yaqindan o‘qilmaydi) */
+export function whiteboard() {
+  return make('whiteboard', 512, 384, (g, w, h) => {
+    g.fillStyle = '#fbfcfd';
+    g.fillRect(0, 0, w, h);
+    const r = rng(41);
+    const inks = ['#1d4ed8', '#111827', '#dc2626', '#047857'];
+    g.lineCap = 'round';
+    for (let line = 0; line < 9; line++) {
+      g.strokeStyle = inks[line % inks.length]!;
+      g.lineWidth = 4;
+      let x = 30 + (line % 3 === 0 ? 0 : 24);
+      const y = 40 + line * 36;
+      g.beginPath();
+      g.moveTo(x, y);
+      const end = 180 + r() * 260;
+      while (x < end) {
+        x += 6 + r() * 10;
+        g.lineTo(x, y + (r() - 0.5) * 8);
+      }
+      g.stroke();
+    }
+    // Kichik sxema: uchta quti va strelkalar
+    g.strokeStyle = '#dc2626';
+    g.lineWidth = 3;
+    for (let i = 0; i < 3; i++) g.strokeRect(w - 150, 40 + i * 90, 110, 50);
+    g.beginPath();
+    g.moveTo(w - 95, 90);
+    g.lineTo(w - 95, 130);
+    g.moveTo(w - 95, 180);
+    g.lineTo(w - 95, 220);
+    g.stroke();
+  });
+}
+
+/** Majlis xonasidagi televizor: bayram slaydi */
+export function tvSlide() {
+  return make('tv-slide', 768, 432, (g, w, h) => {
+    const bg = g.createLinearGradient(0, 0, w, h);
+    bg.addColorStop(0, '#4c1d95');
+    bg.addColorStop(0.55, '#be185d');
+    bg.addColorStop(1, '#f59e0b');
+    g.fillStyle = bg;
+    g.fillRect(0, 0, w, h);
+    const r = rng(53);
+    for (let i = 0; i < 70; i++) {
+      g.fillStyle = ['#fde68a', '#a7f3d0', '#fbcfe8', '#ffffff'][i % 4]!;
+      g.save();
+      g.translate(r() * w, r() * h);
+      g.rotate(r() * Math.PI);
+      g.fillRect(-6, -2, 12, 4);
+      g.restore();
+    }
+    g.fillStyle = '#ffffff';
+    g.textAlign = 'center';
+    g.font = `800 64px ${FONT}`;
+    g.fillText('Loyiha topshirildi!', w / 2, h / 2 - 10);
+    g.font = `600 34px ${FONT}`;
+    g.fillStyle = 'rgba(255,255,255,0.85)';
+    g.fillText('Rahmat, jamoa 🎉', w / 2, h / 2 + 50);
+  });
+}
+
 /** Atlas (ikat) naqshli gilam — milliy aksent */
 export function ikatRug() {
   return make('rug', 1024, 512, (g, w, h) => {

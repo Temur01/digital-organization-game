@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ui } from '../content/uz/ui';
 import { currentObjective, isObjectiveDone } from '../missions/engine/missionReducer';
 import type { Mission, MissionRuntimeState } from '../types/models';
+import { fullscreenSupported, useFullscreen } from '../app/fullscreen';
 import { useCountUp } from './anim';
 import { Button } from './Button';
 import styles from './ui.module.css';
@@ -28,6 +29,7 @@ export function HUD({ mission, state, onPause }: { mission: Mission; state: Miss
   const required = mission.objectives.filter((o) => !o.optional);
   const doneCount = required.filter((o) => isObjectiveDone(o, state.flags)).length;
   const score = useCountUp(state.score, 600);
+  const [fullscreen, toggleFullscreen] = useFullscreen();
 
   return (
     <header className={styles.hud}>
@@ -64,6 +66,17 @@ export function HUD({ mission, state, onPause }: { mission: Mission; state: Miss
         <Bump value={state.score}>
           ⭐ {ui.common.score}: {score}
         </Bump>
+        {fullscreenSupported() && (
+          <Button
+            variant="secondary"
+            onClick={toggleFullscreen}
+            aria-pressed={fullscreen}
+            aria-label={fullscreen ? ui.game.fullscreenOff : ui.game.fullscreenOn}
+            title={fullscreen ? ui.game.fullscreenOff : ui.game.fullscreenOn}
+          >
+            <span aria-hidden="true">{fullscreen ? '🗗' : '⛶'}</span>
+          </Button>
+        )}
         <Button variant="secondary" onClick={onPause} aria-label={ui.game.pause}>
           ⏸ <span className={styles.hideSm}>{ui.game.pause}</span>
         </Button>

@@ -58,7 +58,7 @@ export function ProfileScreen() {
     const decisions = result.decisions;
     const safe = decisions.filter((decision) => decision.firstOutcome === 'safe').length;
     return [{ label: mission.topicLabel, safe, total: decisions.length }];
-  }).sort((a, b) => a.total ? a.safe / a.total - (b.total ? b.safe / b.total : 0) : 1);
+  }).sort((a, b) => (a.total ? a.safe / a.total - (b.total ? b.safe / b.total : 0) : 1));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -123,7 +123,9 @@ export function ProfileScreen() {
                 {insights.map(({ label, safe, total }) => (
                   <li key={label}>
                     <span>{label}</span>
-                    <strong>{safe}/{total} xavfsiz tanlov</strong>
+                    <strong>
+                      {safe}/{total} xavfsiz tanlov
+                    </strong>
                   </li>
                 ))}
               </ul>

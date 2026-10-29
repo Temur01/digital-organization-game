@@ -3,6 +3,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { CHARACTERS } from '../../content/characters';
 import type { HotspotVisualState, InteractiveObject, Point, Rect, RoomDefinition } from '../../types/models';
 import type { GameBridge, SceneCommand } from '../bridge';
@@ -94,6 +95,10 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x070b1a);
+  // Muhit xaritasi: metall va shisha haqiqiy aks ettiradi, yuzalar yumshoq qaytgan nur oladi
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environment = envMap;
   const camera = new THREE.PerspectiveCamera(33, 16 / 9, 0.1, 80);
   camera.position.copy(CAMERA_POS);
   camera.lookAt(CAMERA_TARGET);
@@ -189,8 +194,10 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
   const buildLights = (r: RoomDefinition): THREE.Group => {
     const g = new THREE.Group();
     const night = r.theme.night ?? false;
-    g.add(new THREE.HemisphereLight(night ? 0x46588f : 0xe6f2ff, night ? 0x1d160f : 0xc9a77c, night ? 0.55 : 1.15));
-    g.add(new THREE.AmbientLight(0xffffff, night ? 0.12 : 0.25));
+    // Muhit xaritasi yumshoq yorug‘likni beradi — to‘ldiruvchi nurlar kamaytirildi
+    scene.environmentIntensity = r.theme.envIntensity ?? (night ? 0.12 : 0.2);
+    g.add(new THREE.HemisphereLight(night ? 0x46588f : 0xe6f2ff, night ? 0x1d160f : 0xc9a77c, night ? 0.45 : 0.62));
+    g.add(new THREE.AmbientLight(0xffffff, night ? 0.08 : 0.12));
     const key = new THREE.DirectionalLight(night ? 0x9fb4ff : 0xfff0d4, night ? 0.55 : 2.4);
     key.position.set(-4.5, 9, -2.5);
     key.target.position.set(1, 0, 4);
@@ -210,8 +217,10 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     const fill = new THREE.DirectionalLight(night ? 0x6c7cc8 : 0xdde8ff, night ? 0.35 : 0.6);
     fill.position.set(3, 5, 14);
     g.add(fill);
-    renderer.toneMappingExposure = night ? 1.15 : 0.92;
-    bloom.strength = night ? 0.7 : 0.28;
+    renderer.toneMappingExposure = night ? 1.15 : 0.82;
+    // Kunduzi faqat haqiqiy yorug‘lik manbalari (chiroq, ekran) porlaydi — oq devorlar emas
+    bloom.strength = night ? 0.7 : 0.16;
+    bloom.threshold = night ? 0.93 : 0.99;
     scene.fog = new THREE.Fog(0x070b1a, 22, 45);
     tint = night ? 0xc3cbeb : 0xffffff;
     return g;
@@ -587,6 +596,8 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     timer.dispose();
     clearRoom();
     composer.dispose();
+    envMap.dispose();
+    pmrem.dispose();
     target.dispose();
     tex.disposeTextures();
     renderer.dispose();

@@ -62,7 +62,15 @@ export type DecorKind =
   | 'lamp'
   | 'kitchen'
   | 'fridge'
-  | 'bistro';
+  | 'bistro'
+  | 'sofa'
+  | 'monstera'
+  | 'pendant'
+  | 'slats'
+  | 'tv'
+  | 'balloons'
+  | 'meetingTable'
+  | 'glassWall';
 
 export interface DecorItem {
   kind: DecorKind;
@@ -77,6 +85,18 @@ export interface RoomTheme {
   floorLine: number;
   window: number;
   night?: boolean;
+  /** Pol materiali (standart: yog‘och) */
+  floorStyle?: 'oak' | 'stone' | 'carpet' | 'terrazzo';
+  /** Devor rangi (CSS) */
+  wallColor?: string;
+  /** Aksent rangi: shift chizig‘i, logotip */
+  accent?: number;
+  /** Pastki panel rangi; null — panelsiz zamonaviy devor */
+  wainscot?: number | null;
+  /** Shu xonadagi kompyuter ko‘rinishi */
+  computer?: 'monitor' | 'laptop' | 'allInOne';
+  /** Muhit yorug‘ligi kuchi (aks ettirishlar) */
+  envIntensity?: number;
 }
 
 export interface RoomDefinition {
@@ -103,7 +123,7 @@ export type Effect = { type: 'setFlag'; flag: Flag } | { type: 'findClue'; clueI
 // ---------- Interaktiv obyekt ----------
 export type HotspotKind = 'computer' | 'phone' | 'device' | 'npc' | 'poster' | 'note' | 'door' | 'box' | 'coffee' | 'qr';
 export type HotspotVisualState = 'idle' | 'disabled' | 'done' | 'hidden';
-export type SimAppId = 'email' | 'workstation' | 'phone' | 'itPortal';
+export type SimAppId = 'email' | 'workstation' | 'phone' | 'itPortal' | 'social';
 
 export type InteractionAction = { type: 'dialog'; dialogId: string } | { type: 'openSim'; app: SimAppId } | { type: 'decision'; decisionId: string };
 
@@ -277,17 +297,61 @@ export interface SimItPortal {
   };
 }
 
+/** Ijtimoiy tarmoq simulyatsiyasidagi suratning bitta obyekti (foizlarda joylashuv) */
+export interface SimPhotoItem {
+  id: string;
+  icon: string;
+  label: string;
+  /** Surat kengligi/balandligiga nisbatan markaz, 0–100 */
+  x: number;
+  y: number;
+  clueId?: string;
+}
+
+/** Ijtimoiy tarmoq: hamkasbning posti → shubhali DM → o‘z profilingiz maxfiyligi (ketma-ket) */
+export interface SimSocial {
+  post: {
+    decisionId: string;
+    choiceIds: string[];
+    author: string;
+    handle: string;
+    time: string;
+    location: string;
+    locationClueId?: string;
+    photo: SimPhotoItem[];
+    caption: SimTextPart[];
+    likes: number;
+  };
+  dm: {
+    decisionId: string;
+    choiceIds: string[];
+    from: string;
+    handle: string;
+    profileNote: string;
+    profileClueId?: string;
+    messages: SimTextPart[][];
+  };
+  privacy: {
+    decisionId: string;
+    choiceIds: string[];
+    intro: string;
+    fields: { label: string; value: string; clueId?: string }[];
+  };
+  doneText: string;
+}
+
 export interface SimContent {
   emails?: SimEmail[];
   messenger?: SimMessenger;
   extraFiles?: SimFile[];
   phone?: SimPhone;
   itPortal?: SimItPortal;
+  social?: SimSocial;
 }
 
 // ---------- Missiya ----------
-export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident' | 'm4-coffee-break';
-export type MissionTopic = 'phishing' | 'malware' | 'mfa' | 'password' | 'incident' | 'physical';
+export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident' | 'm4-coffee-break' | 'm5-social-media';
+export type MissionTopic = 'phishing' | 'malware' | 'mfa' | 'password' | 'incident' | 'physical' | 'privacy';
 
 export interface Objective {
   id: string;
@@ -385,6 +449,8 @@ export interface Settings {
   voice?: boolean;
   /** O‘yindagi fon musiqasi va qadam tovushlari (standart: yoqilgan) */
   music?: boolean;
+  /** Missiyani to‘liq ekranda boshlash (standart: yoqilgan) */
+  fullscreen?: boolean;
 }
 
 export interface LocalProgress {

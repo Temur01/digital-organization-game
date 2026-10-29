@@ -10,7 +10,8 @@ export const DEFAULT_SETTINGS: Settings = {
   reducedMotion: 'system',
   highContrast: false,
   listMode: false,
-  sound: false,
+  sound: true,
+  fullscreen: true,
 };
 
 const emptyMission = (status: MissionProgress['status']): MissionProgress => ({

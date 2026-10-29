@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fullscreenSupported } from '../app/fullscreen';
 import { useVoiceLabel } from '../app/hooks';
 import { AMBIENCE_ENABLED } from '../app/ambience';
 import { VOICE_ENABLED } from '../app/voice';
@@ -57,6 +58,12 @@ export function SettingsPanel({ allowReset = true }: { allowReset?: boolean }) {
           <span>{label}</span>
         </label>
       ))}
+      {fullscreenSupported() && (
+        <label className={styles.checkRow}>
+          <input type="checkbox" checked={settings.fullscreen ?? true} onChange={(e) => update({ fullscreen: e.target.checked })} />
+          <span>{ui.settings.fullscreen}</span>
+        </label>
+      )}
       {AMBIENCE_ENABLED && (
         <label className={styles.checkRow}>
           <input type="checkbox" checked={settings.music ?? true} onChange={(e) => update({ music: e.target.checked })} />

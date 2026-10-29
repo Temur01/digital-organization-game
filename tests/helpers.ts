@@ -81,6 +81,26 @@ export const SAFE_SCRIPTS: Record<MissionId, MissionAction[]> = {
     choose('m4-d-wifi', 'guest'),
     ACK,
   ],
+  'm5-social-media': [
+    READY,
+    act('m5-board'),
+    CLOSE,
+    choose('m5-d-board', 'wipe'),
+    ACK,
+    act('m5-colleague'),
+    CLOSE,
+    act('m5-phone'),
+    clue('m5-c-badge'),
+    clue('m5-c-screen'),
+    clue('m5-c-geotag'),
+    choose('m5-d-post', 'retake'),
+    ACK,
+    clue('m5-c-recruiter'),
+    choose('m5-d-dm', 'report'),
+    ACK,
+    choose('m5-d-privacy', 'private'),
+    ACK,
+  ],
 };
 
 export function run(missionId: MissionId, actions: MissionAction[], from?: MissionRuntimeState): MissionRuntimeState {

@@ -7,6 +7,7 @@ import { continueTarget, hasAnyProgress } from '../app/transitions';
 import { CHARACTERS } from '../content/characters';
 import { ui } from '../content/uz/ui';
 import { account } from '../content/uz/extra';
+import { MISSION_LIST } from '../missions/data';
 import { AccountChip } from '../ui/AccountChip';
 import { Button } from '../ui/Button';
 import { CharacterArt } from '../ui/CharacterArt';
@@ -15,6 +16,13 @@ import { Modal } from '../ui/Modal';
 import styles from './screens.module.css';
 
 const FLOATERS = ['✉️', '🔒', '🛡️', '🔑', '📱', '💾', '🔍', '⚠️', '🧩', '📎', '🛰️', '💡'];
+
+// Yangi missiya qo‘shilsa, raqamlar o‘zi yangilanadi
+const STATS = [
+  { icon: '🎯', value: MISSION_LIST.length, label: ui.title.stats.missions },
+  { icon: '🔍', value: MISSION_LIST.reduce((n, m) => n + Object.keys(m.clues).length, 0), label: ui.title.stats.clues },
+  { icon: '⏱️', value: MISSION_LIST.reduce((n, m) => n + m.minutes, 0), label: ui.title.stats.minutes },
+];
 
 export function TitleScreen() {
   const progress = useGameStore((s) => s.progress);
@@ -80,7 +88,7 @@ export function TitleScreen() {
         </motion.div>
 
         <motion.ul className={styles.statRow} {...rise(4)}>
-          {ui.title.stats.map((s) => (
+          {STATS.map((s) => (
             <li key={s.label} className={styles.statCard}>
               <span aria-hidden="true">{s.icon}</span>
               <strong>{s.value}</strong>

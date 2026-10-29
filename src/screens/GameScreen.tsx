@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { exitFullscreen } from '../app/fullscreen';
 import { useReducedMotion, usePlayer } from '../app/hooks';
 import { useActiveMission, useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
@@ -9,6 +10,7 @@ import { isHotspotDone, isHotspotEnabled, isHotspotVisible, type MissionAction }
 import { SimEmailClient } from '../sim/SimEmailClient';
 import { SimItPortal } from '../sim/SimItPortal';
 import { SimPhone } from '../sim/SimPhone';
+import { SimSocial } from '../sim/SimSocial';
 import { SimWorkstation } from '../sim/SimWorkstation';
 import type { HotspotVisualState, Mission, MissionRuntimeState, OverlayRef, Rect, SimAppId } from '../types/models';
 import { ConsequencePanel } from '../ui/ConsequencePanel';
@@ -27,6 +29,7 @@ const SIMS: Record<SimAppId, (p: SimProps) => JSX.Element | null> = {
   workstation: SimWorkstation,
   phone: SimPhone,
   itPortal: SimItPortal,
+  social: SimSocial,
 };
 
 const EMOTES = { safe: '😎', risky: '🤔', critical: '😱' } as const;
@@ -120,6 +123,9 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
       }),
     [bridge, dispatch, activate],
   );
+
+  // Missiyadan chiqilganda (natija, xarita) to‘liq ekran rejimi ham yopiladi
+  useEffect(() => () => void exitFullscreen(), []);
 
   // Fon musiqasi: o‘yin ekranida chalinadi, chiqqanda yoki sozlamada o‘chirilganda to‘xtaydi
   useEffect(() => {

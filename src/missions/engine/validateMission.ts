@@ -122,6 +122,21 @@ export function validateMission(mission: Mission): string[] {
     }
   }
 
+  if (sim.social) {
+    const { post, dm, privacy } = sim.social;
+    checkClue(post.locationClueId, 'post');
+    post.photo.forEach((item) => checkClue(item.clueId, `post surati «${item.id}»`));
+    checkParts(post.caption, 'post matni');
+    checkClue(dm.profileClueId, 'DM');
+    dm.messages.forEach((p) => checkParts(p, 'DM'));
+    privacy.fields.forEach((f) => checkClue(f.clueId, `profil «${f.label}»`));
+    for (const { decisionId, choiceIds } of [post, dm, privacy]) {
+      const d = mission.decisions[decisionId];
+      if (!d) err(`ijtimoiy tarmoq: qaror «${decisionId}» topilmadi`);
+      for (const id of choiceIds) if (!d?.choices.some((ch) => ch.id === id)) err(`ijtimoiy tarmoq: tanlov «${id}» topilmadi`);
+    }
+  }
+
   // Tugatish mumkinmi: completeWhen dagi har bir flag biror joyda o‘rnatiladi
   const settable = new Set<string>([...Object.keys(mission.decisions).map(doneFlag), ...Object.keys(mission.clues).map(clueFlag)]);
   const addEffects = (effects?: { type: string; flag?: string }[]) => effects?.forEach((e) => e.type === 'setFlag' && e.flag && settable.add(e.flag));

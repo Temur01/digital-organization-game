@@ -329,5 +329,5 @@ export const m4CoffeeBreak: Mission = {
     'Shubhali stiker va e’lonlarni IT xavfsizlikka xabar qiling.',
     'Ichki Wi-Fi parolini bermang — mehmonlar uchun mehmon tarmog‘i bor.',
   ],
-  unlocks: [],
+  unlocks: ['m5-social-media'],
 };

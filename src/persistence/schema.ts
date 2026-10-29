@@ -38,6 +38,7 @@ export const settingsSchema = z.object({
   sound: z.boolean(),
   voice: z.boolean().optional(),
   music: z.boolean().optional(),
+  fullscreen: z.boolean().optional(),
 });
 
 /** missions — qisman: noma’lum yoki yetishmayotgan yozuvlar normalize() da tiklanadi. */

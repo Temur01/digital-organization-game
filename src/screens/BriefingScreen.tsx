@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { enterFullscreen } from '../app/fullscreen';
 import { usePlayer, useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
@@ -10,6 +11,7 @@ import styles from './screens.module.css';
 export function BriefingScreen() {
   const id = useGameStore((s) => s.briefingMissionId);
   const startMission = useGameStore((s) => s.startMission);
+  const fullscreenOnStart = useGameStore((s) => s.progress.settings.fullscreen ?? true);
   const goTo = useGameStore((s) => s.goTo);
   const player = usePlayer();
   const heading = useScreenHeading<HTMLHeadingElement>();
@@ -106,7 +108,14 @@ export function BriefingScreen() {
             <Button variant="ghost" onClick={() => goTo('map')}>
               ← {ui.briefing.backToMap}
             </Button>
-            <Button className={[styles.ctaBig, styles.pulseButton].join(' ')} onClick={() => startMission(mission.id)}>
+            <Button
+              className={[styles.ctaBig, styles.pulseButton].join(' ')}
+              onClick={() => {
+                // To‘liq ekran faqat bosish ichida ruxsat etiladi — shuning uchun shu yerda, missiyadan oldin
+                if (fullscreenOnStart) void enterFullscreen();
+                startMission(mission.id);
+              }}
+            >
               <span aria-hidden="true">▶</span> {ui.briefing.start}
             </Button>
           </div>
