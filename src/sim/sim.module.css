@@ -1,0 +1,380 @@
+.muted {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+.notice {
+  background: var(--color-safe-bg);
+  color: var(--color-safe);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+.markHint {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-risky-bg);
+  color: var(--color-risky);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+.paneHeading {
+  font-size: 1rem;
+  margin: 0 0 var(--space-2);
+}
+
+/* ---------- Belgilar ---------- */
+.clue {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: inherit;
+  border-radius: 3px;
+}
+.clueBlock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.clueActive {
+  cursor: crosshair;
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 2px;
+  background: rgb(242 177 52 / 0.12);
+}
+.clueActive:hover {
+  background: rgb(242 177 52 / 0.3);
+}
+.clueFound {
+  background: rgb(209 73 91 / 0.15);
+  box-shadow: inset 0 -2px 0 var(--color-critical);
+}
+.clueFound::after {
+  content: ' 🔍';
+}
+
+/* ---------- Pochta ---------- */
+.mailLayout {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: var(--space-4);
+}
+.mailList ul {
+  list-style: none;
+  display: grid;
+  gap: var(--space-1);
+}
+.mailItem {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px var(--space-2);
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  min-height: 44px;
+}
+.mailItemActive {
+  border-color: var(--color-primary);
+  background: var(--color-surface-alt);
+  box-shadow: inset 4px 0 0 var(--color-primary);
+}
+.mailFrom {
+  font-weight: 700;
+}
+.mailTime {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+.mailSubject {
+  grid-column: 1 / -1;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mailView {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+}
+.mailToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.mailHeading {
+  font-size: 1.1rem;
+}
+.mailMeta {
+  overflow-wrap: anywhere;
+}
+.mail p {
+  overflow-wrap: anywhere;
+}
+.signature {
+  color: var(--color-muted);
+  font-style: italic;
+}
+.attachment {
+  display: inline-flex;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+}
+.linkWrap {
+  position: relative;
+  display: inline-block;
+}
+.fakeLink {
+  font: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #1a56db;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tooltip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 5;
+  width: max-content;
+  max-width: min(80vw, 360px);
+  overflow-wrap: anywhere;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 4px;
+  background: var(--color-text);
+  color: #fff;
+  font-size: 0.85rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.linkWrap:hover .tooltip,
+.linkWrap:focus-within .tooltip {
+  opacity: 1;
+}
+
+/* ---------- Ish stoli ---------- */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: var(--space-3);
+}
+.tab {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+.tabActive {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary-strong);
+}
+.chat {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+.chatContact {
+  margin: 0;
+}
+.tag {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-risky-bg);
+  color: var(--color-risky);
+}
+.bubble {
+  max-width: 85%;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 14px 14px 14px 4px;
+  background: var(--color-surface-alt);
+}
+.fileCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.fileIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 48px;
+  border-radius: 4px;
+  background: #d1495b;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+}
+.checkRow input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+}
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+.decisionBar {
+  margin-top: var(--space-4);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---------- Telefon ---------- */
+.phone {
+  display: grid;
+  justify-items: center;
+}
+.phoneCard {
+  width: min(100%, 420px);
+  padding: var(--space-4);
+  border-radius: 24px;
+  background: #1d2433;
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.phoneCard .muted {
+  color: #c9d1dc;
+}
+.phoneApp {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+  color: #c9d1dc;
+}
+.badgeCount {
+  background: var(--color-critical);
+  color: #fff;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+.phoneTitle {
+  font-size: 1.3rem;
+}
+.phoneDetails {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+.phoneDetails dt {
+  color: #c9d1dc;
+}
+.phoneDetails dd {
+  margin: 0;
+  font-weight: 600;
+}
+.phoneActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.phoneActionsColumn {
+  display: grid;
+  gap: var(--space-2);
+}
+.subtitles {
+  background: rgb(255 255 255 / 0.08);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+/* ---------- IT portal ---------- */
+.form {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+.fieldset {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin: 0;
+}
+.fieldset legend {
+  font-weight: 700;
+}
+.fieldsetError {
+  border: 2px solid var(--color-critical);
+}
+.errorBox {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-critical-bg);
+  color: var(--color-critical);
+}
+.errorBox ul {
+  padding-left: var(--space-5);
+}
+.passwordList {
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+.passwordCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.passwordText {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 719px) {
+  .mailLayout {
+    grid-template-columns: 1fr;
+  }
+}
