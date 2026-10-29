@@ -1,8 +1,9 @@
 /* Hisob, «Bilim sinovi» va reyting ekranlari */
 .page {
+  width: min(100%, 1120px);
   max-width: 1120px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4) calc(var(--space-6) * 2);
+  padding: var(--space-6) clamp(12px, 4vw, var(--space-4)) calc(var(--space-6) * 2);
 }
 .card {
   position: relative;
@@ -1154,7 +1155,27 @@
     grid-template-columns: 1fr;
   }
   .statGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .statGrid li {
+    padding: var(--space-2);
+    overflow-wrap: anywhere;
+  }
+  .statGrid strong {
+    font-size: clamp(1.1rem, 6vw, 1.5rem);
+  }
+  .profileInsights li {
+    align-items: flex-start;
+  }
+  .profileInsights li span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .profileInsights li strong {
+    flex: 0 0 auto;
+    max-width: 48%;
+    overflow-wrap: anywhere;
   }
   .boardList li {
     grid-template-columns: 32px minmax(0, 1fr) auto;

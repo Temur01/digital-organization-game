@@ -6,6 +6,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  min-width: 320px;
 }
 
 body {
@@ -21,6 +22,7 @@ body {
     radial-gradient(700px 500px at 50% 120%, rgb(56 189 248 / 0.14), transparent 60%), var(--color-bg);
   background-attachment: fixed;
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 
