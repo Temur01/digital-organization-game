@@ -4,7 +4,7 @@ import { MISSIONS } from '../missions/data';
 import { isObjectiveDone, missionReducer, buildResult, createInitialState, type MissionAction } from '../missions/engine/missionReducer';
 import { applyResult, clearProgress, createDefaultProgress, isStorageAvailable, loadProgress, saveProgress } from '../persistence/storage';
 import type { AppScreen, CharacterId, LocalProgress, MissionId, MissionResult, MissionRuntimeState, Settings } from '../types/models';
-import { playSfx, type SfxName } from './sfx';
+import { playSfx, setSoundEnabled, type SfxName } from './sfx';
 import { enqueueResult, type ServerBest } from './sync';
 import { loadMissionSession, saveMissionSession } from './session';
 import type { QuizResult } from '../quiz/engine';
@@ -67,9 +67,8 @@ function persist(progress: LocalProgress): LocalProgress {
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
-  const sfx = (name: SfxName) => {
-    if (get().progress.settings.sound) playSfx(name);
-  };
+  // «Tovush effektlari» sozlamasini sfx moduli o‘zi tekshiradi (setSoundEnabled — fayl oxirida)
+  const sfx = (name: SfxName, delaySeconds = 0) => playSfx(name, delaySeconds);
 
   return {
     screen: 'title',
@@ -156,7 +155,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
       if (next.phase !== 'completed') {
         for (const o of mission.objectives) {
           if (!o.optional && isObjectiveDone(o, next.flags) && !isObjectiveDone(o, prev.flags)) {
-            get().pushToast(ui.game.objectiveDone(o.label));
+            get().pushToast(ui.game.objectiveDone(o.label), 'success');
+            // Qaror tovushi bilan ustma-ust tushmasin
+            sfx('objective', 0.35);
           }
         }
       }
@@ -224,3 +225,9 @@ export function useActiveMission() {
   const state = useGameStore((s) => s.mission);
   return state ? { state, mission: MISSIONS[state.missionId] } : null;
 }
+
+// Tovush sozlamasi: ishga tushganda va har o‘zgarganda sfx moduliga uzatiladi
+setSoundEnabled(useGameStore.getState().progress.settings.sound);
+useGameStore.subscribe((s, prev) => {
+  if (s.progress.settings.sound !== prev.progress.settings.sound) setSoundEnabled(s.progress.settings.sound);
+});

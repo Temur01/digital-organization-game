@@ -302,9 +302,9 @@ export const m3MfaIncident: Mission = {
         fields: [
           {
             id: 'what',
-            label: 'Nima bo‘ldi? (barcha mos variantlarni belgilang)',
+            label: 'Bugun nima bo‘ldi?',
             kind: 'checkbox',
-            errorHint: 'Bugun aynan nima sodir bo‘lganini eslang: telefon va qo‘ng‘iroq.',
+            errorHint: 'Bugun ikki narsa bo‘ldi: telefonga so‘ralmagan MFA so‘rovlari keldi va kimdir kod so‘rab qo‘ng‘iroq qildi. Bu missiyada xat kelmadi.',
             options: [
               { id: 'mfa', label: 'So‘ralmagan MFA so‘rovlari', correct: true },
               { id: 'call', label: 'Kod so‘rab qo‘ng‘iroq qilishdi', correct: true },
@@ -313,9 +313,9 @@ export const m3MfaIncident: Mission = {
           },
           {
             id: 'shared',
-            label: 'Biror narsani tasdiqladingizmi yoki kimgadir aytdingizmi?',
+            label: 'Siz MFA so‘rovini tasdiqladingizmi yoki SMS kodni kimgadir aytdingizmi?',
             kind: 'radio',
-            errorHint: 'Siz so‘rovni rad etdingiz va kodni aytmadingiz.',
+            errorHint: 'Eslang: siz MFA so‘rovini «Rad etish» bilan rad etdingiz va kodni hech kimga aytmadingiz.',
             options: [
               { id: 'no', label: 'Yo‘q', correct: true },
               { id: 'yes', label: 'Ha', correct: false },

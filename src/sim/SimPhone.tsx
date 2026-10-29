@@ -1,5 +1,6 @@
 import { motion, useAnimationControls } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { playSfx, startRing } from '../app/sfx';
 import { ui } from '../content/uz/ui';
 import { isDecisionDone } from '../missions/engine/missionReducer';
 import { Button } from '../ui/Button';
@@ -22,17 +23,23 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
 
   useEffect(() => {
     if (pushDone) return;
+    playSfx('vibrate');
     const t = window.setInterval(() => {
       setRequests((n) => Math.min(n + 1, 99));
+      playSfx('vibrate');
       // Yangi so‘rov — telefon titraydi (harakat kamaytirilganda MotionConfig buni o‘chiradi)
       void shake.start({ x: [0, -6, 6, -5, 5, -3, 3, 0], rotate: [0, -1.5, 1.5, -1, 1, 0], transition: { duration: 0.45 } });
     }, 4000);
     return () => window.clearInterval(t);
   }, [pushDone, shake]);
 
+  const callDone = phone ? isDecisionDone(state, phone.call.decisionId) : true;
+  // Kiruvchi qo‘ng‘iroq: ikki marta jiringlaydi; javob berilsa yoki oyna yopilsa — darhol to‘xtaydi
+  const ringing = pushDone && !callDone;
+  useEffect(() => (ringing ? startRing(2) : undefined), [ringing]);
+
   if (!phone) return null;
   const { mfa, call } = phone;
-  const callDone = isDecisionDone(state, call.decisionId);
   const choose = (decisionId: string, choiceId: string) => dispatch({ type: 'CHOOSE', decisionId, choiceId });
   const choicesOf = (decisionId: string, ids: readonly string[]) =>
     ids.map((id) => mission.decisions[decisionId]?.choices.find((c) => c.id === id)).filter((c) => c !== undefined);

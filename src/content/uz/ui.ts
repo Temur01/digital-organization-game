@@ -46,7 +46,6 @@ export const ui = {
     selected: 'Tanlandi',
     confirm: 'Shu qahramon bilan boshlash',
     role: 'Lavozim',
-    locked: 'Qahramon profilingizdagi jinsga qarab tanlangan. O‘zgartirish uchun profildagi jinsni o‘zgartiring.',
   },
   map: {
     eyebrow: 'Ofis xaritasi',
@@ -242,7 +241,9 @@ export const ui = {
       reportHeading: 'Hodisani xabar qilish',
       reportIntro: 'Belgilang. Bu shakl hech qayerga yuborilmaydi va saqlanmaydi — bu simulyatsiya.',
       submit: 'Yuborish',
-      fixFields: 'Quyidagi maydonlarni tekshiring:',
+      fixFields: 'Belgilangan savollarni qayta tekshiring — izoh har bir savol ostida.',
+      multiHint: 'Bir nechta variant tanlash mumkin',
+      singleHint: 'Bitta variantni tanlang',
       passwordHeading: 'Parolni almashtirish',
       passwordNote: 'Bu yerda parol yozilmaydi — faqat variant tanlanadi.',
       choose: 'Tanlash',

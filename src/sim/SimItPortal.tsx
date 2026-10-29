@@ -53,30 +53,37 @@ function ReportForm({ mission, dispatch }: SimProps) {
       <h3 className={styles.paneHeading}>{ui.sim.itPortal.reportHeading}</h3>
       <p className={styles.muted}>{ui.sim.itPortal.reportIntro}</p>
       {errors.length > 0 && (
-        <div className={styles.errorBox} role="alert">
-          <p>{ui.sim.itPortal.fixFields}</p>
-          <ul>
-            {report.fields
-              .filter((f) => errors.includes(f.id))
-              .map((f) => (
-                <li key={f.id}>
-                  <strong>{f.label}</strong> — {f.errorHint}
-                </li>
-              ))}
-          </ul>
-        </div>
+        <p className={styles.errorBox} role="alert">
+          {ui.sim.itPortal.fixFields}
+        </p>
       )}
-      {report.fields.map((f) => (
-        <fieldset key={f.id} className={[styles.fieldset, errors.includes(f.id) ? styles.fieldsetError : ''].join(' ')}>
-          <legend>{f.label}</legend>
-          {f.options.map((o) => (
-            <label key={o.id} className={styles.checkRow}>
-              <input type={f.kind} name={f.id} checked={(values[f.id] ?? []).includes(o.id)} onChange={(e) => toggle(f, o.id, e.target.checked)} />
-              <span>{o.label}</span>
-            </label>
-          ))}
-        </fieldset>
-      ))}
+      {report.fields.map((f) => {
+        const invalid = errors.includes(f.id);
+        const hintId = `${f.id}-hint`;
+        return (
+          <fieldset
+            key={f.id}
+            className={[styles.fieldset, invalid ? styles.fieldsetError : ''].join(' ')}
+            aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? hintId : undefined}
+          >
+            <legend>
+              {f.label} <span className={styles.fieldKind}>· {f.kind === 'checkbox' ? ui.sim.itPortal.multiHint : ui.sim.itPortal.singleHint}</span>
+            </legend>
+            {f.options.map((o) => (
+              <label key={o.id} className={styles.checkRow}>
+                <input type={f.kind} name={f.id} checked={(values[f.id] ?? []).includes(o.id)} onChange={(e) => toggle(f, o.id, e.target.checked)} />
+                <span>{o.label}</span>
+              </label>
+            ))}
+            {invalid && (
+              <p id={hintId} className={styles.fieldHint}>
+                💡 {f.errorHint}
+              </p>
+            )}
+          </fieldset>
+        );
+      })}
       <Button type="submit">{ui.sim.itPortal.submit}</Button>
     </form>
   );

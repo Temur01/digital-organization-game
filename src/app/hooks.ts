@@ -59,6 +59,7 @@ export function usePlayer() {
   const locked = useLockedCharacter();
   const selected = useGameStore((s) => s.progress.selectedCharacter);
   const id = locked ?? selected ?? 'bek';
-  const { first, position } = usePlayerName();
-  return useMemo(() => ({ ...CHARACTERS[id], name: first, role: position }), [id, first, position]);
+  const { first, position, fromProfile } = usePlayerName();
+  // Mehmon — qahramonning o‘z ismi va lavozimi (Guli tanlansa «Guli», «Bek» emas)
+  return useMemo(() => (fromProfile ? { ...CHARACTERS[id], name: first, role: position } : CHARACTERS[id]), [id, first, position, fromProfile]);
 }

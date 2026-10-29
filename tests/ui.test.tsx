@@ -37,7 +37,8 @@ describe('ekranlar', () => {
     select.unmount();
 
     render(<MissionMapScreen />);
-    expect(screen.getByText('O‘yinchi: Bek')).toBeInTheDocument();
+    // Mehmon Guli’ni tanladi — xaritada «Guli» (avval xato bilan «Bek» chiqardi)
+    expect(screen.getByText('O‘yinchi: Guli')).toBeInTheDocument();
     const locked = screen.getByRole('button', { name: /Topilgan fleshka/ });
     expect(locked).toHaveAttribute('aria-disabled', 'true');
     await user.click(locked);
@@ -55,34 +56,31 @@ describe('ekranlar', () => {
     expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();
   });
 
-  it('erkak foydalanuvchi — Bek qahramoni uning ismi va kasbi bilan, Guli qulflanadi', () => {
+  it('erkak foydalanuvchi — qahramon tanlovi o‘tkazib yuboriladi: Bek, uning ismi va kasbi bilan', () => {
     useAuthStore.setState({
       status: 'signedIn',
       profile: { id: 'u1', full_name: 'Temur', email: 't@k.uz', gender: 'male', position: 'Yurist' },
     });
+    useGameStore.setState({ screen: 'characterSelect' });
     const { unmount } = render(<CharacterSelectScreen />);
-    const own = screen.getByRole('radio', { name: /Temur/ });
-    expect(own).toBeChecked();
-    expect(own).toHaveAttribute('value', 'bek');
-    expect(screen.getByRole('radio', { name: /Guli/ })).toBeDisabled();
-    expect(screen.getAllByText('Yurist').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(useGameStore.getState().screen).toBe('map');
+    expect(useGameStore.getState().progress.selectedCharacter).toBe('bek');
     unmount();
 
-    useGameStore.setState({ progress: { ...createDefaultProgress(), selectedCharacter: 'bek' } });
     render(<MissionMapScreen />);
+    expect(screen.getByText('O‘yinchi: Temur')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /qahramon/i })).not.toBeInTheDocument();
   });
 
-  it('ayol foydalanuvchi — Guli qahramoni uning ismi bilan', () => {
+  it('ayol foydalanuvchi — qahramon tanlovi o‘tkazib yuboriladi: Guli', () => {
     useAuthStore.setState({
       status: 'signedIn',
       profile: { id: 'u2', full_name: 'Malika', email: 'm@k.uz', gender: 'female', position: 'Buxgalter' },
     });
     render(<CharacterSelectScreen />);
-    const own = screen.getByRole('radio', { name: /Malika/ });
-    expect(own).toBeChecked();
-    expect(own).toHaveAttribute('value', 'guli');
-    expect(screen.getByRole('radio', { name: /Bek/ })).toBeDisabled();
+    expect(useGameStore.getState().screen).toBe('map');
+    expect(useGameStore.getState().progress.selectedCharacter).toBe('guli');
   });
 });
 

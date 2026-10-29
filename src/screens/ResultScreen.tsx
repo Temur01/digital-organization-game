@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useMemo } from 'react';
 import { usePlayer, useScreenHeading } from '../app/hooks';
+import { playSfx } from '../app/sfx';
 import { totalStars as countStars, useGameStore } from '../app/store';
 import { allCompleted, nextMissionId } from '../app/transitions';
 import { rankFor, ui } from '../content/uz/ui';
@@ -32,8 +33,15 @@ export function ResultScreen() {
   const lead = useMemo(() => ui.result.passedLead[Math.floor(Math.random() * ui.result.passedLead.length)], []);
 
   useEffect(() => {
-    if (!passed) return;
-    const t = window.setTimeout(() => celebrate(stars === 3 || finishedAll ? 'big' : 'small'), 500 + stars * 280);
+    if (!passed) {
+      playSfx('fail', 0.25);
+      return;
+    }
+    // Har bir yulduz «otilib» chiqqanda (Stars: delay 0.3 + 0.28 s qadam) — uchqun, so‘ng fanfara va konfetti
+    for (let i = 0; i < stars; i++) playSfx('star', 0.3 + i * 0.28);
+    const at = 500 + stars * 280;
+    playSfx('fanfare', at / 1000);
+    const t = window.setTimeout(() => celebrate(stars === 3 || finishedAll ? 'big' : 'small'), at);
     return () => window.clearTimeout(t);
   }, [passed, stars, finishedAll]);
 

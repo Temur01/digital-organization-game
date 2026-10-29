@@ -132,8 +132,12 @@ export function startRouter(): () => void {
     if (applying) return;
     const next = routeFromState(state);
     if (hashFor(next) === hashFor(prev)) return;
-    // Brifingdan o‘yinga, o‘yindan natijaga — tarixni to‘ldirmaslik uchun almashtiramiz
-    const replace = (prev.screen === 'briefing' && next.screen === 'playing') || (prev.screen === 'playing' && next.screen === 'result');
+    // Brifingdan o‘yinga, o‘yindan natijaga, qahramon tanlovidan xaritaga — tarixni to‘ldirmaslik uchun almashtiramiz.
+    // Oxirgisi: qahramon jinsdan aniqlansa tanlov sahifasi o‘tkazib yuboriladi — «Orqaga» unga qaytib, yana xaritaga sakramasin.
+    const replace =
+      (prev.screen === 'briefing' && next.screen === 'playing') ||
+      (prev.screen === 'playing' && next.screen === 'result') ||
+      (prev.screen === 'characterSelect' && next.screen === 'map');
     prev = next;
     sync(replace);
   });

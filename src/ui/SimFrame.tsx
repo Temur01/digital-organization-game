@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { playSfx } from '../app/sfx';
 import { ui } from '../content/uz/ui';
 import { Button } from './Button';
 import { Modal } from './Modal';
@@ -14,6 +15,12 @@ interface SimFrameProps {
 
 /** Barcha simulyatsiya oynalari uchun ramka: «SIMULYATSIYA» yorlig‘i doim ko‘rinadi. */
 export function SimFrame({ title, icon, onClose, children, toolbar }: SimFrameProps) {
+  // Kompyuter/telefon oynasi ochilishi va yopilishi
+  useEffect(() => {
+    playSfx('open');
+    return () => playSfx('close');
+  }, []);
+
   return (
     <Modal title={title} hideTitle onEscape={onClose} size="lg" className={[styles.simModal, 'simLight'].join(' ')}>
       <div className={styles.simHeader}>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useLockedCharacter, usePlayerName, useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { CHARACTER_IDS, CHARACTERS } from '../content/characters';
@@ -15,15 +15,21 @@ export function CharacterSelectScreen() {
   const goTo = useGameStore((s) => s.goTo);
   const returnTo = useGameStore((s) => s.characterSelectReturnTo);
   const locked = useLockedCharacter();
-  const [picked, setSelected] = useState<CharacterId>(current ?? 'bek');
-  const selected = locked ?? picked;
+  const [selected, setSelected] = useState<CharacterId>(current ?? 'bek');
   const heading = useScreenHeading<HTMLHeadingElement>();
   const player = usePlayerName();
-  // Kirgan foydalanuvchi: jinsiga mos qahramon (yoki jins ko‘rsatilmagan bo‘lsa — ikkalasi) uning ismi va kasbini oladi;
-  // mehmonga va boshqa jinsdagi qahramonga — Bek/Guli
-  const isOwn = (id: CharacterId) => player.fromProfile && (locked === null || locked === id);
-  const nameOf = (id: CharacterId) => (isOwn(id) ? player.first : CHARACTERS[id].name);
-  const roleOf = (id: CharacterId) => (isOwn(id) ? player.position : CHARACTERS[id].role);
+
+  // Profilda jins bor — qahramon allaqachon ma’lum (erkak → Bek, ayol → Guli), tanlov sahifasi o‘tkazib yuboriladi
+  useEffect(() => {
+    if (locked) selectCharacter(locked);
+  }, [locked, selectCharacter]);
+
+  // Kirgan foydalanuvchi (jinsi ko‘rsatilmagan) — qahramon uning ismi va kasbini oladi; mehmonga — Bek/Guli
+  const nameOf = (id: CharacterId) => (player.fromProfile ? player.first : CHARACTERS[id].name);
+  const roleOf = (id: CharacterId) => (player.fromProfile ? player.position : CHARACTERS[id].role);
+
+  // O‘tkazib yuborilayotganda sahifa «lip» etib ko‘rinmasin
+  if (locked) return null;
 
   return (
     <main className={styles.page}>
@@ -34,7 +40,7 @@ export function CharacterSelectScreen() {
         <h1 ref={heading} tabIndex={-1}>
           {ui.characterSelect.heading}
         </h1>
-        <p className={styles.lead}>{locked ? ui.characterSelect.locked : ui.characterSelect.note}</p>
+        <p className={styles.lead}>{ui.characterSelect.note}</p>
       </header>
 
       <fieldset className={styles.characterGroup}>
@@ -42,28 +48,18 @@ export function CharacterSelectScreen() {
         {CHARACTER_IDS.map((id, i) => {
           const c = CHARACTERS[id];
           const checked = selected === id;
-          const disabled = locked !== null && locked !== id;
           return (
             <motion.label
               key={id}
               className={[styles.characterCard, checked ? styles.characterCardActive : ''].join(' ')}
-              aria-disabled={disabled || undefined}
               style={{ '--accent': c.accent } as CSSProperties}
               initial={{ opacity: 0, y: 50, rotate: i === 0 ? -3 : 3 }}
-              animate={{ opacity: disabled ? 0.45 : 1, y: 0, rotate: 0, scale: checked ? 1 : 0.97 }}
-              whileHover={disabled ? undefined : { y: -8 }}
+              animate={{ opacity: 1, y: 0, rotate: 0, scale: checked ? 1 : 0.97 }}
+              whileHover={{ y: -8 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 260, damping: 20, delay: i * 0.08 }}
             >
-              <input
-                type="radio"
-                name="character"
-                value={id}
-                checked={checked}
-                disabled={disabled}
-                onChange={() => setSelected(id)}
-                className={styles.radioInput}
-              />
+              <input type="radio" name="character" value={id} checked={checked} onChange={() => setSelected(id)} className={styles.radioInput} />
               <span className={styles.characterStage} aria-hidden="true">
                 <span className={styles.characterGlow} />
                 <motion.span

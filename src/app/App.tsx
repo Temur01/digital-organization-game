@@ -15,6 +15,7 @@ import type { AppScreen } from '../types/models';
 import { Toasts } from '../ui/Toasts';
 import { useReducedMotion } from './hooks';
 import { useAuthStore } from './auth';
+import { playSfx } from './sfx';
 import { useGameStore } from './store';
 
 const SCREENS: Record<AppScreen, () => JSX.Element | null> = {
@@ -39,6 +40,16 @@ export function App() {
 
   // Supabase sessiyasi: kirish, token yangilanishi, chiqish
   useEffect(() => initAuth(), [initAuth]);
+
+  // Tugma, tab va tanlov kartalarini bosganda yumshoq «tik» (sozlamalarda tovush o‘chirilsa — jim)
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const el = (e.target as Element | null)?.closest('button, [role="tab"], [role="option"], label');
+      if (el && !el.matches(':disabled, [aria-disabled="true"]')) playSfx('tap');
+    };
+    window.addEventListener('pointerdown', onDown);
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;

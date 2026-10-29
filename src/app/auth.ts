@@ -8,6 +8,22 @@ import { flushPending, pullServerBest } from './sync';
 /** Ro‘yxatdan o‘tishda kiritilgan profil ma’lumotlari (trigger ishlamasa ham profil yaratish uchun) */
 const PENDING_PROFILE_KEY = 'raqamli-qalqon:pending-profile';
 const PROFILE_COLUMNS = 'id, full_name, email, gender, position';
+/** `gender` migratsiyasi (20261029030000) qo‘llanmagan baza uchun — profil baribir ishlashi kerak */
+const LEGACY_COLUMNS = 'id, full_name, email, position';
+/** Serverda `gender` ustuni bormi (birinchi «ustun yo‘q» xatosidan keyin false bo‘ladi) */
+let genderColumn = true;
+const profileColumns = () => (genderColumn ? PROFILE_COLUMNS : LEGACY_COLUMNS);
+
+/** Postgres 42703 — «column … does not exist» */
+function isMissingGender(error: { code?: string; message?: string } | null): boolean {
+  if (error?.code !== '42703' || !/gender/.test(error.message ?? '')) return false;
+  genderColumn = false;
+  console.warn('[profil] Bazada «gender» ustuni yo‘q — supabase/migrations/20261029030000_profile_gender.sql qo‘llanmagan.');
+  return true;
+}
+
+/** Eski bazadan kelgan profilda `gender` bo‘lmaydi — tipga moslab null qo‘yamiz */
+const asProfile = (row: unknown): Profile | null => (row ? { gender: null, ...(row as Omit<Profile, 'gender'>) } : null);
 /** Parolni tiklash havolasidan qaytganini bildiruvchi URL belgisi (?tiklash=1) */
 const RECOVERY_PARAM = 'tiklash';
 
@@ -65,7 +81,8 @@ interface AuthStore {
   updatePassword(password: string): Promise<{ ok: true } | { ok: false; error: string }>;
   /** Tiklash oqimidan chiqish (masalan, «Bekor qilish») */
   clearRecovery(): void;
-  saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'gender' | 'position'>>): Promise<{ ok: boolean; error?: string }>;
+  /** `warning` — saqlandi, lekin hammasi emas (masalan, bazada jins ustuni yo‘q) */
+  saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'gender' | 'position'>>): Promise<{ ok: boolean; error?: string; warning?: string }>;
   signOut(): Promise<void>;
 }
 
@@ -102,8 +119,13 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
   const loadProfile = async (session: Session) => {
     if (!supabase) return;
     const user = session.user;
-    let { data: profile } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', user.id).maybeSingle();
-    if (!profile) {
+    const select = () => supabase!.from('profiles').select(profileColumns()).eq('id', user.id).maybeSingle();
+    let res = await select();
+    if (res.error && isMissingGender(res.error)) res = await select();
+    let profile = asProfile(res.data);
+    // Profil faqat so‘rov muvaffaqiyatli bo‘lib, yozuv topilmaganda yaratiladi.
+    // So‘rov xato bo‘lsa (tarmoq va h.k.) — mavjud profilni eski ro‘yxatdan o‘tish ma’lumoti bilan ustidan yozmaymiz.
+    if (!profile && !res.error) {
       // Zaxira yo‘l: trigger ishlamagan bo‘lsa — ro‘yxatdan o‘tishda kiritilgan ma’lumotdan profil yaratamiz
       let pending: Partial<RegisterInput> = {};
       try {
@@ -112,22 +134,24 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
         /* e’tiborsiz */
       }
       const meta = user.user_metadata as Record<string, unknown>;
+      const gender = pending.gender ?? (meta.gender === 'male' || meta.gender === 'female' ? meta.gender : null);
       const row = {
         id: user.id,
         email: user.email ?? '',
         full_name: String(pending.fullName ?? meta.full_name ?? (user.email ?? 'Foydalanuvchi').split('@')[0]),
-        gender: pending.gender ?? (meta.gender === 'male' || meta.gender === 'female' ? meta.gender : null),
         position: pending.position?.trim() || (typeof meta.position === 'string' && meta.position.trim()) || null,
+        ...(genderColumn ? { gender } : {}),
       };
-      const res = await supabase.from('profiles').upsert(row).select(PROFILE_COLUMNS).single();
-      profile = res.data;
+      const created = await supabase.from('profiles').upsert(row).select(profileColumns()).single();
+      profile = asProfile(created.data);
     }
     try {
       localStorage.removeItem(PENDING_PROFILE_KEY);
     } catch {
       /* e’tiborsiz */
     }
-    set({ profile: (profile as Profile | null) ?? null });
+    if (res.error && !profile) console.warn('[profil] Profilni yuklab bo‘lmadi:', res.error.message);
+    set({ profile });
   };
 
   const syncAll = async () => {
@@ -240,10 +264,27 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     saveProfile: async (patch) => {
       const { userId, profile } = get();
       if (!supabase || !userId) return { ok: false, error: 'Avval tizimga kiring.' };
-      const { data, error } = await supabase.from('profiles').update(patch).eq('id', userId).select(PROFILE_COLUMNS).single();
-      if (error) return { ok: false, error: 'Profilni saqlab bo‘lmadi. Qayta urinib ko‘ring.' };
-      set({ profile: (data as Profile) ?? profile });
-      return { ok: true };
+      const client = supabase;
+      const update = () => {
+        const withoutGender = { ...patch };
+        delete withoutGender.gender;
+        return client
+          .from('profiles')
+          .update(genderColumn ? patch : withoutGender)
+          .eq('id', userId)
+          .select(profileColumns())
+          .single();
+      };
+      let res = await update();
+      if (res.error && isMissingGender(res.error)) res = await update();
+      if (res.error) return { ok: false, error: 'Profilni saqlab bo‘lmadi. Qayta urinib ko‘ring.' };
+      set({ profile: asProfile(res.data) ?? profile });
+      return 'gender' in patch && !genderColumn
+        ? {
+            ok: true,
+            warning: 'Ism va kasb saqlandi, lekin jins saqlanmadi: serverda «gender» ustuni yo‘q. Administrator ma’lumotlar bazasini yangilashi kerak.',
+          }
+        : { ok: true };
     },
 
     signOut: async () => {

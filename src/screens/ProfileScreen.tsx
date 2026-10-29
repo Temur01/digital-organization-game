@@ -62,7 +62,8 @@ export function ProfileScreen() {
     setSaving(true);
     const res = await saveProfile({ full_name: n, gender, position });
     setSaving(false);
-    if (res.ok) pushToast(t.saved, 'success');
+    if (res.ok && res.warning) setError(res.warning);
+    else if (res.ok) pushToast(t.saved, 'success');
     else setError(res.error ?? null);
   };
 
