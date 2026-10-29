@@ -1,5 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { useVoiceLabel } from '../app/hooks';
+import { useGameStore } from '../app/store';
+import { speak, stopSpeaking, type VoiceKind } from '../app/voice';
+import { CHARACTER_VOICE, SPEAKER_VOICE } from '../content/characters';
 import { ui } from '../content/uz/ui';
 import type { Character, Dialog } from '../types/models';
 import { CharacterAvatar } from './CharacterArt';
@@ -34,7 +38,7 @@ interface DialogPanelProps {
   dialog: Dialog;
   player: Character;
   /** Rasmli NPC’lar: ism → illyustratsiya */
-  npcs?: Record<string, { art: string; faceX: number }>;
+  npcs?: Record<string, { art: string; faceX: number; voice?: 'male' | 'female' }>;
   onClose(): void;
 }
 
@@ -43,6 +47,21 @@ export function DialogPanel({ dialog, player, npcs, onClose }: DialogPanelProps)
   const [index, setIndex] = useState(0);
   const line = dialog.lines[index];
   const typing = useTypewriter(line?.text ?? '');
+  const voiceOn = useGameStore((s) => s.progress.settings.voice ?? true);
+  const updateSettings = useGameStore((s) => s.updateSettings);
+  const canSpeak = useVoiceLabel() !== null;
+  const lineText = line?.text ?? '';
+  const lineSpeaker = line?.speaker ?? '';
+  const voiceKind: VoiceKind =
+    lineSpeaker === 'player' ? CHARACTER_VOICE[player.id] : (npcs?.[lineSpeaker]?.voice ?? SPEAKER_VOICE[lineSpeaker] ?? 'neutral');
+
+  // Har bir yangi qatorni ovozli o‘qiymiz; qator almashganda yoki oyna yopilganda to‘xtatamiz
+  useEffect(() => {
+    if (!voiceOn || !canSpeak || !lineText) return;
+    speak(lineText, voiceKind);
+    return () => stopSpeaking();
+  }, [lineText, voiceKind, voiceOn, canSpeak]);
+
   if (!line) return null;
   const isPlayer = line.speaker === 'player';
   const speaker = isPlayer ? playerName : line.speaker;
@@ -99,6 +118,17 @@ export function DialogPanel({ dialog, player, npcs, onClose }: DialogPanelProps)
             <span key={i} className={i === index ? styles.dotActive : styles.dot} />
           ))}
         </span>
+        {canSpeak && (
+          <Button
+            variant="ghost"
+            aria-pressed={voiceOn}
+            aria-label={voiceOn ? ui.dialog.voiceOff : ui.dialog.voiceOn}
+            title={voiceOn ? ui.dialog.voiceOff : ui.dialog.voiceOn}
+            onClick={() => updateSettings({ voice: !voiceOn })}
+          >
+            <span aria-hidden="true">{voiceOn ? '🔊' : '🔇'}</span>
+          </Button>
+        )}
         <Button onClick={advance} autoFocusTarget>
           {last && typing.done ? ui.dialog.finish : ui.dialog.next}
         </Button>

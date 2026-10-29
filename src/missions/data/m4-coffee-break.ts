@@ -78,6 +78,7 @@ export const m4CoffeeBreak: Mission = {
       interactPoint: { x: 520, y: 352 },
       npc: {
         name: 'Sardor',
+        voice: 'male',
         art: NPC_ART.man.art,
         faceX: NPC_ART.man.faceX,
         look: { skin: 0xe2ad84, skinShade: 0xc28d64, hair: 0x1b1b1b, hairStyle: 'short', top: 0x23365e, bottom: 0xc9b089, shoes: 0x4a2c17, accent: 'none' },

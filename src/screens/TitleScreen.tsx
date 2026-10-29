@@ -6,6 +6,8 @@ import { useGameStore } from '../app/store';
 import { continueTarget, hasAnyProgress } from '../app/transitions';
 import { CHARACTERS } from '../content/characters';
 import { ui } from '../content/uz/ui';
+import { account } from '../content/uz/extra';
+import { AccountChip } from '../ui/AccountChip';
 import { Button } from '../ui/Button';
 import { CharacterArt } from '../ui/CharacterArt';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -20,6 +22,7 @@ export function TitleScreen() {
   const newGame = useGameStore((s) => s.newGame);
   const openSettings = useGameStore((s) => s.openSettings);
   const openCharacterSelect = useGameStore((s) => s.openCharacterSelect);
+  const openAux = useGameStore((s) => s.openAux);
   const [dialog, setDialog] = useState<'newGame' | 'about' | null>(null);
   const heading = useScreenHeading<HTMLHeadingElement>();
   const canContinue = hasAnyProgress(progress);
@@ -34,6 +37,9 @@ export function TitleScreen() {
 
   return (
     <main className={styles.title}>
+      <div className={styles.topRight}>
+        <AccountChip />
+      </div>
       <div className={styles.orbs} aria-hidden="true">
         <span />
         <span />
@@ -83,7 +89,15 @@ export function TitleScreen() {
           ))}
         </motion.ul>
 
-        <motion.div className={styles.linkRow} {...rise(5)}>
+        <motion.div className={styles.featureRow} {...rise(5)}>
+          <Button variant="secondary" onClick={() => openAux('quiz')}>
+            <span aria-hidden="true">🧠</span> {account.quiz}
+          </Button>
+          <Button variant="secondary" onClick={() => openAux('leaderboard')}>
+            <span aria-hidden="true">🏆</span> {account.leaderboard}
+          </Button>
+        </motion.div>
+        <motion.div className={styles.linkRow} {...rise(6)}>
           <Button variant="ghost" onClick={openSettings}>
             <span aria-hidden="true">⚙️</span> {ui.title.settings}
           </Button>
@@ -91,7 +105,7 @@ export function TitleScreen() {
             <span aria-hidden="true">ℹ️</span> {ui.title.about}
           </Button>
         </motion.div>
-        <motion.p className={styles.simNote} {...rise(6)}>
+        <motion.p className={styles.simNote} {...rise(7)}>
           <span aria-hidden="true">🔒</span> {ui.common.simulationNote}
         </motion.p>
       </section>

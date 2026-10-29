@@ -167,8 +167,8 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
   const closeOverlay = useCallback(() => dispatch({ type: 'CLOSE_OVERLAY' }), [dispatch]);
   const nearHotspot = nearId ? mission.hotspots.find((h) => h.id === nearId) : undefined;
   const npcArt = useMemo(() => {
-    const out: Record<string, { art: string; faceX: number }> = {};
-    for (const h of mission.hotspots) if (h.npc?.art) out[h.npc.name] = { art: h.npc.art, faceX: h.npc.faceX ?? 0.5 };
+    const out: Record<string, { art: string; faceX: number; voice?: 'male' | 'female' }> = {};
+    for (const h of mission.hotspots) if (h.npc?.art) out[h.npc.name] = { art: h.npc.art, faceX: h.npc.faceX ?? 0.5, voice: h.npc.voice };
     return out;
   }, [mission]);
 

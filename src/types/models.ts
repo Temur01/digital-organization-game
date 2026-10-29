@@ -120,6 +120,8 @@ export interface NpcLook {
   art?: string;
   /** Avatar uchun yuz markazi (0–1) */
   faceX?: number;
+  /** Dialogni ovozli o‘qishda ovoz turi */
+  voice?: 'male' | 'female';
 }
 
 export interface InteractiveObject {
@@ -396,6 +398,8 @@ export interface Settings {
   highContrast: boolean;
   listMode: boolean;
   sound: boolean;
+  /** Dialoglarni ovozli o‘qish (eski progressda bo‘lmasligi mumkin — standart: yoqilgan) */
+  voice?: boolean;
 }
 
 export interface LocalProgress {
@@ -403,6 +407,8 @@ export interface LocalProgress {
   selectedCharacter: CharacterId | null;
   missions: Record<MissionId, MissionProgress>;
   settings: Settings;
+  /** «Bilim sinovi» dagi eng yaxshi ball */
+  quizBest?: number;
   updatedAt: string;
 }
 
@@ -413,4 +419,8 @@ export type AppScreen =
   | 'briefing'
   | 'playing'
   | 'result'
-  | 'settings';
+  | 'settings'
+  | 'auth'
+  | 'profile'
+  | 'quiz'
+  | 'leaderboard';

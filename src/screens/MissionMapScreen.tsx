@@ -4,6 +4,8 @@ import { useGameStore } from '../app/store';
 import { previousMissionTitle } from '../app/transitions';
 import { rankFor, ui } from '../content/uz/ui';
 import { MISSION_LIST } from '../missions/data';
+import { account } from '../content/uz/extra';
+import { AccountChip } from '../ui/AccountChip';
 import { Button } from '../ui/Button';
 import { CharacterArt } from '../ui/CharacterArt';
 import { Stars } from '../ui/Stars';
@@ -16,6 +18,7 @@ export function MissionMapScreen() {
   const openCharacterSelect = useGameStore((s) => s.openCharacterSelect);
   const openSettings = useGameStore((s) => s.openSettings);
   const goTo = useGameStore((s) => s.goTo);
+  const openAux = useGameStore((s) => s.openAux);
   const player = usePlayer();
   const heading = useScreenHeading<HTMLHeadingElement>();
   const maxStars = MISSION_LIST.length * 3;
@@ -140,6 +143,13 @@ export function MissionMapScreen() {
           </div>
           <p className={styles.rankNext}>{nextRank ? ui.map.nextRank(nextRank.min - totalStars, nextRank.name) : ui.map.maxRank}</p>
           <div className={styles.menu}>
+            <AccountChip />
+            <Button onClick={() => openAux('quiz')}>
+              <span aria-hidden="true">🧠</span> {account.quiz}
+            </Button>
+            <Button variant="secondary" onClick={() => openAux('leaderboard')}>
+              <span aria-hidden="true">🏆</span> {account.leaderboard}
+            </Button>
             <Button variant="secondary" onClick={openCharacterSelect}>
               {ui.map.changeCharacter}
             </Button>

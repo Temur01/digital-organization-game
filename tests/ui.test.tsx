@@ -35,7 +35,7 @@ describe('ekranlar', () => {
     select.unmount();
 
     render(<MissionMapScreen />);
-    expect(screen.getByText('O‘yinchi: Guli')).toBeInTheDocument();
+    expect(screen.getByText('O‘yinchi: Temur')).toBeInTheDocument();
     const locked = screen.getByRole('button', { name: /Topilgan fleshka/ });
     expect(locked).toHaveAttribute('aria-disabled', 'true');
     await user.click(locked);
@@ -47,7 +47,7 @@ describe('ekranlar', () => {
   it('personajlar strelka tugmalari bilan almashadi', async () => {
     const user = userEvent.setup();
     render(<CharacterSelectScreen />);
-    const bek = screen.getByRole('radio', { name: /Bek/ });
+    const bek = screen.getByRole('radio', { name: /Temur/ });
     bek.focus();
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();

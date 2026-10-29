@@ -49,6 +49,7 @@ export const m1Phishing: Mission = {
       interactPoint: { x: 760, y: 480 },
       npc: {
         name: 'Dilnoza',
+        voice: 'female',
         art: NPC_ART.woman.art,
         faceX: NPC_ART.woman.faceX,
         look: { skin: 0xc99a72, skinShade: 0xa97c56, hair: 0x1f1612, hairStyle: 'bun', top: 0x7b5ea7, bottom: 0x33334d, shoes: 0x222222, accent: 'none' },

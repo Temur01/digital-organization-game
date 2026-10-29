@@ -1,6 +1,10 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect } from 'react';
+import { AuthScreen } from '../screens/AuthScreen';
 import { BriefingScreen } from '../screens/BriefingScreen';
+import { LeaderboardScreen } from '../screens/LeaderboardScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
+import { QuizScreen } from '../screens/QuizScreen';
 import { CharacterSelectScreen } from '../screens/CharacterSelectScreen';
 import { GameScreen } from '../screens/GameScreen';
 import { MissionMapScreen } from '../screens/MissionMapScreen';
@@ -10,6 +14,7 @@ import { TitleScreen } from '../screens/TitleScreen';
 import type { AppScreen } from '../types/models';
 import { Toasts } from '../ui/Toasts';
 import { useReducedMotion } from './hooks';
+import { useAuthStore } from './auth';
 import { useGameStore } from './store';
 
 const SCREENS: Record<AppScreen, () => JSX.Element | null> = {
@@ -20,12 +25,20 @@ const SCREENS: Record<AppScreen, () => JSX.Element | null> = {
   playing: GameScreen,
   result: ResultScreen,
   settings: SettingsScreen,
+  auth: AuthScreen,
+  profile: ProfileScreen,
+  quiz: QuizScreen,
+  leaderboard: LeaderboardScreen,
 };
 
 export function App() {
   const screen = useGameStore((s) => s.screen);
   const settings = useGameStore((s) => s.progress.settings);
   const reducedMotion = useReducedMotion(settings.reducedMotion);
+  const initAuth = useAuthStore((s) => s.init);
+
+  // Supabase sessiyasi: magic link’dan qaytish, token yangilanishi, chiqish
+  useEffect(() => initAuth(), [initAuth]);
 
   useEffect(() => {
     const root = document.documentElement;

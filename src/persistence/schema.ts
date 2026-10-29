@@ -36,6 +36,7 @@ export const settingsSchema = z.object({
   highContrast: z.boolean(),
   listMode: z.boolean(),
   sound: z.boolean(),
+  voice: z.boolean().optional(),
 });
 
 /** missions — qisman: noma’lum yoki yetishmayotgan yozuvlar normalize() da tiklanadi. */
@@ -44,5 +45,6 @@ export const progressSchema = z.object({
   selectedCharacter: z.enum(['bek', 'guli']).nullable(),
   missions: z.record(z.string(), missionProgressSchema),
   settings: settingsSchema,
+  quizBest: z.number().min(0).optional(),
   updatedAt: z.string(),
 });

@@ -9,4 +9,6 @@ export const companyConfig = {
   phishingDomain: 'kompaniya-tolov.example',
   itPhone: '1234',
   reportButton: 'Fishingni xabar qilish',
+  /** Kirmagan o‘yinchi shu ism bilan ko‘rinadi; ro‘yxatdan o‘tish formasi ham shu qiymatlar bilan to‘ldiriladi */
+  defaultPlayer: { firstName: 'Temur', lastName: 'Suvonov', age: 25, department: 'AKT', position: 'dasturchi' },
 } as const;

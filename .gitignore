@@ -2,3 +2,7 @@ node_modules
 dist
 *.log
 .DS_Store
+# Muhit o‘zgaruvchilari (Supabase kalitlari) — repoga tushmasin
+.env
+.env.local
+.env.*.local

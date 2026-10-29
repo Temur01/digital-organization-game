@@ -9,8 +9,8 @@ import type { Character, CharacterId } from '../types/models';
 export const CHARACTERS: Record<CharacterId, Character> = {
   bek: {
     id: 'bek',
-    name: 'Bek',
-    role: 'Savdo bo‘limi menejeri',
+    name: 'Temur',
+    role: 'AKT bo‘limi dasturchi',
     shortDescription: 'Ishga birinchi kun. Hamma bilan tez til topishadi, lekin har bir xatni bosishdan oldin o‘ylab ko‘rishni o‘rganmoqda.',
     traits: ['Tezkor', 'Muloqotchan', 'Optimist'],
     quote: '«Shubhalansang — tekshir!»',
@@ -55,6 +55,12 @@ export const CHARACTERS: Record<CharacterId, Character> = {
 };
 
 /** NPC illyustratsiyalari (src/assets/collegue.png dan kesilgan) */
+/** Qahramon ovozi (dialoglarni ovozli o‘qish) */
+export const CHARACTER_VOICE = { bek: 'male', guli: 'female' } as const;
+
+/** Xaritada hotspoti yo‘q, lekin dialogda gapiradigan jamoadoshlar ovozi */
+export const SPEAKER_VOICE: Record<string, 'male' | 'female'> = { Rahbar: 'male', 'IT bo‘limi': 'male' };
+
 export const NPC_ART = {
   man: { art: colleagueMan, faceX: 0.62 },
   woman: { art: colleagueWoman, faceX: 0.42 },

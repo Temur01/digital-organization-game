@@ -20,6 +20,10 @@ import type {
   Settings,
 } from '../types/models';
 import { playSfx, type SfxName } from './sfx';
+import { enqueueResult, type ServerBest } from './sync';
+import { loadMissionSession, saveMissionSession } from './session';
+import type { QuizResult } from '../quiz/engine';
+import { normalize } from '../persistence/storage';
 
 export interface Toast {
   id: number;
@@ -31,6 +35,8 @@ export interface GameStore {
   screen: AppScreen;
   settingsReturnTo: AppScreen;
   characterSelectReturnTo: AppScreen;
+  /** Kirish, profil, sinov va reyting ekranlaridan qaytish joyi */
+  auxReturnTo: AppScreen;
   progress: LocalProgress;
   storageAvailable: boolean;
   briefingMissionId: MissionId | null;
@@ -50,8 +56,16 @@ export interface GameStore {
   updateSettings(patch: Partial<Settings>): void;
   openBriefing(id: MissionId): void;
   startMission(id: MissionId): void;
+  /** Sahifa yangilanganda: sessiyada shu missiya bo‘lsa — davom ettiradi, bo‘lmasa yangidan boshlaydi */
+  resumeMission(id: MissionId): void;
+  /** Saqlangan oxirgi natijani ko‘rsatadi (natija sahifasi yangilanganda) */
+  showStoredResult(id: MissionId): boolean;
   dispatchMission(action: MissionAction): void;
   exitMission(): void;
+  openAux(screen: 'auth' | 'profile' | 'quiz' | 'leaderboard'): void;
+  closeAux(): void;
+  finishQuiz(result: QuizResult): void;
+  mergeServerProgress(best: ServerBest): void;
   pushToast(text: string, tone?: Toast['tone']): void;
   dismissToast(id: number): void;
 }
@@ -76,6 +90,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     screen: 'title',
     settingsReturnTo: 'title',
     characterSelectReturnTo: 'title',
+    auxReturnTo: 'title',
     progress: loadProgress(),
     storageAvailable: isStorageAvailable(),
     briefingMissionId: null,
@@ -116,7 +131,32 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     startMission: (id) => {
       if (get().progress.missions[id].status === 'locked') return;
-      set({ mission: createInitialState(id), briefingMissionId: id, screen: 'playing', toasts: [] });
+      const mission = createInitialState(id);
+      saveMissionSession(mission);
+      set({ mission, briefingMissionId: id, screen: 'playing', toasts: [] });
+    },
+
+    resumeMission: (id) => {
+      if (get().progress.missions[id].status === 'locked') return;
+      const saved = loadMissionSession();
+      if (!saved || saved.missionId !== id) return get().startMission(id);
+      const mission = MISSIONS[id];
+      const pending = saved.pendingFeedback;
+      const outcome = pending ? mission.decisions[pending.decisionId]?.choices.find((c) => c.id === pending.choiceId)?.outcome : undefined;
+      // Jiddiy xato oqibatini yangilash bilan «chetlab o‘tib» bo‘lmaydi — oqibat ekrani qaytadi.
+      // Aks holda xona qayta yuklanadi: topilgan belgilar, ball va qarorlar saqlanadi.
+      const restored: MissionRuntimeState =
+        outcome === 'critical'
+          ? { ...saved, phase: 'consequence', resumeTo: null }
+          : { ...saved, phase: 'loading', resumeTo: null, activeOverlay: null, pendingFeedback: null };
+      set({ mission: restored, briefingMissionId: id, screen: 'playing', toasts: [] });
+    },
+
+    showStoredResult: (id) => {
+      const stored = get().lastResult?.missionId === id ? get().lastResult : get().progress.missions[id].lastResult;
+      if (!stored) return false;
+      set({ lastResult: stored, starsBefore: totalStars(get().progress), screen: 'result' });
+      return true;
     },
 
     dispatchMission: (action) => {
@@ -149,13 +189,49 @@ export const useGameStore = create<GameStore>()((set, get) => {
         const result = buildResult(next, mission);
         const starsBefore = totalStars(get().progress);
         const progress = persist(applyResult(get().progress, result, mission.unlocks));
+        enqueueResult({ kind: 'mission', data: result });
+        saveMissionSession(null);
         set({ mission: null, lastResult: result, starsBefore, progress, screen: 'result', toasts: [] });
         return;
       }
+      saveMissionSession(next);
       set({ mission: next });
     },
 
-    exitMission: () => set({ mission: null, screen: 'map', toasts: [] }),
+    exitMission: () => {
+      saveMissionSession(null);
+      set({ mission: null, screen: 'map', toasts: [] });
+    },
+
+    openAux: (screen) =>
+      set((s) => {
+        const aux: AppScreen[] = ['auth', 'profile', 'quiz', 'leaderboard'];
+        return { auxReturnTo: aux.includes(s.screen) ? s.auxReturnTo : s.screen, screen };
+      }),
+    closeAux: () => set((s) => ({ screen: s.auxReturnTo })),
+
+    finishQuiz: (result) => {
+      const progress = persist({ ...get().progress, quizBest: Math.max(get().progress.quizBest ?? 0, result.score) });
+      enqueueResult({ kind: 'quiz', data: result });
+      set({ progress });
+    },
+
+    mergeServerProgress: (best) => {
+      const current = get().progress;
+      const missions = { ...current.missions };
+      for (const [id, server] of Object.entries(best.missions)) {
+        const local = missions[id as keyof typeof missions];
+        if (!local) continue;
+        missions[id as keyof typeof missions] = {
+          ...local,
+          status: server.passed ? 'completed' : local.status,
+          bestScore: Math.max(local.bestScore, server.bestScore),
+          bestStars: Math.max(local.bestStars, server.bestStars) as typeof local.bestStars,
+          attempts: Math.max(local.attempts, server.attempts),
+        };
+      }
+      set({ progress: persist({ ...current, missions: normalize(missions), quizBest: Math.max(current.quizBest ?? 0, best.quizBest) }) });
+    },
 
     pushToast: (text, tone = 'info') =>
       set((s) => ({ toasts: [...s.toasts.slice(-2), { id: ++toastSeq, text, tone }] })),

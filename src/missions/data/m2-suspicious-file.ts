@@ -47,6 +47,7 @@ export const m2SuspiciousFile: Mission = {
       interactPoint: { x: 200, y: 350 },
       npc: {
         name: 'Javlon',
+        voice: 'male',
         art: NPC_ART.man.art,
         faceX: NPC_ART.man.faceX,
         look: { skin: 0xc8946b, skinShade: 0xa8764f, hair: 0x1b1b1b, hairStyle: 'short', top: 0x6b7280, bottom: 0x2d2d38, shoes: 0x1e1e1e, accent: 'none' },

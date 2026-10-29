@@ -275,6 +275,18 @@
   font-size: 0.8rem;
   color: var(--color-muted);
 }
+.topRight {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: 3;
+}
+.featureRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
 .linkRow {
   display: flex;
   flex-wrap: wrap;

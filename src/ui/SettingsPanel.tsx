@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useVoiceLabel } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
 import type { Settings } from '../types/models';
@@ -16,6 +17,7 @@ export function SettingsPanel({ allowReset = true }: { allowReset?: boolean }) {
   const pushToast = useGameStore((s) => s.pushToast);
   const storageAvailable = useGameStore((s) => s.storageAvailable);
   const [confirmReset, setConfirmReset] = useState(false);
+  const voice = useVoiceLabel();
 
   return (
     <div className={styles.settings}>
@@ -53,6 +55,11 @@ export function SettingsPanel({ allowReset = true }: { allowReset?: boolean }) {
           <span>{label}</span>
         </label>
       ))}
+      <label className={styles.checkRow}>
+        <input type="checkbox" disabled={!voice} checked={!!voice && (settings.voice ?? true)} onChange={(e) => update({ voice: e.target.checked })} />
+        <span>{ui.settings.voice}</span>
+      </label>
+      <p className={styles.muted}>{voice ? ui.settings.voiceUsing(voice) : ui.settings.voiceUnavailable}</p>
       {!storageAvailable && <p className={styles.warning}>{ui.map.storageWarning}</p>}
       {allowReset && (
         <Button variant="danger" onClick={() => setConfirmReset(true)}>
