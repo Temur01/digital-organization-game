@@ -4,7 +4,9 @@ import { MISSIONS } from '../missions/data';
 import { isObjectiveDone, missionReducer, buildResult, createInitialState, type MissionAction } from '../missions/engine/missionReducer';
 import { applyResult, clearProgress, createDefaultProgress, isStorageAvailable, loadProgress, saveProgress } from '../persistence/storage';
 import type { AppScreen, CharacterId, LocalProgress, MissionId, MissionResult, MissionRuntimeState, Settings } from '../types/models';
-import { playSfx, setSoundEnabled, type SfxName } from './sfx';
+import { audioManager } from '../game/audio';
+import { playGameAudio } from '../game/audio/audioEvents';
+import { resolveAudioSettings } from '../game/audio/audioSettings';
 import { enqueueResult, type ServerBest } from './sync';
 import { loadMissionSession, saveMissionSession } from './session';
 import type { QuizResult } from '../quiz/engine';
@@ -67,9 +69,6 @@ function persist(progress: LocalProgress): LocalProgress {
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
-  // «Tovush effektlari» sozlamasini sfx moduli o‘zi tekshiradi (setSoundEnabled — fayl oxirida)
-  const sfx = (name: SfxName, delaySeconds = 0) => playSfx(name, delaySeconds);
-
   return {
     screen: 'title',
     settingsReturnTo: 'title',
@@ -148,23 +147,28 @@ export const useGameStore = create<GameStore>()((set, get) => {
       if (next === prev) return;
 
       // Yon ta’sirlar: toastlar va tovushlar (reducer sof qoladi)
+      // Obyekt bilan o‘zaro ta’sir — faqat reducer qabul qilganda (yopiq obyekt yoki takroriy bosish tovush chiqarmaydi)
+      if (action.type === 'ACTIVATE_HOTSPOT') {
+        const kind = mission.hotspots.find((h) => h.id === action.hotspotId)?.kind;
+        if (kind) playGameAudio({ type: 'hotspotActivated', kind });
+      }
       for (const id of next.cluesFound.filter((c) => !prev.cluesFound.includes(c))) {
         get().pushToast(ui.game.clueFound(mission.clues[id]?.label ?? id), 'success');
-        sfx('clue');
+        playGameAudio({ type: 'clueFound' });
       }
       if (next.phase !== 'completed') {
         for (const o of mission.objectives) {
           if (!o.optional && isObjectiveDone(o, next.flags) && !isObjectiveDone(o, prev.flags)) {
             get().pushToast(ui.game.objectiveDone(o.label), 'success');
             // Qaror tovushi bilan ustma-ust tushmasin
-            sfx('objective', 0.35);
+            playGameAudio({ type: 'objectiveComplete' }, { delay: 0.35 });
           }
         }
       }
       if (next.phase === 'feedback' && prev.phase !== 'feedback' && next.pendingFeedback) {
         const { decisionId, choiceId } = next.pendingFeedback;
         const outcome = mission.decisions[decisionId]?.choices.find((c) => c.id === choiceId)?.outcome;
-        if (outcome) sfx(outcome);
+        if (outcome) playGameAudio({ type: 'decision', outcome });
       }
 
       if (next.phase === 'completed' || next.phase === 'failed') {
@@ -226,8 +230,8 @@ export function useActiveMission() {
   return state ? { state, mission: MISSIONS[state.missionId] } : null;
 }
 
-// Tovush sozlamasi: ishga tushganda va har o‘zgarganda sfx moduliga uzatiladi
-setSoundEnabled(useGameStore.getState().progress.settings.sound);
+// Audio sozlamalari: ishga tushganda va har o‘zgarganda AudioManager’ga uzatiladi (chalinayotgan tovushlar qayta boshlanmaydi)
+audioManager.setSettings(resolveAudioSettings(useGameStore.getState().progress.settings));
 useGameStore.subscribe((s, prev) => {
-  if (s.progress.settings.sound !== prev.progress.settings.sound) setSoundEnabled(s.progress.settings.sound);
+  if (s.progress.settings !== prev.progress.settings) audioManager.setSettings(resolveAudioSettings(s.progress.settings));
 });

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { fullscreenSupported } from '../app/fullscreen';
 import { useVoiceLabel } from '../app/hooks';
-import { AMBIENCE_ENABLED } from '../app/ambience';
 import { VOICE_ENABLED } from '../app/voice';
 import { useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
 import type { Settings } from '../types/models';
+import { AudioControls } from './AudioControls';
 import { Button } from './Button';
 import { ConfirmDialog } from './ConfirmDialog';
 import styles from './ui.module.css';
@@ -50,7 +50,6 @@ export function SettingsPanel({ allowReset = true }: { allowReset?: boolean }) {
         [
           ['highContrast', ui.settings.highContrast],
           ['listMode', ui.settings.listMode],
-          ['sound', ui.settings.sound],
         ] as const
       ).map(([key, label]) => (
         <label key={key} className={styles.checkRow}>
@@ -64,12 +63,7 @@ export function SettingsPanel({ allowReset = true }: { allowReset?: boolean }) {
           <span>{ui.settings.fullscreen}</span>
         </label>
       )}
-      {AMBIENCE_ENABLED && (
-        <label className={styles.checkRow}>
-          <input type="checkbox" checked={settings.music ?? true} onChange={(e) => update({ music: e.target.checked })} />
-          <span>{ui.settings.music}</span>
-        </label>
-      )}
+      <AudioControls />
       {VOICE_ENABLED && (
         <>
           <label className={styles.checkRow}>

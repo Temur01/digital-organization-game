@@ -3,7 +3,8 @@ import { exitFullscreen } from '../app/fullscreen';
 import { useReducedMotion, usePlayer } from '../app/hooks';
 import { useActiveMission, useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
-import { playFootstep, startMusic, stopMusic } from '../app/ambience';
+import { audioManager } from '../game/audio';
+import { surfaceForFloor } from '../game/audio/audioConfig';
 import { GameBridge } from '../game/bridge';
 import { createScene } from '../game/three/createScene3D';
 import { isHotspotDone, isHotspotEnabled, isHotspotVisible, type MissionAction } from '../missions/engine/missionReducer';
@@ -70,9 +71,9 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
   const isLoading = state.phase === 'loading';
 
   // Hodisa ishlovchilari eng so‘nggi qiymatlarni ref orqali o‘qiydi
-  const music = settings.music ?? true;
-  const latest = useRef({ hotspotStates, exploring, reducedMotion, music });
-  latest.current = { hotspotStates, exploring, reducedMotion, music };
+  const floor = surfaceForFloor(mission.room.theme.floorStyle);
+  const latest = useRef({ hotspotStates, exploring, reducedMotion, floor });
+  latest.current = { hotspotStates, exploring, reducedMotion, floor };
 
   const activate = useCallback(
     (id: string) => {
@@ -117,7 +118,7 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
             setRects(e.rects);
             break;
           case 'footstep':
-            if (latest.current.music) playFootstep();
+            audioManager.playFootstep(latest.current.floor);
             break;
         }
       }),
@@ -127,12 +128,25 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
   // Missiyadan chiqilganda (natija, xarita) to‘liq ekran rejimi ham yopiladi
   useEffect(() => () => void exitFullscreen(), []);
 
-  // Fon musiqasi: o‘yin ekranida chalinadi, chiqqanda yoki sozlamada o‘chirilganda to‘xtaydi
+  // Xona fon tovushi (kunduzgi ofis / tungi ofis); missiyadan chiqilganda to‘xtaydi
+  const night = mission.room.theme.night ?? false;
   useEffect(() => {
-    if (!music) return;
-    startMusic();
-    return () => stopMusic();
-  }, [music]);
+    audioManager.setAmbience(night ? 'roomToneNight' : 'roomToneDay');
+    return () => audioManager.setAmbience(null);
+  }, [night]);
+
+  // Pauza: musiqa pasayadi, xona jim. Oyna (dialog, simulyatsiya) ochiq — xona tovushlari pasayadi.
+  const paused = state.phase === 'paused';
+  const overlayOpen = !exploring && !paused && !isLoading;
+  useEffect(() => audioManager.setGamePaused(paused), [paused]);
+  useEffect(() => audioManager.setOverlay(overlayOpen), [overlayOpen]);
+  useEffect(
+    () => () => {
+      audioManager.setGamePaused(false);
+      audioManager.setOverlay(false);
+    },
+    [],
+  );
 
   // Xona yuklash (start va qayta boshlash)
   useEffect(() => {

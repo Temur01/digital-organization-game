@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { playSfx } from '../app/sfx';
+import { playGameAudio } from '../game/audio/audioEvents';
 import { ui } from '../content/uz/ui';
 import { Button } from './Button';
 import { Modal } from './Modal';
@@ -17,8 +17,9 @@ interface SimFrameProps {
 export function SimFrame({ title, icon, onClose, children, toolbar }: SimFrameProps) {
   // Kompyuter/telefon oynasi ochilishi va yopilishi
   useEffect(() => {
-    playSfx('open');
-    return () => playSfx('close');
+    // Ochish/yopish bitta guruhda (cooldown) — StrictMode’dagi ikki marta o‘rnatish ortiqcha tovush bermaydi
+    playGameAudio({ type: 'ui', action: 'windowOpen' });
+    return () => void playGameAudio({ type: 'ui', action: 'windowClose' });
   }, []);
 
   return (

@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
+import { playGameAudio } from '../game/audio/audioEvents';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '../app/auth';
 import { useScreenHeading } from '../app/hooks';
@@ -129,6 +130,7 @@ function QuizPlay({ state, setState, onFinish }: { state: QuizState; setState(s:
       if (next === state) return;
       setState(next);
       const ok = next.answers[q.id]?.correct;
+      playGameAudio({ type: 'quizAnswer', correct: !!ok });
       const el = optionRefs.current[id] ?? null;
       if (ok) {
         burstAt(el, 18);

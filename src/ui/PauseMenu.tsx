@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { playGameAudio } from '../game/audio/audioEvents';
 import { ui } from '../content/uz/ui';
 import { Button } from './Button';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -15,6 +16,7 @@ interface PauseMenuProps {
 export function PauseMenu({ onResume, onRestart, onExit }: PauseMenuProps) {
   const [view, setView] = useState<'menu' | 'settings'>('menu');
   const [confirm, setConfirm] = useState<'restart' | 'exit' | null>(null);
+  useEffect(() => void playGameAudio({ type: 'ui', action: 'menuOpen' }), []);
 
   return (
     <Modal title={view === 'menu' ? ui.pause.heading : ui.settings.heading} onEscape={view === 'menu' ? onResume : () => setView('menu')} size="sm">

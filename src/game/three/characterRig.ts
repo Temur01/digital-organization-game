@@ -112,7 +112,17 @@ export class CharacterRig {
     this.emote.visible = true;
   }
 
-  animate(dt: number, moving: boolean, reducedMotion: boolean, camera: THREE.Camera): void {
+  /** Yurish varag‘i bormi (bo‘lmasa qadam tovushi vaqt bo‘yicha) */
+  get hasWalkCycle(): boolean {
+    return this.walk !== null && this.walkTextures.length > 0;
+  }
+
+  /**
+   * Har kadr. Qaytaradi: shu kadrda oyoq polga tegdimi (qadam tovushi animatsiya bilan sinxron chalinishi uchun).
+   * `contactFrames` — yurish varag‘idagi oyoq tegish kadrlari.
+   */
+  animate(dt: number, moving: boolean, reducedMotion: boolean, camera: THREE.Camera, contactFrames: readonly number[] = []): boolean {
+    let stepped = false;
     this.time += dt;
     // Billboard: faqat vertikal o‘q atrofida kameraga buriladi
     const dx = camera.position.x - this.root.position.x;
@@ -130,6 +140,8 @@ export class CharacterRig {
       const index = Math.floor(this.walkPhase) % this.walkTextures.length;
       if (index !== this.frameIndex) {
         this.frameIndex = index;
+        // To‘xtash paytidagi «so‘nish» (walkBlend) qadamlari sanalmaydi — faqat haqiqiy harakat
+        stepped = moving && contactFrames.includes(index);
         (this.walk.material as THREE.MeshBasicMaterial).map = this.walkTextures[index]!;
       }
       this.walk.scale.x = this.flip;
@@ -161,6 +173,7 @@ export class CharacterRig {
       this.emote.material.opacity = Math.min(1, this.emoteLeft / 0.3);
       if (this.emoteLeft <= 0) this.emote.visible = false;
     }
+    return stepped;
   }
 
   dispose(): void {

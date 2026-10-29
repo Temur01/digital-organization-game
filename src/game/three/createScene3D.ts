@@ -9,12 +9,14 @@ import type { HotspotVisualState, InteractiveObject, Point, Rect, RoomDefinition
 import type { GameBridge, SceneCommand } from '../bridge';
 import { buildDecor, buildHotspot, buildShell, type Animator, type BuiltHotspot } from './builders';
 import { CharacterRig } from './characterRig';
+import { audioManager } from '../audio';
+import { FOOTSTEP_CADENCE } from '../audio/audioConfig';
+import type { LoopHandle, LoopId } from '../audio/audioTypes';
 import { buildAtmosphere, Bursts } from './fx';
 import { clampToWalkable, faceFrom, footRect, fromX, fromZ, intersects, toX, toZ } from './space';
 import * as tex from './textures';
 
 const SPEED = 180; // mantiqiy px/s
-const STEP_INTERVAL = 0.32; // qadam tovushlari orasidagi vaqt, s
 const INTERACT_RADIUS = 56;
 const INTRO_SECONDS = 1.6;
 const MARKER_W = 0.5;
@@ -135,6 +137,11 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
   let introLeft = 0;
   let puffTimer = 0;
   let stepTimer = 0;
+  /** Xonadagi 3D tovush manbalari (xona almashganda to‘xtatiladi) */
+  let emitters: LoopHandle[] = [];
+  /** Stol telefoni: faqat «kutilayotgan» holatda titraydi */
+  const phoneBuzz = new Map<string, LoopHandle>();
+  let lastListener = { x: NaN, z: NaN };
   let lastLayoutAt = 0;
   let layoutDirty = true;
   let loadToken = 0;
@@ -239,6 +246,11 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     }
     hotspots.clear();
     animators = [];
+    emitters.forEach((e) => e.stop());
+    emitters = [];
+    phoneBuzz.forEach((e) => e.stop());
+    phoneBuzz.clear();
+    lastListener = { x: NaN, z: NaN };
   };
 
   const loadRoom = (cmd: Extract<SceneCommand, { type: 'loadRoom' }>) => {
@@ -298,6 +310,20 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
       hotspots.set(def.id, { def, built, marker, badge, ring, box, state: 'idle', visited: false, badgeAge: 1, hop: 0, seed: seed++ });
     }
 
+    // 3D tovush manbalari: obyektlar o‘z joyidan «eshitiladi»
+    const emitAt = (id: LoopId, p: THREE.Vector3, spatial?: { refDistance?: number; maxDistance?: number }) =>
+      emitters.push(audioManager.playLoop(id, { position: { x: p.x, y: p.y, z: p.z }, spatial }));
+    for (const [, h] of hotspots) {
+      const c = h.box.getCenter(new THREE.Vector3());
+      if (h.def.kind === 'computer') emitAt('computerHum', c, { refDistance: 0.7, maxDistance: 8 });
+      if (h.def.kind === 'coffee') emitAt('coffeeMachine', c, { refDistance: 0.9 });
+    }
+    for (const d of r.decor) {
+      const x = toX(d.rect.x + d.rect.width / 2);
+      if (d.kind === 'cooler') emitAt('waterCooler', new THREE.Vector3(x, 1, toZ(d.rect.y + d.rect.height, r)));
+      if (d.kind === 'clock') emitAt('clockTick', new THREE.Vector3(x, 2.6, 0.1), { refDistance: 0.6, maxDistance: 9 });
+    }
+
     walkTarget = null;
     targetHotspot = null;
     nearId = null;
@@ -339,6 +365,14 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
       if (state === 'done' && h.state !== 'done' && h.def.kind === 'coffee') {
         // Kofe tayyorlanishi: qahramon kutadi, so‘ng ☕
         window.setTimeout(() => player?.showEmote('☕', 2.4), reducedMotion ? 0 : 1600);
+      }
+      if (h.def.kind === 'phone') {
+        const buzzing = phoneBuzz.get(id);
+        if (state === 'idle' && !buzzing) phoneBuzz.set(id, audioManager.playLoop('phoneBuzz', { position: center, spatial: { refDistance: 0.8 } }));
+        else if (state !== 'idle' && buzzing) {
+          buzzing.stop();
+          phoneBuzz.delete(id);
+        }
       }
       h.state = state;
       h.built.object.visible = state !== 'hidden';
@@ -482,13 +516,13 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
 
     if (player) {
       player.root.position.set(toX(pos.x), 0, toZ(pos.y, room));
-      if (moving) {
-        stepTimer -= dt;
-        if (stepTimer <= 0) {
-          bridge.emit({ type: 'footstep' });
-          stepTimer = STEP_INTERVAL;
-        }
-      } else stepTimer = 0;
+      // Tinglovchi qahramon bilan yuradi (faqat joy o‘zgarganda yangilanadi)
+      const lx = player.root.position.x;
+      const lz = player.root.position.z;
+      if (Math.abs(lx - lastListener.x) + Math.abs(lz - lastListener.z) > 0.02 || Number.isNaN(lastListener.x)) {
+        lastListener = { x: lx, z: lz };
+        audioManager.setListener({ x: lx, y: 1.6, z: lz });
+      }
       if (moving && !reducedMotion) {
         puffTimer -= dt;
         if (puffTimer <= 0) {
@@ -496,7 +530,17 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
           puffTimer = 0.2;
         }
       }
-      player.animate(dt, moving, reducedMotion, camera);
+      // Qadam tovushi: yurish animatsiyasidagi oyoq tegish kadrlarida; animatsiya bo‘lmasa — vaqt bo‘yicha
+      const contact = player.animate(dt, moving, reducedMotion, camera, FOOTSTEP_CADENCE.contactFrames);
+      if (player.hasWalkCycle) {
+        if (contact) bridge.emit({ type: 'footstep' });
+      } else if (moving) {
+        stepTimer -= dt;
+        if (stepTimer <= 0) {
+          bridge.emit({ type: 'footstep' });
+          stepTimer = FOOTSTEP_CADENCE.walkInterval;
+        }
+      } else stepTimer = 0;
     }
 
     // Hotspotlar: «!» belgisi, yaqinlik halqasi, bajarilgan nishoni, NPC salomi

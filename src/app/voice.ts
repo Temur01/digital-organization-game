@@ -5,6 +5,10 @@
  * O‘zbekcha ovoz kam tarqalgan, shuning uchun tartib: uz → tr → az → kk (talaffuzi yaqin turkiy tillar),
  * ular ham bo‘lmasa — istalgan lokal ovoz (jim qolgandan ko‘ra yaxshiroq).
  */
+
+import { audioManager } from '../game/audio';
+import { busVolume } from '../game/audio/audioSettings';
+
 export type VoiceKind = 'male' | 'female' | 'neutral';
 
 /** Hozircha o‘chirilgan: qurilmalarda o‘zbekcha ovoz yo‘q, turkcha talaffuz esa mos emas */
@@ -74,7 +78,8 @@ export function speak(text: string, kind: VoiceKind = 'neutral'): void {
   u.lang = voice.lang;
   u.pitch = PITCH[kind];
   u.rate = 1;
-  u.volume = 1;
+  // Ovoz sozlamalariga bo‘ysunadi: ovozsiz rejimda va umumiy balandlik bilan
+  u.volume = busVolume(audioManager.getSettings(), 'sfx');
   // Chrome: cancel()dan keyin darhol speak() ba’zan jim qoladi — biroz kechiktiramiz
   pendingTimer = window.setTimeout(() => synth.speak(u), 60);
 }

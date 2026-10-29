@@ -1,3 +1,5 @@
+import type { AudioSettings } from '../game/audio/audioTypes';
+
 // ---------- Personaj ----------
 export type CharacterId = 'bek' | 'guli';
 export type Direction = 'down' | 'up' | 'left' | 'right';
@@ -451,6 +453,8 @@ export interface Settings {
   music?: boolean;
   /** Missiyani to‘liq ekranda boshlash (standart: yoqilgan) */
   fullscreen?: boolean;
+  /** Ovoz balandliklari. Bo‘lmasa — eski `sound`/`music` belgilaridan hisoblanadi (resolveAudioSettings). */
+  audio?: AudioSettings;
 }
 
 export interface LocalProgress {

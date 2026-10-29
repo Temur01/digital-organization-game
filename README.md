@@ -135,3 +135,7 @@ Original art lives in `src/assets/`; the game uses optimized copies from `src/as
 - Fonts are local (`@fontsource-variable/manrope`, `@fontsource-variable/unbounded`) — nothing is loaded from the internet.
 - 3D rooms, furniture, and textures are generated in code (`src/game/three/builders.ts`, `textures.ts`).
 - Design tokens: `src/styles/tokens.css` (dark theme; simulation windows use a light palette inside `.simLight`).
+
+## Audio
+
+Music, ambience, footsteps, 3D object sounds and effects are handled by `src/game/audio/` (Web Audio API, no extra dependency). No audio files are bundled yet — every sound is synthesized until a file is added. Expected filenames and how to add them: [docs/AUDIO.md](docs/AUDIO.md).

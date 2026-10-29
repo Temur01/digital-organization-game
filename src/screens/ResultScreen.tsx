@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useMemo } from 'react';
 import { usePlayer, useScreenHeading } from '../app/hooks';
-import { playSfx } from '../app/sfx';
+import { playGameAudio } from '../game/audio/audioEvents';
 import { totalStars as countStars, useGameStore } from '../app/store';
 import { allCompleted, nextMissionId } from '../app/transitions';
 import { rankFor, ui } from '../content/uz/ui';
@@ -34,13 +34,13 @@ export function ResultScreen() {
 
   useEffect(() => {
     if (!passed) {
-      playSfx('fail', 0.25);
+      playGameAudio({ type: 'missionEnded', passed: false }, { delay: 0.25 });
       return;
     }
     // Har bir yulduz «otilib» chiqqanda (Stars: delay 0.3 + 0.28 s qadam) — uchqun, so‘ng fanfara va konfetti
-    for (let i = 0; i < stars; i++) playSfx('star', 0.3 + i * 0.28);
+    for (let i = 0; i < stars; i++) playGameAudio({ type: 'resultStar' }, { delay: 0.3 + i * 0.28 });
     const at = 500 + stars * 280;
-    playSfx('fanfare', at / 1000);
+    playGameAudio({ type: 'missionEnded', passed: true }, { delay: at / 1000 });
     const t = window.setTimeout(() => celebrate(stars === 3 || finishedAll ? 'big' : 'small'), at);
     return () => window.clearTimeout(t);
   }, [passed, stars, finishedAll]);

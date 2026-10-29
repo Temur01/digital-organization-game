@@ -1,6 +1,7 @@
 import { motion, useAnimationControls } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { playSfx, startRing } from '../app/sfx';
+import { audioManager } from '../game/audio';
+import { playGameAudio } from '../game/audio/audioEvents';
 import { ui } from '../content/uz/ui';
 import { isDecisionDone } from '../missions/engine/missionReducer';
 import { Button } from '../ui/Button';
@@ -23,10 +24,10 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
 
   useEffect(() => {
     if (pushDone) return;
-    playSfx('vibrate');
+    playGameAudio({ type: 'ui', action: 'vibrate' });
     const t = window.setInterval(() => {
       setRequests((n) => Math.min(n + 1, 99));
-      playSfx('vibrate');
+      playGameAudio({ type: 'ui', action: 'vibrate' });
       // Yangi so‘rov — telefon titraydi (harakat kamaytirilganda MotionConfig buni o‘chiradi)
       void shake.start({ x: [0, -6, 6, -5, 5, -3, 3, 0], rotate: [0, -1.5, 1.5, -1, 1, 0], transition: { duration: 0.45 } });
     }, 4000);
@@ -36,7 +37,16 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
   const callDone = phone ? isDecisionDone(state, phone.call.decisionId) : true;
   // Kiruvchi qo‘ng‘iroq: ikki marta jiringlaydi; javob berilsa yoki oyna yopilsa — darhol to‘xtaydi
   const ringing = pushDone && !callDone;
-  useEffect(() => (ringing ? startRing(2) : undefined), [ringing]);
+  useEffect(() => {
+    if (!ringing) return;
+    const ring = audioManager.playLoop('phoneRing');
+    // Ikki marta jiringlab, qo‘ng‘iroq «ulanadi»
+    const t = window.setTimeout(() => ring.stop(), 4800);
+    return () => {
+      window.clearTimeout(t);
+      ring.stop();
+    };
+  }, [ringing]);
 
   if (!phone) return null;
   const { mfa, call } = phone;

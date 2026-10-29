@@ -15,7 +15,11 @@ import type { AppScreen } from '../types/models';
 import { Toasts } from '../ui/Toasts';
 import { useReducedMotion } from './hooks';
 import { useAuthStore } from './auth';
-import { playSfx } from './sfx';
+import { audioManager, installAudioLifecycle } from '../game/audio';
+import { playGameAudio } from '../game/audio/audioEvents';
+import { useBackgroundMusic } from '../game/audio/hooks/useBackgroundMusic';
+import type { MusicId } from '../game/audio/audioTypes';
+import { MISSIONS } from '../missions/data';
 import { useGameStore } from './store';
 
 const SCREENS: Record<AppScreen, () => JSX.Element | null> = {
@@ -41,11 +45,24 @@ export function App() {
   // Supabase sessiyasi: kirish, token yangilanishi, chiqish
   useEffect(() => initAuth(), [initAuth]);
 
+  // Audio: birinchi bosishda ishga tushadi (brauzer qoidasi), yorliq yashirilsa to‘xtaydi
+  useEffect(() => installAudioLifecycle(), []);
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    // Faqat ishlab chiqishda: brauzerda tekshirish uchun (window.__audio.debugState())
+    (window as unknown as { __audio?: typeof audioManager }).__audio = audioManager;
+  }, []);
+
+  // Fon musiqasi ekranga qarab: missiya ichida — xonaga mos (tun/kun), qolgan joyda — menyu
+  const missionId = useGameStore((s) => s.mission?.missionId ?? null);
+  const music: MusicId = screen === 'playing' && missionId ? (MISSIONS[missionId].room.theme.night ? 'night' : 'gameplay') : 'menu';
+  useBackgroundMusic(music);
+
   // Tugma, tab va tanlov kartalarini bosganda yumshoq «tik» (sozlamalarda tovush o‘chirilsa — jim)
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
       const el = (e.target as Element | null)?.closest('button, [role="tab"], [role="option"], label');
-      if (el && !el.matches(':disabled, [aria-disabled="true"]')) playSfx('tap');
+      if (el && !el.matches(':disabled, [aria-disabled="true"]')) playGameAudio({ type: 'ui', action: 'tap' });
     };
     window.addEventListener('pointerdown', onDown);
     return () => window.removeEventListener('pointerdown', onDown);

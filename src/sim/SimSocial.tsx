@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, type ReactNode } from 'react';
-import { playSfx } from '../app/sfx';
+import { playGameAudio } from '../game/audio/audioEvents';
 import { ui } from '../content/uz/ui';
 import { isDecisionDone } from '../missions/engine/missionReducer';
 import type { Mission, SimTextPart } from '../types/models';
@@ -30,7 +30,7 @@ export function SimSocial({ mission, state, dispatch, onClose }: SimProps) {
 
   // Yangi DM kelganda — bildirishnoma tovushi
   useEffect(() => {
-    if (stage === 'dm') playSfx('notify', 0.3);
+    if (stage === 'dm') playGameAudio({ type: 'ui', action: 'notify' }, { delay: 0.3 });
   }, [stage]);
 
   if (!social) return null;
