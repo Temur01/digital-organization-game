@@ -232,10 +232,20 @@ export const m3MfaIncident: Mission = {
     },
   },
   clues: {
-    'm3-c-unrequested': { id: 'm3-c-unrequested', label: 'So‘ralmagan so‘rov', explanation: 'Siz hech qayerga kirmayapsiz — demak, parolingiz kimdadir bor.', points: 5 },
+    'm3-c-unrequested': {
+      id: 'm3-c-unrequested',
+      label: 'So‘ralmagan so‘rov',
+      explanation: 'Siz hech qayerga kirmayapsiz — demak, parolingiz kimdadir bor.',
+      points: 5,
+    },
     'm3-c-location': { id: 'm3-c-location', label: 'Noma’lum joylashuv', explanation: 'So‘rov sizning qurilmangiz va joylashuvingizdan emas.', points: 5 },
     'm3-c-caller': { id: 'm3-c-caller', label: 'Kod so‘ralmoqda', explanation: 'Haqiqiy IT xodimi hech qachon kod yoki parol so‘ramaydi.', points: 5 },
-    'm3-c-official': { id: 'm3-c-official', label: 'Rasmiy raqam', explanation: `Tekshirish uchun raqam plakatda (${c.itPhone}), qo‘ng‘iroq qiluvchidan emas.`, points: 5 },
+    'm3-c-official': {
+      id: 'm3-c-official',
+      label: 'Rasmiy raqam',
+      explanation: `Tekshirish uchun raqam plakatda (${c.itPhone}), qo‘ng‘iroq qiluvchidan emas.`,
+      points: 5,
+    },
     'm3-c-sticky': { id: 'm3-c-sticky', label: 'Ochiq yozilgan parol', explanation: 'Parolni stikerga yozmang — parol menejeridan foydalaning.', points: 5 },
   },
   consequences: {

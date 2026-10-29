@@ -1,0 +1,5 @@
+# Lock fayllar avtomatik yaratiladi
+package-lock.json
+bun.lock
+# Hujjatlar qo‘lda tahrirlanadi (jadvallar va matn tartibi saqlansin)
+*.md

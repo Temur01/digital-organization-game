@@ -28,13 +28,7 @@ export function CharacterArt({ character, height, float = false, className }: Ch
 export function CharacterAvatar({ character, className }: { character: Pick<Character, 'art' | 'faceX'>; className?: string }) {
   return (
     <span className={[styles.avatar, styles.avatarPlayer, className].filter(Boolean).join(' ')} aria-hidden="true">
-      <img
-        src={character.art}
-        alt=""
-        className={styles.avatarImg}
-        style={{ transform: `translateX(-${character.faceX * 100}%)` }}
-        draggable={false}
-      />
+      <img src={character.art} alt="" className={styles.avatarImg} style={{ transform: `translateX(-${character.faceX * 100}%)` }} draggable={false} />
     </span>
   );
 }

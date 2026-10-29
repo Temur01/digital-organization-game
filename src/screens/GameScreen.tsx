@@ -40,13 +40,7 @@ export function GameScreen() {
 function computeStates(mission: Mission, flags: readonly string[]): Record<string, HotspotVisualState> {
   const out: Record<string, HotspotVisualState> = {};
   for (const h of mission.hotspots) {
-    out[h.id] = !isHotspotVisible(h, flags)
-      ? 'hidden'
-      : !isHotspotEnabled(h, flags)
-        ? 'disabled'
-        : isHotspotDone(h, flags)
-          ? 'done'
-          : 'idle';
+    out[h.id] = !isHotspotVisible(h, flags) ? 'hidden' : !isHotspotEnabled(h, flags) ? 'disabled' : isHotspotDone(h, flags) ? 'done' : 'idle';
   }
   return out;
 }
@@ -199,9 +193,7 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
           {sceneError && <p className={styles.sceneError}>{ui.game.sceneError}</p>}
           {isLoading && <p className={styles.loading}>{ui.game.loading}</p>}
           <p className="visually-hidden">{ui.game.sceneLabel}</p>
-          {!sceneError && (
-            <HotspotOverlay hotspots={mission.hotspots} states={hotspotStates} rects={rects} nearId={nearId} onActivate={onHotspotClick} />
-          )}
+          {!sceneError && <HotspotOverlay hotspots={mission.hotspots} states={hotspotStates} rects={rects} nearId={nearId} onActivate={onHotspotClick} />}
           {exploring && nearHotspot && hotspotStates[nearHotspot.id] !== 'hidden' && (
             <p className={styles.interactHint} aria-hidden="true">
               {ui.game.interactHint(nearHotspot.label)}
@@ -214,10 +206,11 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
       {base?.type === 'dialog' && mission.dialogs[base.dialogId] && (
         <DialogPanel key={base.dialogId} dialog={mission.dialogs[base.dialogId]!} player={player} npcs={npcArt} onClose={closeOverlay} />
       )}
-      {base?.type === 'sim' && (() => {
-        const Sim = SIMS[base.app];
-        return <Sim {...simProps} />;
-      })()}
+      {base?.type === 'sim' &&
+        (() => {
+          const Sim = SIMS[base.app];
+          return <Sim {...simProps} />;
+        })()}
       {overlay?.type === 'decision' && mission.decisions[overlay.decisionId] && (
         <DecisionPanel
           decision={mission.decisions[overlay.decisionId]!}
@@ -245,11 +238,7 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
         />
       )}
       {state.phase === 'paused' && (
-        <PauseMenu
-          onResume={() => dispatch({ type: 'RESUME' })}
-          onRestart={() => dispatch({ type: 'RESTART' })}
-          onExit={exitMission}
-        />
+        <PauseMenu onResume={() => dispatch({ type: 'RESUME' })} onRestart={() => dispatch({ type: 'RESTART' })} onExit={exitMission} />
       )}
     </div>
   );

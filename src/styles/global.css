@@ -18,8 +18,7 @@ body {
   background:
     radial-gradient(900px 600px at 10% -10%, rgb(61 214 198 / 0.18), transparent 60%),
     radial-gradient(800px 600px at 110% 10%, rgb(167 139 250 / 0.2), transparent 60%),
-    radial-gradient(700px 500px at 50% 120%, rgb(56 189 248 / 0.14), transparent 60%),
-    var(--color-bg);
+    radial-gradient(700px 500px at 50% 120%, rgb(56 189 248 / 0.14), transparent 60%), var(--color-bg);
   background-attachment: fixed;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -32,9 +31,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-image: linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
 }

@@ -18,10 +18,7 @@ export default tseslint.config(
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
-      'no-restricted-properties': [
-        'error',
-        { object: 'window', property: 'open', message: 'Tashqi oyna ochish taqiqlangan.' },
-      ],
+      'no-restricted-properties': ['error', { object: 'window', property: 'open', message: 'Tashqi oyna ochish taqiqlangan.' }],
       'no-restricted-syntax': [
         'error',
         {

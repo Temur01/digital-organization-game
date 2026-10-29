@@ -94,10 +94,7 @@ export function buildAtmosphere(room: RoomDefinition, scene: THREE.Scene): (t: n
     // Derazadan polga tushayotgan nur — 4 burchakli shaffof «hajm»
     const geo = new THREE.BufferGeometry();
     const reach = depth * 0.55;
-    const vertices = new Float32Array([
-      x0, yTop, 0.05, x1, yTop, 0.05, x1 + 1.2, 0.02, reach, x0 + 1.2, 0.02, reach * 0.75,
-      x0, yBot, 0.05, x1, yBot, 0.05,
-    ]);
+    const vertices = new Float32Array([x0, yTop, 0.05, x1, yTop, 0.05, x1 + 1.2, 0.02, reach, x0 + 1.2, 0.02, reach * 0.75, x0, yBot, 0.05, x1, yBot, 0.05]);
     geo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geo.setIndex([0, 1, 2, 0, 2, 3, 4, 5, 2, 4, 2, 3]);
     geo.computeVertexNormals();
@@ -118,7 +115,13 @@ export function buildAtmosphere(room: RoomDefinition, scene: THREE.Scene): (t: n
     // Poldagi yorug‘ dog‘
     const patch = new THREE.Mesh(
       new THREE.PlaneGeometry(x1 - x0 + 1.4, reach * 0.7),
-      new THREE.MeshBasicMaterial({ map: tex.radialGlow(night ? '143,168,255' : '255,236,190'), transparent: true, opacity: night ? 0.12 : 0.3, depthWrite: false, blending: THREE.AdditiveBlending }),
+      new THREE.MeshBasicMaterial({
+        map: tex.radialGlow(night ? '143,168,255' : '255,236,190'),
+        transparent: true,
+        opacity: night ? 0.12 : 0.3,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
     );
     patch.rotation.x = -Math.PI / 2;
     patch.position.set((x0 + x1) / 2 + 0.8, 0.01, reach * 0.55);

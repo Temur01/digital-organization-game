@@ -1,11 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  STORAGE_KEY,
-  applyResult,
-  createDefaultProgress,
-  loadProgress,
-  saveProgress,
-} from '../src/persistence/storage';
+import { STORAGE_KEY, applyResult, createDefaultProgress, loadProgress, saveProgress } from '../src/persistence/storage';
 import type { MissionResult } from '../src/types/models';
 
 const result = (over: Partial<MissionResult> = {}): MissionResult => ({

@@ -63,9 +63,7 @@ describe('simulyatsiyalar xavfsizligi', () => {
     const user = userEvent.setup();
     const dispatch = vi.fn();
     const state = run('m1-phishing', [READY, act('m1-computer')]);
-    const { baseElement } = render(
-      <SimEmailClient mission={mission} state={state} dispatch={dispatch} playerName="Bek" onClose={() => {}} />,
-    );
+    const { baseElement } = render(<SimEmailClient mission={mission} state={state} dispatch={dispatch} playerName="Bek" onClose={() => {}} />);
     expect(baseElement.querySelector('a')).toBeNull();
     const link = screen.getByRole('button', { name: 'kompaniya.example/hisob' });
     expect(screen.getByRole('tooltip')).toHaveTextContent('kompaniya-tolov.example/login');
@@ -86,9 +84,7 @@ describe('simulyatsiyalar xavfsizligi', () => {
   it('IT portalda matn kiritish maydoni yo‘q (parol yozilmaydi)', () => {
     const m3 = MISSIONS['m3-mfa-incident'];
     const before = run('m3-mfa-incident', [READY]);
-    const { baseElement, rerender } = render(
-      <SimItPortal mission={m3} state={before} dispatch={() => {}} playerName="Guli" onClose={() => {}} />,
-    );
+    const { baseElement, rerender } = render(<SimItPortal mission={m3} state={before} dispatch={() => {}} playerName="Guli" onClose={() => {}} />);
     const textInputs = () => baseElement.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea');
     expect(textInputs()).toHaveLength(0);
     const afterReport = { ...before, flags: [...before.flags, 'done:m3-d-report'] };

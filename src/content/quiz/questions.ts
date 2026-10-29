@@ -39,7 +39,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     id: 'oneid-telegram',
     topic: 'phishing',
     icon: '💬',
-    scenario: 'Telegram’da «Davlat xizmatlari» nomidan xabar keldi: «OneID hisobingiz 24 soatda bloklanadi. Tasdiqlash uchun login, parol va SMS kodni shu chatga yuboring».',
+    scenario:
+      'Telegram’da «Davlat xizmatlari» nomidan xabar keldi: «OneID hisobingiz 24 soatda bloklanadi. Tasdiqlash uchun login, parol va SMS kodni shu chatga yuboring».',
     prompt: 'To‘g‘ri harakat qaysi?',
     options: [
       { id: 'a', text: 'Hech narsa yubormayman, rasmiy saytni o‘zim ochib tekshiraman va mas’ul bo‘linmaga xabar beraman' },
@@ -48,7 +49,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'SMS kodni yubormayman, login va parol esa yetarli bo‘lsa yuboraman' },
     ],
     correct: 'a',
-    explanation: 'Login, parol, OneID ma’lumotlari va SMS orqali kelgan tasdiqlovchi kodlar hech qachon uchinchi shaxslarga oshkor qilinmaydi — hatto «rasmiy» ko‘rinsa ham.',
+    explanation:
+      'Login, parol, OneID ma’lumotlari va SMS orqali kelgan tasdiqlovchi kodlar hech qachon uchinchi shaxslarga oshkor qilinmaydi — hatto «rasmiy» ko‘rinsa ham.',
     source: '1-qism · Davlat xizmatchilari uchun asosiy tavsiyalar',
   },
   {
@@ -64,14 +66,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Qog‘oz chiqindilar qutisiga tashlayman' },
     ],
     correct: 'a',
-    explanation: 'Maxfiy hujjatlarni ochiq joylarda (printerda, muzokara xonasida) qoldirish holati haqida tegishli mas’ul bo‘linmaga darhol xabar berish kerak.',
+    explanation:
+      'Maxfiy hujjatlarni ochiq joylarda (printerda, muzokara xonasida) qoldirish holati haqida tegishli mas’ul bo‘linmaga darhol xabar berish kerak.',
     source: '1-qism · Darhol xabar berish kerak bo‘lgan holatlar',
   },
   {
     id: 'bank-call',
     topic: 'phishing',
     icon: '📞',
-    scenario: 'Notanish raqamdan qo‘ng‘iroq: «Bank xavfsizlik xizmatidanmiz. Kartangizdan shubhali to‘lov o‘tmoqda. To‘xtatish uchun karta raqami va hozir kelgan SMS kodni ayting».',
+    scenario:
+      'Notanish raqamdan qo‘ng‘iroq: «Bank xavfsizlik xizmatidanmiz. Kartangizdan shubhali to‘lov o‘tmoqda. To‘xtatish uchun karta raqami va hozir kelgan SMS kodni ayting».',
     prompt: 'Bu qanday hujum va qanday javob berasiz?',
     options: [
       { id: 'a', text: 'Vishing — qo‘ng‘iroqni tugatib, bankning rasmiy raqamiga o‘zim qo‘ng‘iroq qilaman' },
@@ -80,7 +84,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Smishing — faqat karta raqamini aytaman' },
     ],
     correct: 'a',
-    explanation: 'Telefon orqali amalga oshiriladigan fishing — vishing. Hujumchilar shoshiltirib, maxfiy ma’lumotni oshkor qilishga undaydi. Bank hech qachon SMS kodni so‘ramaydi.',
+    explanation:
+      'Telefon orqali amalga oshiriladigan fishing — vishing. Hujumchilar shoshiltirib, maxfiy ma’lumotni oshkor qilishga undaydi. Bank hech qachon SMS kodni so‘ramaydi.',
     source: '2-qism · Fishingning asosiy turlari',
   },
   {
@@ -96,14 +101,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'SMS’ni hamkasblarimga yuborib, ular ham to‘lashsin' },
     ],
     correct: 'a',
-    explanation: 'SMS orqali yuboriladigan fishing — smishing: xabarda zararli saytga havola yoki shaxsiy ma’lumot so‘rovi bo‘ladi. Kichik summa — faqat karta ma’lumotlarini o‘g‘irlash uchun bahona.',
+    explanation:
+      'SMS orqali yuboriladigan fishing — smishing: xabarda zararli saytga havola yoki shaxsiy ma’lumot so‘rovi bo‘ladi. Kichik summa — faqat karta ma’lumotlarini o‘g‘irlash uchun bahona.',
     source: '2-qism · Fishingning asosiy turlari',
   },
   {
     id: 'pharming-url',
     topic: 'phishing',
     icon: '🌐',
-    scenario: 'Saqlangan havola orqali bank saytiga kirdingiz. Sahifa odatdagidek, lekin manzil satrida bitta harf boshqacha va kirishda qo‘shimcha «pasport seriyasi» so‘ralmoqda.',
+    scenario:
+      'Saqlangan havola orqali bank saytiga kirdingiz. Sahifa odatdagidek, lekin manzil satrida bitta harf boshqacha va kirishda qo‘shimcha «pasport seriyasi» so‘ralmoqda.',
     prompt: 'Eng to‘g‘ri harakat?',
     options: [
       { id: 'a', text: 'Sahifani yopib, rasmiy manzilni brauzerga o‘zim qo‘lda kiritaman' },
@@ -112,14 +119,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Boshqa brauzerda shu havolani ochaman' },
     ],
     correct: 'a',
-    explanation: 'Bu farming bo‘lishi mumkin — trafikni soxta sahifaga yo‘naltirish. Qo‘llanma tavsiyasi: shubhali havolani bosmang, URL manzilni o‘zingiz mustaqil kiriting va 2FA’dan foydalaning.',
+    explanation:
+      'Bu farming bo‘lishi mumkin — trafikni soxta sahifaga yo‘naltirish. Qo‘llanma tavsiyasi: shubhali havolani bosmang, URL manzilni o‘zingiz mustaqil kiriting va 2FA’dan foydalaning.',
     source: '2-qism · Fishingning asosiy turlari',
   },
   {
     id: 'spear-phishing',
     topic: 'phishing',
     icon: '🎯',
-    scenario: 'Kecha konferensiyada nutq so‘zladingiz va bu haqda ijtimoiy tarmoqqa yozdingiz. Bugun ismingiz bilan xat keldi: «Nutqingiz ajoyib edi! Tadbir fotolari ilovada: tadbir_rasmlari.zip».',
+    scenario:
+      'Kecha konferensiyada nutq so‘zladingiz va bu haqda ijtimoiy tarmoqqa yozdingiz. Bugun ismingiz bilan xat keldi: «Nutqingiz ajoyib edi! Tadbir fotolari ilovada: tadbir_rasmlari.zip».',
     prompt: 'Bu xat bilan nima qilasiz?',
     options: [
       { id: 'a', text: 'Ilovani ochmayman, jo‘natuvchini boshqa kanal orqali tekshiraman — bu maqsadli fishing bo‘lishi mumkin' },
@@ -128,7 +137,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Xatni hamkasblarimga ham ulashaman' },
     ],
     correct: 'a',
-    explanation: 'Maqsadli fishing aniq shaxslarga qaratiladi va ularning ish hamda ijtimoiy hayoti haqidagi ma’lumotlardan foydalanadi — shuning uchun juda ishonarli ko‘rinadi.',
+    explanation:
+      'Maqsadli fishing aniq shaxslarga qaratiladi va ularning ish hamda ijtimoiy hayoti haqidagi ma’lumotlardan foydalanadi — shuning uchun juda ishonarli ko‘rinadi.',
     source: '2-qism · Fishingning asosiy turlari',
   },
   {
@@ -144,7 +154,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Kafe xodimidan Wi-Fi qanchalik xavfsizligini so‘rayman' },
     ],
     correct: 'a',
-    explanation: 'Himoyalanmagan Wi-Fi’da hujumchi «o‘rtadagi odam» (Man in the Middle) bo‘lib, siz bilan server orasidagi aloqani sezdirmay ushlab, o‘zgartirishi mumkin.',
+    explanation:
+      'Himoyalanmagan Wi-Fi’da hujumchi «o‘rtadagi odam» (Man in the Middle) bo‘lib, siz bilan server orasidagi aloqani sezdirmay ushlab, o‘zgartirishi mumkin.',
     source: '2-qism · Kiberhujumlar (Man in the Middle)',
   },
   {
@@ -160,14 +171,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Antivirus bor bo‘lsa, yangilanish kerak emas' },
     ],
     correct: 'a',
-    explanation: 'Operatsion tizim va ilovalarni doimiy yangilab borish xakerlar foydalanishi mumkin bo‘lgan zaifliklarni bartaraf etadi. Eskirgan dasturlar — ma’lumot chiqib ketishining asosiy sabablaridan biri.',
+    explanation:
+      'Operatsion tizim va ilovalarni doimiy yangilab borish xakerlar foydalanishi mumkin bo‘lgan zaifliklarni bartaraf etadi. Eskirgan dasturlar — ma’lumot chiqib ketishining asosiy sabablaridan biri.',
     source: '1-qism · Raqamli gigiyenaning asosiy omillari',
   },
   {
     id: 'same-password',
     topic: 'password',
     icon: '🔑',
-    scenario: 'Siz ish pochtasi, OneID va ijtimoiy tarmoq uchun bitta parol ishlatasiz. Bugun yangiliklarda o‘sha ijtimoiy tarmoq ma’lumotlari sizib chiqqani aytildi.',
+    scenario:
+      'Siz ish pochtasi, OneID va ijtimoiy tarmoq uchun bitta parol ishlatasiz. Bugun yangiliklarda o‘sha ijtimoiy tarmoq ma’lumotlari sizib chiqqani aytildi.',
     prompt: 'Endi nima qilish kerak?',
     options: [
       { id: 'a', text: 'Hamma hisoblarda parolni almashtiraman: har biriga alohida murakkab parol va 2FA' },
@@ -176,7 +189,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Ijtimoiy tarmoqni o‘chirib yuboraman, qolgani o‘zgarmaydi' },
     ],
     correct: 'a',
-    explanation: 'Bir xil paroldan bir nechta servisda foydalanmaslik kerak: bitta sizib chiqish barcha hisoblarni ochadi. Murakkab, takrorlanmas parollar va 2FA — asosiy himoya.',
+    explanation:
+      'Bir xil paroldan bir nechta servisda foydalanmaslik kerak: bitta sizib chiqish barcha hisoblarni ochadi. Murakkab, takrorlanmas parollar va 2FA — asosiy himoya.',
     source: '3-qism · Shaxsga doir ma’lumotlarni himoya qilish',
   },
   {
@@ -192,7 +206,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Pochta qutisidagi eski xatlarni o‘chirish' },
     ],
     correct: 'a',
-    explanation: '2FA faqat parolni emas, balki shaxsni tasdiqlashning ikkinchi usulini ham talab qiladi — parol o‘g‘irlangan taqdirda ham hisobni himoya qiladi.',
+    explanation:
+      '2FA faqat parolni emas, balki shaxsni tasdiqlashning ikkinchi usulini ham talab qiladi — parol o‘g‘irlangan taqdirda ham hisobni himoya qiladi.',
     source: '1-qism · Raqamli gigiyenaning asosiy omillari',
   },
   {
@@ -224,7 +239,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Shaxsiy kompyuterda o‘rnatib, faylni o‘sha yerda ochaman' },
     ],
     correct: 'a',
-    explanation: 'Troyanlar oddiy dastur ko‘rinishida bo‘ladi, o‘rnatilgandan so‘ng esa ma’lumot o‘g‘irlaydi yoki masofadan kirish imkonini yaratadi. Fayllarni faqat tasdiqlangan manbalardan yuklab oling.',
+    explanation:
+      'Troyanlar oddiy dastur ko‘rinishida bo‘ladi, o‘rnatilgandan so‘ng esa ma’lumot o‘g‘irlaydi yoki masofadan kirish imkonini yaratadi. Fayllarni faqat tasdiqlangan manbalardan yuklab oling.',
     source: '2-qism · Zararli dasturiy ta’minot',
   },
   {
@@ -240,7 +256,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Faqat brauzerdagi parollarni o‘chiraman' },
     ],
     correct: 'a',
-    explanation: 'Qurilma yoki ma’lumot saqlash vositasi boshqa shaxslarga topshirishdan avval to‘g‘ri tozalanmasa, ma’lumotlar tasodifan oshkor bo‘lishi mumkin.',
+    explanation:
+      'Qurilma yoki ma’lumot saqlash vositasi boshqa shaxslarga topshirishdan avval to‘g‘ri tozalanmasa, ma’lumotlar tasodifan oshkor bo‘lishi mumkin.',
     source: '2-qism · Ma’lumotlarning chiqib ketishi',
   },
   {
@@ -256,14 +273,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Yangi telefon sotib olib, ishni davom ettiraman' },
     ],
     correct: 'a',
-    explanation: 'Maxfiy ma’lumot saqlaydigan qurilmalarning yo‘qolishi — ma’lumot chiqib ketishining asosiy sabablaridan biri. Bunday holatda darhol mas’ul bo‘linmaga xabar berish kerak.',
+    explanation:
+      'Maxfiy ma’lumot saqlaydigan qurilmalarning yo‘qolishi — ma’lumot chiqib ketishining asosiy sabablaridan biri. Bunday holatda darhol mas’ul bo‘linmaga xabar berish kerak.',
     source: '1-qism va 2-qism · Ma’lumotlarning chiqib ketishi',
   },
   {
     id: 'deepfake-boss',
     topic: 'deepfake',
     icon: '🎙️',
-    scenario: 'Rahbaringizning aynan o‘z ovozi bilan qo‘ng‘iroq: «Men majlisdaman, gaplasha olmayman. Shoshilinch: hisobot faylini shu shaxsiy pochtaga yubor!».',
+    scenario:
+      'Rahbaringizning aynan o‘z ovozi bilan qo‘ng‘iroq: «Men majlisdaman, gaplasha olmayman. Shoshilinch: hisobot faylini shu shaxsiy pochtaga yubor!».',
     prompt: 'Qanday harakat qilasiz?',
     options: [
       { id: 'a', text: 'Rahbarni boshqa ma’lum kanal orqali tasdiqlayman — bu deepfake audio bo‘lishi mumkin' },
@@ -272,7 +291,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Shaxsiy pochtamdan yuboraman, ish pochtasidan emas' },
     ],
     correct: 'a',
-    explanation: 'Deepfake audio rahbar ovozini taqlid qilib, xodimlarni aldash va maxfiy ma’lumotlarga kirish uchun ishlatilishi mumkin. Shoshilinch va g‘ayrioddiy so‘rovlarni har doim boshqa kanal orqali tekshiring.',
+    explanation:
+      'Deepfake audio rahbar ovozini taqlid qilib, xodimlarni aldash va maxfiy ma’lumotlarga kirish uchun ishlatilishi mumkin. Shoshilinch va g‘ayrioddiy so‘rovlarni har doim boshqa kanal orqali tekshiring.',
     source: '3-qism · Zamonaviy tahdidlar — Deepfake va SI',
   },
   {
@@ -288,14 +308,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Izoh yozib, muhokamaga qo‘shilaman' },
     ],
     correct: 'a',
-    explanation: 'Deepfake real ko‘rinishdagi soxta videolar yaratib, davlat xizmatchilarini noqonuniy yoki axloqsiz harakat qilayotgandek ko‘rsatishi mumkin. Shubhali materiallarni tarqatishdan oldin tekshiring.',
+    explanation:
+      'Deepfake real ko‘rinishdagi soxta videolar yaratib, davlat xizmatchilarini noqonuniy yoki axloqsiz harakat qilayotgandek ko‘rsatishi mumkin. Shubhali materiallarni tarqatishdan oldin tekshiring.',
     source: '3-qism · Deepfake’dan himoyalanish usullari',
   },
   {
     id: 'desk-photo',
     topic: 'data',
     icon: '📸',
-    scenario: 'Yangi ish stolingiz suratini ijtimoiy tarmoqqa qo‘ymoqchisiz. Suratda monitordagi xizmat hujjati va stikerga yozilgan parol ham ko‘rinib turibdi.',
+    scenario:
+      'Yangi ish stolingiz suratini ijtimoiy tarmoqqa qo‘ymoqchisiz. Suratda monitordagi xizmat hujjati va stikerga yozilgan parol ham ko‘rinib turibdi.',
     prompt: 'Eng to‘g‘ri qaror?',
     options: [
       { id: 'a', text: 'Bunday suratni joylamayman — xizmat ma’lumotlari va parol oshkor bo‘ladi' },
@@ -304,7 +326,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Joylayman, keyin stikerni olib tashlayman' },
     ],
     correct: 'a',
-    explanation: 'Ijtimoiy tarmoqlar va ochiq manbalarda ma’lumot joylashtirishga ongli yondashish kerak. Maxfiy ma’lumotlarni internet saytlari va ijtimoiy tarmoqlarda e’lon qilish — xabar berilishi lozim bo‘lgan holat.',
+    explanation:
+      'Ijtimoiy tarmoqlar va ochiq manbalarda ma’lumot joylashtirishga ongli yondashish kerak. Maxfiy ma’lumotlarni internet saytlari va ijtimoiy tarmoqlarda e’lon qilish — xabar berilishi lozim bo‘lgan holat.',
     source: '1-qism · Shaxsga doir ma’lumotlarni himoya qilish',
   },
   {
@@ -336,14 +359,16 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Hamkasbimning ma’lumotlarini yozaman' },
     ],
     correct: 'a',
-    explanation: 'Ism, manzil, telefon, bank rekvizitlari, pasport va ID ma’lumotlari kiberjinoyatchilar uchun qimmatli. Ularni taqdim etish minimal va faqat zarur hollarda bo‘lishi kerak.',
+    explanation:
+      'Ism, manzil, telefon, bank rekvizitlari, pasport va ID ma’lumotlari kiberjinoyatchilar uchun qimmatli. Ularni taqdim etish minimal va faqat zarur hollarda bo‘lishi kerak.',
     source: '3-qism · Shaxsga doir ma’lumotlarni himoya qilish',
   },
   {
     id: 'fake-technician',
     topic: 'social',
     icon: '🧰',
-    scenario: 'Qabulxonaga kombinezonli odam keldi: «Men provayderdanman, serverxonadagi uskunani tekshirishim kerak. Hujjatlarim mashinada qolibdi, tezroq ochib bering».',
+    scenario:
+      'Qabulxonaga kombinezonli odam keldi: «Men provayderdanman, serverxonadagi uskunani tekshirishim kerak. Hujjatlarim mashinada qolibdi, tezroq ochib bering».',
     prompt: 'Nima qilasiz?',
     options: [
       { id: 'a', text: 'Mas’ul bo‘linma orqali tashrifni tasdiqlamaguncha kiritmayman' },
@@ -352,7 +377,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Kirishiga ruxsat beraman, lekin 5 daqiqadan keyin tekshiraman' },
     ],
     correct: 'a',
-    explanation: 'Ijtimoiy muhandislik — maxfiy ma’lumot yoki tizimlarga kirish uchun insonlarni manipulyatsiya qilish. Bu qo‘ng‘iroq, messenjer va hatto shaxsiy uchrashuv orqali ham bo‘ladi.',
+    explanation:
+      'Ijtimoiy muhandislik — maxfiy ma’lumot yoki tizimlarga kirish uchun insonlarni manipulyatsiya qilish. Bu qo‘ng‘iroq, messenjer va hatto shaxsiy uchrashuv orqali ham bo‘ladi.',
     source: '2-qism · Kiberhujumlar (Ijtimoiy muhandislik)',
   },
   {
@@ -368,7 +394,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Firewall faqat internet tezligini oshiradi' },
     ],
     correct: 'a',
-    explanation: 'Antivirus virus, troyan va boshqa tahdidlarni aniqlash va bartaraf etishga xizmat qiladi, firewall esa tashqi tahdidlarning tarmoq va kompyuterlarga kirishini cheklaydi.',
+    explanation:
+      'Antivirus virus, troyan va boshqa tahdidlarni aniqlash va bartaraf etishga xizmat qiladi, firewall esa tashqi tahdidlarning tarmoq va kompyuterlarga kirishini cheklaydi.',
     source: '1-qism · Raqamli gigiyenaning asosiy omillari',
   },
   {
@@ -384,7 +411,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Deepfake qo‘ng‘iroqlar' },
     ],
     correct: 'a',
-    explanation: 'Qo‘llanmadagi statistikaga ko‘ra brute force (SSH, Telnet) hujumlari ~48% ni tashkil etgan. Shuning uchun uzun, murakkab parollar va 2FA juda muhim.',
+    explanation:
+      'Qo‘llanmadagi statistikaga ko‘ra brute force (SSH, Telnet) hujumlari ~48% ni tashkil etgan. Shuning uchun uzun, murakkab parollar va 2FA juda muhim.',
     source: '1-qism · Raqamli gigiyena ahamiyati',
   },
   {
@@ -400,7 +428,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Deepfake' },
     ],
     correct: 'a',
-    explanation: 'SQL-in’eksiya — veb-ilova kodidagi zaifliklardan foydalanib, ma’lumotlar bazasidagi ma’lumotlarni oshkor qilish yoki o‘zgartirishga qaratilgan hujum.',
+    explanation:
+      'SQL-in’eksiya — veb-ilova kodidagi zaifliklardan foydalanib, ma’lumotlar bazasidagi ma’lumotlarni oshkor qilish yoki o‘zgartirishga qaratilgan hujum.',
     source: '2-qism · Kiberhujumlar',
   },
   {
@@ -416,7 +445,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { id: 'd', text: 'Bunday qonun yo‘q' },
     ],
     correct: 'a',
-    explanation: 'Qo‘llanmadagi normativ hujjatlar: O‘RQ-547 — «Shaxsga doir ma’lumotlar to‘g‘risida», O‘RQ-764 — «Kiberxavfsizlik to‘g‘risida», O‘RQ-788 — «Davlat fuqarolik xizmati to‘g‘risida».',
+    explanation:
+      'Qo‘llanmadagi normativ hujjatlar: O‘RQ-547 — «Shaxsga doir ma’lumotlar to‘g‘risida», O‘RQ-764 — «Kiberxavfsizlik to‘g‘risida», O‘RQ-788 — «Davlat fuqarolik xizmati to‘g‘risida».',
     source: 'Normativ-huquqiy hujjatlar',
   },
 ];

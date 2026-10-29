@@ -2,23 +2,8 @@ import { create } from 'zustand';
 import { ui } from '../content/uz/ui';
 import { MISSIONS } from '../missions/data';
 import { isObjectiveDone, missionReducer, buildResult, createInitialState, type MissionAction } from '../missions/engine/missionReducer';
-import {
-  applyResult,
-  clearProgress,
-  createDefaultProgress,
-  isStorageAvailable,
-  loadProgress,
-  saveProgress,
-} from '../persistence/storage';
-import type {
-  AppScreen,
-  CharacterId,
-  LocalProgress,
-  MissionId,
-  MissionResult,
-  MissionRuntimeState,
-  Settings,
-} from '../types/models';
+import { applyResult, clearProgress, createDefaultProgress, isStorageAvailable, loadProgress, saveProgress } from '../persistence/storage';
+import type { AppScreen, CharacterId, LocalProgress, MissionId, MissionResult, MissionRuntimeState, Settings } from '../types/models';
 import { playSfx, type SfxName } from './sfx';
 import { enqueueResult, type ServerBest } from './sync';
 import { loadMissionSession, saveMissionSession } from './session';
@@ -104,11 +89,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
     openSettings: () => set((s) => ({ settingsReturnTo: s.screen, screen: 'settings' })),
     closeSettings: () => set((s) => ({ screen: s.settingsReturnTo })),
 
-    openCharacterSelect: () =>
-      set((s) => ({ characterSelectReturnTo: s.screen === 'map' ? 'map' : 'title', screen: 'characterSelect' })),
+    openCharacterSelect: () => set((s) => ({ characterSelectReturnTo: s.screen === 'map' ? 'map' : 'title', screen: 'characterSelect' })),
 
-    selectCharacter: (id) =>
-      set((s) => ({ progress: persist({ ...s.progress, selectedCharacter: id }), screen: 'map' })),
+    selectCharacter: (id) => set((s) => ({ progress: persist({ ...s.progress, selectedCharacter: id }), screen: 'map' })),
 
     newGame: () => {
       get().resetProgress();
@@ -121,8 +104,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({ progress: persist({ ...createDefaultProgress(), settings }), lastResult: null });
     },
 
-    updateSettings: (patch) =>
-      set((s) => ({ progress: persist({ ...s.progress, settings: { ...s.progress.settings, ...patch } }) })),
+    updateSettings: (patch) => set((s) => ({ progress: persist({ ...s.progress, settings: { ...s.progress.settings, ...patch } }) })),
 
     openBriefing: (id) => {
       if (get().progress.missions[id].status === 'locked') return;
@@ -233,8 +215,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({ progress: persist({ ...current, missions: normalize(missions), quizBest: Math.max(current.quizBest ?? 0, best.quizBest) }) });
     },
 
-    pushToast: (text, tone = 'info') =>
-      set((s) => ({ toasts: [...s.toasts.slice(-2), { id: ++toastSeq, text, tone }] })),
+    pushToast: (text, tone = 'info') => set((s) => ({ toasts: [...s.toasts.slice(-2), { id: ++toastSeq, text, tone }] })),
     dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
   };
 });

@@ -76,17 +76,11 @@ function addFlag(state: MissionRuntimeState, flag: string): MissionRuntimeState 
 function addClue(state: MissionRuntimeState, clueId: string, mission: Mission): MissionRuntimeState {
   const clue = mission.clues[clueId];
   if (!clue || state.cluesFound.includes(clueId)) return state;
-  return addFlag(
-    { ...state, cluesFound: [...state.cluesFound, clueId], score: state.score + clue.points },
-    clueFlag(clueId),
-  );
+  return addFlag({ ...state, cluesFound: [...state.cluesFound, clueId], score: state.score + clue.points }, clueFlag(clueId));
 }
 
 function applyEffects(state: MissionRuntimeState, effects: Effect[] | undefined, mission: Mission): MissionRuntimeState {
-  return (effects ?? []).reduce<MissionRuntimeState>(
-    (s, e) => (e.type === 'setFlag' ? addFlag(s, e.flag) : addClue(s, e.clueId, mission)),
-    state,
-  );
+  return (effects ?? []).reduce<MissionRuntimeState>((s, e) => (e.type === 'setFlag' ? addFlag(s, e.flag) : addClue(s, e.clueId, mission)), state);
 }
 
 function maybeComplete(state: MissionRuntimeState, mission: Mission): MissionRuntimeState {
@@ -113,11 +107,7 @@ function runAction(state: MissionRuntimeState, action: InteractionAction): Missi
 
 // ---------- Reducer ----------
 
-export function missionReducer(
-  state: MissionRuntimeState,
-  action: MissionAction,
-  mission: Mission,
-): MissionRuntimeState {
+export function missionReducer(state: MissionRuntimeState, action: MissionAction, mission: Mission): MissionRuntimeState {
   switch (action.type) {
     case 'START_MISSION':
     case 'RESTART':
@@ -222,9 +212,7 @@ export function missionReducer(
       return PAUSABLE.includes(state.phase) ? { ...state, resumeTo: state.phase, phase: 'paused' } : state;
 
     case 'RESUME':
-      return state.phase === 'paused' && state.resumeTo
-        ? { ...state, phase: state.resumeTo, resumeTo: null }
-        : state;
+      return state.phase === 'paused' && state.resumeTo ? { ...state, phase: state.resumeTo, resumeTo: null } : state;
   }
 }
 

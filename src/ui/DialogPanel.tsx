@@ -52,8 +52,7 @@ export function DialogPanel({ dialog, player, npcs, onClose }: DialogPanelProps)
   const canSpeak = useVoiceLabel() !== null;
   const lineText = line?.text ?? '';
   const lineSpeaker = line?.speaker ?? '';
-  const voiceKind: VoiceKind =
-    lineSpeaker === 'player' ? CHARACTER_VOICE[player.id] : (npcs?.[lineSpeaker]?.voice ?? SPEAKER_VOICE[lineSpeaker] ?? 'neutral');
+  const voiceKind: VoiceKind = lineSpeaker === 'player' ? CHARACTER_VOICE[player.id] : (npcs?.[lineSpeaker]?.voice ?? SPEAKER_VOICE[lineSpeaker] ?? 'neutral');
 
   // Har bir yangi qatorni ovozli o‘qiymiz; qator almashganda yoki oyna yopilganda to‘xtatamiz
   useEffect(() => {

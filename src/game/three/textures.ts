@@ -44,46 +44,58 @@ const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 // ---------- Xona ----------
 
 export function woodFloor(night: boolean) {
-  return make(`floor-${night}`, 1024, 1024, (g, w, h) => {
-    const r = rng(7);
-    const plankH = h / 8;
-    const tones = night ? ['#6b5a47', '#74624d', '#625240', '#7a6650'] : ['#c9a77c', '#d2b088', '#bf9d72', '#d8b991'];
-    for (let row = 0; row < 8; row++) {
-      let x = -r() * 300;
-      while (x < w) {
-        const len = 260 + r() * 300;
-        g.fillStyle = tones[Math.floor(r() * tones.length)]!;
-        g.fillRect(x, row * plankH, len, plankH);
-        // Yog‘och tolalari
-        g.strokeStyle = night ? 'rgba(0,0,0,0.12)' : 'rgba(110,70,30,0.12)';
-        g.lineWidth = 1.5;
-        for (let i = 0; i < 5; i++) {
-          const yy = row * plankH + 10 + r() * (plankH - 20);
-          g.beginPath();
-          g.moveTo(x, yy);
-          g.bezierCurveTo(x + len * 0.3, yy + (r() - 0.5) * 10, x + len * 0.6, yy + (r() - 0.5) * 10, x + len, yy);
-          g.stroke();
+  return make(
+    `floor-${night}`,
+    1024,
+    1024,
+    (g, w, h) => {
+      const r = rng(7);
+      const plankH = h / 8;
+      const tones = night ? ['#6b5a47', '#74624d', '#625240', '#7a6650'] : ['#c9a77c', '#d2b088', '#bf9d72', '#d8b991'];
+      for (let row = 0; row < 8; row++) {
+        let x = -r() * 300;
+        while (x < w) {
+          const len = 260 + r() * 300;
+          g.fillStyle = tones[Math.floor(r() * tones.length)]!;
+          g.fillRect(x, row * plankH, len, plankH);
+          // Yog‘och tolalari
+          g.strokeStyle = night ? 'rgba(0,0,0,0.12)' : 'rgba(110,70,30,0.12)';
+          g.lineWidth = 1.5;
+          for (let i = 0; i < 5; i++) {
+            const yy = row * plankH + 10 + r() * (plankH - 20);
+            g.beginPath();
+            g.moveTo(x, yy);
+            g.bezierCurveTo(x + len * 0.3, yy + (r() - 0.5) * 10, x + len * 0.6, yy + (r() - 0.5) * 10, x + len, yy);
+            g.stroke();
+          }
+          g.fillStyle = 'rgba(0,0,0,0.25)';
+          g.fillRect(x, row * plankH, 2, plankH);
+          x += len;
         }
-        g.fillStyle = 'rgba(0,0,0,0.25)';
-        g.fillRect(x, row * plankH, 2, plankH);
-        x += len;
+        g.fillStyle = 'rgba(0,0,0,0.22)';
+        g.fillRect(0, row * plankH, w, 2);
       }
-      g.fillStyle = 'rgba(0,0,0,0.22)';
-      g.fillRect(0, row * plankH, w, 2);
-    }
-  }, [3, 2]);
+    },
+    [3, 2],
+  );
 }
 
 export function wallPaint(base: string, key: string) {
-  return make(`wall-${key}`, 512, 512, (g, w, h) => {
-    g.fillStyle = base;
-    g.fillRect(0, 0, w, h);
-    const r = rng(11);
-    for (let i = 0; i < 2500; i++) {
-      g.fillStyle = `rgba(${r() > 0.5 ? '255,255,255' : '0,0,0'},${r() * 0.035})`;
-      g.fillRect(r() * w, r() * h, 2, 2);
-    }
-  }, [4, 2]);
+  return make(
+    `wall-${key}`,
+    512,
+    512,
+    (g, w, h) => {
+      g.fillStyle = base;
+      g.fillRect(0, 0, w, h);
+      const r = rng(11);
+      for (let i = 0; i < 2500; i++) {
+        g.fillStyle = `rgba(${r() > 0.5 ? '255,255,255' : '0,0,0'},${r() * 0.035})`;
+        g.fillRect(r() * w, r() * h, 2, 2);
+      }
+    },
+    [4, 2],
+  );
 }
 
 /** Atlas (ikat) naqshli gilam — milliy aksent */
@@ -349,7 +361,11 @@ export function qrPoster() {
         }
       }
     }
-    for (const [fx, fy] of [[70, 134], [190, 134], [70, 254]] as const) {
+    for (const [fx, fy] of [
+      [70, 134],
+      [190, 134],
+      [70, 254],
+    ] as const) {
       g.fillStyle = '#111';
       g.fillRect(fx, fy, 60, 60);
       g.fillStyle = '#fff';

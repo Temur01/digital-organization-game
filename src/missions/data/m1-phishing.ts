@@ -26,7 +26,12 @@ export const m1Phishing: Mission = {
   objectives: [
     { id: 'o-mail', label: 'Kompyuterda pochtani tekshiring', completeWhen: { all: ['done:m1-d-action'] } },
     { id: 'o-verify', label: 'Rahbar xonasi oldida qarzni qanday tekshirishni hal qiling', completeWhen: { all: ['done:m1-d-verify'] } },
-    { id: 'o-clues', label: 'Fishing xatidagi 5 ta xavf belgisini toping', optional: true, completeWhen: { all: ['clue:m1-c-domain', 'clue:m1-c-urgency', 'clue:m1-c-greeting', 'clue:m1-c-link', 'clue:m1-c-attachment'] } },
+    {
+      id: 'o-clues',
+      label: 'Fishing xatidagi 5 ta xavf belgisini toping',
+      optional: true,
+      completeWhen: { all: ['clue:m1-c-domain', 'clue:m1-c-urgency', 'clue:m1-c-greeting', 'clue:m1-c-link', 'clue:m1-c-attachment'] },
+    },
   ],
   hotspots: [
     {
@@ -91,7 +96,10 @@ export const m1Phishing: Mission = {
     'm1-dlg-poster': {
       id: 'm1-dlg-poster',
       lines: [
-        { speaker: 'Plakat', text: 'FISHING BELGILARI: 1) yuboruvchi domeni biroz boshqacha; 2) shoshiltirish va tahdid; 3) «Hurmatli xodim» kabi umumiy murojaat; 4) havola matni va haqiqiy manzil farq qiladi.' },
+        {
+          speaker: 'Plakat',
+          text: 'FISHING BELGILARI: 1) yuboruvchi domeni biroz boshqacha; 2) shoshiltirish va tahdid; 3) «Hurmatli xodim» kabi umumiy murojaat; 4) havola matni va haqiqiy manzil farq qiladi.',
+        },
         { speaker: 'Plakat', text: `Shubhali xatni o‘chirmang — «${c.reportButton}» tugmasini bosing.` },
       ],
     },
@@ -187,11 +195,31 @@ export const m1Phishing: Mission = {
     },
   },
   clues: {
-    'm1-c-domain': { id: 'm1-c-domain', label: 'Yuboruvchi domeni', explanation: `«${c.phishingDomain}» — bu «${c.domain}» emas. Domenni harfma-harf tekshiring.`, points: 5 },
-    'm1-c-urgency': { id: 'm1-c-urgency', label: 'Shoshiltirish va tahdid', explanation: '«2 soat ichida», «bloklanadi» — o‘ylashga vaqt bermaslik uchun bosim o‘tkazish.', points: 5 },
-    'm1-c-greeting': { id: 'm1-c-greeting', label: 'Umumiy murojaat', explanation: 'Ismingiz o‘rniga «Hurmatli xodim» — xat ko‘pchilikka yuborilgan.', points: 5 },
+    'm1-c-domain': {
+      id: 'm1-c-domain',
+      label: 'Yuboruvchi domeni',
+      explanation: `«${c.phishingDomain}» — bu «${c.domain}» emas. Domenni harfma-harf tekshiring.`,
+      points: 5,
+    },
+    'm1-c-urgency': {
+      id: 'm1-c-urgency',
+      label: 'Shoshiltirish va tahdid',
+      explanation: '«2 soat ichida», «bloklanadi» — o‘ylashga vaqt bermaslik uchun bosim o‘tkazish.',
+      points: 5,
+    },
+    'm1-c-greeting': {
+      id: 'm1-c-greeting',
+      label: 'Umumiy murojaat',
+      explanation: 'Ismingiz o‘rniga «Hurmatli xodim» — xat ko‘pchilikka yuborilgan.',
+      points: 5,
+    },
     'm1-c-link': { id: 'm1-c-link', label: 'Havola manzili', explanation: 'Ko‘rinadigan matn va haqiqiy manzil farq qiladi.', points: 5 },
-    'm1-c-attachment': { id: 'm1-c-attachment', label: 'Kutilmagan ilova', explanation: 'Buxgalteriya hisob-fakturani .html fayl sifatida yubormaydi.', points: 5 },
+    'm1-c-attachment': {
+      id: 'm1-c-attachment',
+      label: 'Kutilmagan ilova',
+      explanation: 'Buxgalteriya hisob-fakturani .html fayl sifatida yubormaydi.',
+      points: 5,
+    },
   },
   consequences: {
     'm1-cq-link': {
@@ -214,9 +242,7 @@ export const m1Phishing: Mission = {
         subject: 'Noyabr oyi tadbirlari',
         greeting: 'Assalomu alaykum, hamkasblar!',
         time: '08:42',
-        body: [
-          [{ type: 'text', text: 'Noyabr oyida jamoaviy seminar va sport kuni rejalashtirilgan. Batafsil jadval ichki portalda e’lon qilinadi.' }],
-        ],
+        body: [[{ type: 'text', text: 'Noyabr oyida jamoaviy seminar va sport kuni rejalashtirilgan. Batafsil jadval ichki portalda e’lon qilinadi.' }]],
         signature: 'Hurmat bilan, HR bo‘limi',
       },
       {

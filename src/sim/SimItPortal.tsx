@@ -71,12 +71,7 @@ function ReportForm({ mission, dispatch }: SimProps) {
           <legend>{f.label}</legend>
           {f.options.map((o) => (
             <label key={o.id} className={styles.checkRow}>
-              <input
-                type={f.kind}
-                name={f.id}
-                checked={(values[f.id] ?? []).includes(o.id)}
-                onChange={(e) => toggle(f, o.id, e.target.checked)}
-              />
+              <input type={f.kind} name={f.id} checked={(values[f.id] ?? []).includes(o.id)} onChange={(e) => toggle(f, o.id, e.target.checked)} />
               <span>{o.label}</span>
             </label>
           ))}

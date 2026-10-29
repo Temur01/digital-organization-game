@@ -50,8 +50,7 @@ export function FeedbackPanel({ choice, firstAttempt, playerName, onAck }: Feedb
   const iconRef = useRef<HTMLDivElement>(null);
   const earned = outcome === 'safe' && firstAttempt ? choice.points : 0;
   const shownPoints = useCountUp(earned, 600, 0);
-  const button =
-    outcome === 'safe' ? ui.feedback.continue : outcome === 'risky' ? ui.feedback.retry : ui.feedback.whatWouldHappen;
+  const button = outcome === 'safe' ? ui.feedback.continue : outcome === 'risky' ? ui.feedback.retry : ui.feedback.whatWouldHappen;
 
   useEffect(() => {
     if (outcome !== 'safe') return;

@@ -14,10 +14,7 @@ interface DecisionPanelProps {
 }
 
 export function DecisionPanel({ decision, playerName, onChoose, onEscape }: DecisionPanelProps) {
-  const choices = useMemo(
-    () => (decision.shuffle === false ? decision.choices : stableShuffle(decision.choices, decision.id)),
-    [decision],
-  );
+  const choices = useMemo(() => (decision.shuffle === false ? decision.choices : stableShuffle(decision.choices, decision.id)), [decision]);
   const listRef = useRef<HTMLOListElement>(null);
 
   useEffect(() => {

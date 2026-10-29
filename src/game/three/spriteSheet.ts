@@ -164,7 +164,9 @@ export function extractFrames(img: HTMLImageElement, expected = 8): Frame[] {
 
   const figures = big.map((main) => {
     // Figuraga tegishli mayda bo‘laklar (masalan, poyabzal yoki qo‘l uchi) — faqat uning chegarasi ichida
-    const extras = comps.filter((c) => c !== main && !big.includes(c) && c.area > 300 && overlaps(main, c, 2) && c.minX >= main.minX - 2 && c.maxX <= main.maxX + 2);
+    const extras = comps.filter(
+      (c) => c !== main && !big.includes(c) && c.area > 300 && overlaps(main, c, 2) && c.minX >= main.minX - 2 && c.maxX <= main.maxX + 2,
+    );
     return renderFigure(data, w, [main, ...extras]);
   });
 

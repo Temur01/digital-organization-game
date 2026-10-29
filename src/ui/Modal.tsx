@@ -3,8 +3,7 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 import styles from './ui.module.css';
 
 const stack: symbol[] = [];
-const FOCUSABLE =
-  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 interface ModalProps {
   title: string;

@@ -94,12 +94,26 @@ describe('missiya dvigateli', () => {
 
     // Belgilarsiz va hammasi birinchi urinishda xavfli
     const minimal = [
-      READY, act('m3-phone'),
-      choose('m3-d-push', 'ignore'), ACK, choose('m3-d-push', 'deny'), ACK,
-      choose('m3-d-call', 'callback-given'), ACK, choose('m3-d-call', 'hangup-official'), ACK, CLOSE,
+      READY,
+      act('m3-phone'),
+      choose('m3-d-push', 'ignore'),
+      ACK,
+      choose('m3-d-push', 'deny'),
+      ACK,
+      choose('m3-d-call', 'callback-given'),
+      ACK,
+      choose('m3-d-call', 'hangup-official'),
+      ACK,
+      CLOSE,
       act('m3-computer'),
-      choose('m3-d-report', 'submit-wrong'), ACK, choose('m3-d-report', 'submit-correct'), ACK,
-      choose('m3-d-password', 'reuse'), ACK, choose('m3-d-password', 'passphrase'), ACK,
+      choose('m3-d-report', 'submit-wrong'),
+      ACK,
+      choose('m3-d-report', 'submit-correct'),
+      ACK,
+      choose('m3-d-password', 'reuse'),
+      ACK,
+      choose('m3-d-password', 'passphrase'),
+      ACK,
     ];
     const one = buildResult(run('m3-mfa-incident', minimal), m3);
     expect(one.outcome).toBe('passed');

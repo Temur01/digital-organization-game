@@ -46,12 +46,7 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
     >
       <div className={styles.phone}>
         {!pushDone && (
-          <motion.section
-            className={styles.phoneCard}
-            aria-labelledby="mfa-title"
-            animate={shake}
-            initial={{ y: -40, opacity: 0 }}
-          >
+          <motion.section className={styles.phoneCard} aria-labelledby="mfa-title" animate={shake} initial={{ y: -40, opacity: 0 }}>
             <p className={styles.phoneApp}>
               🔐 {mfa.app}{' '}
               <motion.span

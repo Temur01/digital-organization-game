@@ -2,9 +2,18 @@
 export type SfxName = 'safe' | 'risky' | 'critical' | 'clue';
 
 const TONES: Record<SfxName, [number, number][]> = {
-  safe: [[660, 0.08], [880, 0.12]],
-  risky: [[440, 0.12], [370, 0.14]],
-  critical: [[300, 0.16], [220, 0.22]],
+  safe: [
+    [660, 0.08],
+    [880, 0.12],
+  ],
+  risky: [
+    [440, 0.12],
+    [370, 0.14],
+  ],
+  critical: [
+    [300, 0.16],
+    [220, 0.22],
+  ],
   clue: [[990, 0.07]],
 };
 

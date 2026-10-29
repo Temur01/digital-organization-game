@@ -77,10 +77,8 @@ export function authErrorText(error: AuthError | Error | { message?: string; sta
   if (e.code === 'invalid_credentials' || msg.includes('invalid login credentials')) return 'Email yoki parol noto‘g‘ri.';
   if (e.code === 'user_already_exists' || e.code === 'email_exists' || msg.includes('already registered'))
     return 'Bu email bilan hisob allaqachon bor. «Kirish» bo‘limini tanlang.';
-  if (e.code === 'same_password' || msg.includes('different from the old password'))
-    return 'Yangi parol eskisidan farq qilishi kerak.';
-  if (e.code === 'weak_password' || msg.includes('password should'))
-    return 'Parol juda oddiy. Kamida 6 ta belgi: harf va raqamlarni aralashtiring.';
+  if (e.code === 'same_password' || msg.includes('different from the old password')) return 'Yangi parol eskisidan farq qilishi kerak.';
+  if (e.code === 'weak_password' || msg.includes('password should')) return 'Parol juda oddiy. Kamida 6 ta belgi: harf va raqamlarni aralashtiring.';
   if (e.code === 'email_not_confirmed' || msg.includes('email not confirmed'))
     return 'Email hali tasdiqlanmagan. Administrator Supabase’da email tasdiqlashni o‘chirishi kerak.';
   if (e.code === 'signup_disabled' || msg.includes('signups not allowed')) return 'Ro‘yxatdan o‘tish hozircha yopiq.';
@@ -239,12 +237,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     saveProfile: async (patch) => {
       const { userId, profile } = get();
       if (!supabase || !userId) return { ok: false, error: 'Avval tizimga kiring.' };
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(patch)
-        .eq('id', userId)
-        .select(PROFILE_COLUMNS)
-        .single();
+      const { data, error } = await supabase.from('profiles').update(patch).eq('id', userId).select(PROFILE_COLUMNS).single();
       if (error) return { ok: false, error: 'Profilni saqlab bo‘lmadi. Qayta urinib ko‘ring.' };
       set({ profile: (data as Profile) ?? profile });
       return { ok: true };

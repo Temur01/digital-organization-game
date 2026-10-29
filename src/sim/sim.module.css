@@ -458,7 +458,10 @@
   display: inline-block;
 }
 .mailItem {
-  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    background 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 .mailItem:hover {
   transform: translateX(3px);
@@ -476,7 +479,10 @@
   }
 }
 .passwordCard {
-  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 .passwordCard:hover {
   transform: translateY(-2px);

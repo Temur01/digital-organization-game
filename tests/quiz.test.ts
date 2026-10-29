@@ -3,16 +3,7 @@ import { useGameStore } from '../src/app/store';
 import { PENDING_KEY, enqueueResult, readPending } from '../src/app/sync';
 import { QUIZ_QUESTIONS, QUIZ_TOPICS } from '../src/content/quiz/questions';
 import { createDefaultProgress } from '../src/persistence/storage';
-import {
-  answerQuestion,
-  applyFiftyFifty,
-  buildQuizResult,
-  createQuizSession,
-  currentQuestion,
-  maxScoreFor,
-  nextQuestion,
-  pointsFor,
-} from '../src/quiz/engine';
+import { answerQuestion, applyFiftyFifty, buildQuizResult, createQuizSession, currentQuestion, maxScoreFor, nextQuestion, pointsFor } from '../src/quiz/engine';
 import { validate } from '../src/screens/AuthScreen';
 
 /** Deterministik tasodif (testlar barqaror bo‘lishi uchun) */
@@ -122,7 +113,10 @@ describe('natijalar navbati va server progressi', () => {
   });
 
   it('server ulanmagan bo‘lsa natija lokal navbatda qoladi', () => {
-    enqueueResult({ kind: 'quiz', data: { quizId: 'q', score: 50, maxScore: 100, correct: 5, total: 10, bestStreak: 3, durationMs: 1, answers: {}, finishedAt: 'x' } });
+    enqueueResult({
+      kind: 'quiz',
+      data: { quizId: 'q', score: 50, maxScore: 100, correct: 5, total: 10, bestStreak: 3, durationMs: 1, answers: {}, finishedAt: 'x' },
+    });
     expect(readPending()).toHaveLength(1);
     localStorage.setItem(PENDING_KEY, '{buzilgan');
     expect(readPending()).toEqual([]);

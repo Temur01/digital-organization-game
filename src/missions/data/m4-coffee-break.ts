@@ -268,11 +268,26 @@ export const m4CoffeeBreak: Mission = {
     },
   },
   clues: {
-    'm4-c-unlocked': { id: 'm4-c-unlocked', label: 'Ochiq ekran', explanation: 'Ekranda maxfiy hisobot va pochta ochiq — atrofda begona odamlar yuribdi.', points: 5 },
+    'm4-c-unlocked': {
+      id: 'm4-c-unlocked',
+      label: 'Ochiq ekran',
+      explanation: 'Ekranda maxfiy hisobot va pochta ochiq — atrofda begona odamlar yuribdi.',
+      points: 5,
+    },
     'm4-c-free': { id: 'm4-c-free', label: '«Bepul» tuzog‘i', explanation: '«Bepul kofe» evaziga ish login va parolini so‘rash — klassik aldov.', points: 5 },
     'm4-c-domain': { id: 'm4-c-domain', label: 'Begona domen', explanation: `«${qrDomain}» — bu «${c.domain}» emas.`, points: 5 },
-    'm4-c-sticker': { id: 'm4-c-sticker', label: 'Rasmiy bo‘lmagan stiker', explanation: 'Mashina brendi ustidan qiyshiq yopishtirilgan, ma’muriyat e’lon qilmagan.', points: 5 },
-    'm4-c-ask': { id: 'm4-c-ask', label: 'Ichki parol so‘ralmoqda', explanation: 'Ichki tarmoq paroli begona qurilma uchun so‘ralmoqda — mehmonlar uchun alohida tarmoq bor.', points: 5 },
+    'm4-c-sticker': {
+      id: 'm4-c-sticker',
+      label: 'Rasmiy bo‘lmagan stiker',
+      explanation: 'Mashina brendi ustidan qiyshiq yopishtirilgan, ma’muriyat e’lon qilmagan.',
+      points: 5,
+    },
+    'm4-c-ask': {
+      id: 'm4-c-ask',
+      label: 'Ichki parol so‘ralmoqda',
+      explanation: 'Ichki tarmoq paroli begona qurilma uchun so‘ralmoqda — mehmonlar uchun alohida tarmoq bor.',
+      points: 5,
+    },
   },
   consequences: {
     'm4-cq-unlocked': {

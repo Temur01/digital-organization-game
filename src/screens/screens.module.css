@@ -95,10 +95,14 @@
 @keyframes pulseBtn {
   0%,
   100% {
-    box-shadow: 0 8px 24px rgb(61 214 198 / 0.28), 0 0 0 0 rgb(61 214 198 / 0.45);
+    box-shadow:
+      0 8px 24px rgb(61 214 198 / 0.28),
+      0 0 0 0 rgb(61 214 198 / 0.45);
   }
   50% {
-    box-shadow: 0 8px 24px rgb(61 214 198 / 0.28), 0 0 0 12px rgb(61 214 198 / 0);
+    box-shadow:
+      0 8px 24px rgb(61 214 198 / 0.28),
+      0 0 0 12px rgb(61 214 198 / 0);
   }
 }
 .glass {
@@ -260,7 +264,9 @@
   border: 1px solid var(--color-border);
   border-radius: 16px;
   backdrop-filter: var(--blur);
-  transition: transform 200ms ease, border-color 200ms ease;
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease;
 }
 .statCard:hover {
   transform: translateY(-3px);
@@ -402,7 +408,9 @@
   cursor: pointer;
   overflow: hidden;
   backdrop-filter: var(--blur);
-  transition: border-color 220ms ease, box-shadow 260ms ease;
+  transition:
+    border-color 220ms ease,
+    box-shadow 260ms ease;
 }
 .characterCard::before {
   content: '';
@@ -418,7 +426,9 @@
 }
 .characterCardActive {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 20px 60px color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 20px 60px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .characterCardActive::before {
   opacity: 1;
@@ -601,10 +611,14 @@
 @keyframes nodeGlow {
   0%,
   100% {
-    box-shadow: var(--shadow), 0 0 0 0 rgb(61 214 198 / 0.35);
+    box-shadow:
+      var(--shadow),
+      0 0 0 0 rgb(61 214 198 / 0.35);
   }
   50% {
-    box-shadow: var(--shadow), 0 0 0 10px rgb(61 214 198 / 0);
+    box-shadow:
+      var(--shadow),
+      0 0 0 10px rgb(61 214 198 / 0);
   }
 }
 .room_completed {
@@ -1047,7 +1061,8 @@
   overflow: hidden;
 }
 .heroPassed {
-  background: radial-gradient(600px 300px at 20% 0%, rgb(52 211 153 / 0.25), transparent 70%),
+  background:
+    radial-gradient(600px 300px at 20% 0%, rgb(52 211 153 / 0.25), transparent 70%),
     radial-gradient(500px 300px at 100% 100%, rgb(255 200 87 / 0.18), transparent 70%);
 }
 .heroFailed {
@@ -1248,7 +1263,10 @@
   border-radius: 22px;
   overflow: hidden;
   background: #1b2230;
-  box-shadow: 0 0 0 1px var(--color-border-strong), 0 30px 80px rgb(0 0 0 / 0.5), 0 0 80px rgb(61 214 198 / 0.12);
+  box-shadow:
+    0 0 0 1px var(--color-border-strong),
+    0 30px 80px rgb(0 0 0 / 0.5),
+    0 0 80px rgb(61 214 198 / 0.12);
 }
 /* Yumshoq vinyetka */
 .stage::after {

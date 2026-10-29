@@ -191,7 +191,11 @@ export function buildDecor(item: DecorItem, room: RoomDefinition, seed: number):
       const sHand = box(0.008, p.h * 0.42, 0.01, std(0xd1495b, 0.4), 0);
       sHand.position.y = p.h * 0.17;
       second.add(sHand);
-      for (const [hand, z] of [[hour, 0.04], [minute, 0.045], [second, 0.05]] as const) {
+      for (const [hand, z] of [
+        [hour, 0.04],
+        [minute, 0.045],
+        [second, 0.05],
+      ] as const) {
         hand.position.z = z;
         g.add(hand);
       }
@@ -326,7 +330,10 @@ export function buildDecor(item: DecorItem, room: RoomDefinition, seed: number):
       led.position.set(0, 0.15, f.d * 0.35 + 0.02);
       const top = box(f.w + 0.08, 0.06, f.d * 0.7 + 0.16, std(0xf1f3f5, 0.25), 0.02);
       top.position.y = 1.05;
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.32), new THREE.MeshBasicMaterial({ map: tex.label('QABULXONA', '#0f172a', '#7ff0e4'), transparent: true }));
+      const sign = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.1, 0.32),
+        new THREE.MeshBasicMaterial({ map: tex.label('QABULXONA', '#0f172a', '#7ff0e4'), transparent: true }),
+      );
       sign.position.set(0, 0.55, f.d * 0.35 + 0.025);
       g.add(body, accent, led, top, sign);
       g.position.set(f.cx, 0, f.cz);
@@ -627,7 +634,9 @@ export function buildHotspot(def: InteractiveObject, room: RoomDefinition, decor
       const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.16), new THREE.MeshBasicMaterial({ map: tex.phoneScreen(), toneMapped: false }));
       screen.rotation.x = -Math.PI / 2;
       screen.position.y = 0.007;
-      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.radialGlow('239,68,68'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      const halo = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: tex.radialGlow('239,68,68'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }),
+      );
       halo.scale.set(0.5, 0.5, 1);
       halo.position.y = 0.05;
       g.add(shadowed(body), screen, halo);
@@ -653,7 +662,9 @@ export function buildHotspot(def: InteractiveObject, room: RoomDefinition, decor
       cap.position.x = 0.065;
       const tag = box(0.03, 0.026, 0.042, std(0xffd166, 0.5), 0.004);
       tag.position.x = -0.03;
-      const glint = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.sparkleStar(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      const glint = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: tex.sparkleStar(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }),
+      );
       glint.position.set(0.05, 0.08, 0);
       g.add(shadowed(body), cap, tag, glint);
       g.position.set(cx, 0.0125, z);
@@ -841,7 +852,10 @@ export function buildHotspot(def: InteractiveObject, room: RoomDefinition, decor
             mat.needsUpdate = true;
           });
       }
-      const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.3, 24), new THREE.MeshBasicMaterial({ map: tex.radialGlow('0,0,0'), transparent: true, opacity: 0.45, depthWrite: false }));
+      const shadow = new THREE.Mesh(
+        new THREE.CircleGeometry(0.3, 24),
+        new THREE.MeshBasicMaterial({ map: tex.radialGlow('0,0,0'), transparent: true, opacity: 0.45, depthWrite: false }),
+      );
       shadow.rotation.x = -Math.PI / 2;
       shadow.position.y = 0.01;
       shadow.scale.set(1, 0.6, 1);

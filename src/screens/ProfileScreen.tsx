@@ -40,8 +40,7 @@ export function ProfileScreen() {
 
   // Avval erkin matn sifatida kiritilgan kasb ro‘yxatda bo‘lmasa ham tanlovda ko‘rinib tursin
   const known: readonly SelectOption[] = companyConfig.positions;
-  const positionOptions =
-    profile?.position && !known.some((o) => o.value === profile.position) ? [{ value: profile.position }, ...known] : known;
+  const positionOptions = profile?.position && !known.some((o) => o.value === profile.position) ? [{ value: profile.position }, ...known] : known;
 
   const completed = MISSION_LIST.filter((m) => progress.missions[m.id].status === 'completed').length;
   const stats = [
@@ -84,7 +83,7 @@ export function ProfileScreen() {
           </motion.span>
           <div>
             <h1 ref={heading} tabIndex={-1} className={styles.cardHeading}>
-              {status === 'signedIn' ? profile?.full_name ?? t.heading : t.guestHeading}
+              {status === 'signedIn' ? (profile?.full_name ?? t.heading) : t.guestHeading}
             </h1>
             {status === 'signedIn' && profile?.position && <p className={styles.muted}>{profile.position}</p>}
             <p className={styles.muted}>{status === 'signedIn' ? email : t.guestText}</p>

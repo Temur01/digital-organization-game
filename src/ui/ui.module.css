@@ -15,7 +15,11 @@
   overflow: hidden;
   isolation: isolate;
   text-align: center;
-  transition: transform 140ms ease, box-shadow 200ms ease, background 200ms ease, border-color 200ms ease;
+  transition:
+    transform 140ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease;
 }
 .button:hover {
   transform: translateY(-2px);
@@ -27,11 +31,15 @@
   background: var(--gradient-primary);
   background-size: 160% 100%;
   color: var(--color-on-primary);
-  box-shadow: 0 8px 24px rgb(61 214 198 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.35);
+  box-shadow:
+    0 8px 24px rgb(61 214 198 / 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 .button_primary:hover {
   background-position: 100% 0;
-  box-shadow: 0 12px 32px rgb(56 189 248 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.35);
+  box-shadow:
+    0 12px 32px rgb(56 189 248 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 /* Yaltiroq chiziq */
 .button_primary::after {
@@ -70,7 +78,9 @@
   box-shadow: 0 8px 24px rgb(251 113 133 / 0.3);
 }
 .button[aria-pressed='true'] {
-  box-shadow: 0 0 0 2px var(--color-accent), 0 0 18px rgb(255 200 87 / 0.35);
+  box-shadow:
+    0 0 0 2px var(--color-accent),
+    0 0 18px rgb(255 200 87 / 0.35);
 }
 
 .actions {
@@ -120,7 +130,9 @@
   background: linear-gradient(180deg, rgb(30 40 80 / 0.92), rgb(14 20 44 / 0.94));
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  box-shadow:
+    var(--shadow),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
   padding: var(--space-5) var(--space-5) var(--space-5);
   backdrop-filter: var(--blur);
 }
@@ -153,19 +165,25 @@
   background: linear-gradient(90deg, #34d399, #3dd6c6);
 }
 .tone_safe {
-  box-shadow: var(--shadow), 0 0 60px rgb(52 211 153 / 0.25);
+  box-shadow:
+    var(--shadow),
+    0 0 60px rgb(52 211 153 / 0.25);
 }
 .tone_risky::before {
   background: linear-gradient(90deg, #fbbf24, #fb923c);
 }
 .tone_risky {
-  box-shadow: var(--shadow), 0 0 60px rgb(251 191 36 / 0.2);
+  box-shadow:
+    var(--shadow),
+    0 0 60px rgb(251 191 36 / 0.2);
 }
 .tone_critical::before {
   background: linear-gradient(90deg, #fb7185, #f43f5e);
 }
 .tone_critical {
-  box-shadow: var(--shadow), 0 0 70px rgb(251 113 133 / 0.3);
+  box-shadow:
+    var(--shadow),
+    0 0 70px rgb(251 113 133 / 0.3);
 }
 .modalTitle {
   font-size: 1.2rem;
@@ -195,7 +213,9 @@
   font-weight: 700;
   background: linear-gradient(135deg, #7c3aed, #a78bfa);
   color: #fff;
-  box-shadow: 0 8px 20px rgb(0 0 0 / 0.3), inset 0 0 0 2px rgb(255 255 255 / 0.2);
+  box-shadow:
+    0 8px 20px rgb(0 0 0 / 0.3),
+    inset 0 0 0 2px rgb(255 255 255 / 0.2);
 }
 .avatarPlayer {
   background: linear-gradient(135deg, #0ea5a4, #38bdf8);
@@ -257,7 +277,9 @@
   height: 8px;
   border-radius: 999px;
   background: var(--color-border-strong);
-  transition: width 220ms ease, background 220ms ease;
+  transition:
+    width 220ms ease,
+    background 220ms ease;
 }
 .dotActive {
   width: 24px;
@@ -302,7 +324,11 @@
   border-radius: 16px;
   cursor: pointer;
   font-weight: 600;
-  transition: border-color 180ms ease, background 180ms ease, transform 160ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 160ms ease,
+    box-shadow 180ms ease;
 }
 .choiceButton:hover,
 .choiceButton:focus-visible {
@@ -328,7 +354,9 @@
   margin-left: auto;
   opacity: 0;
   transform: translateX(-8px);
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
   color: var(--color-primary);
   font-weight: 800;
 }
@@ -474,7 +502,9 @@
 }
 .toast_success {
   border-color: rgb(52 211 153 / 0.5);
-  box-shadow: var(--shadow), 0 0 24px rgb(52 211 153 / 0.25);
+  box-shadow:
+    var(--shadow),
+    0 0 24px rgb(52 211 153 / 0.25);
 }
 .toastIcon {
   display: inline-grid;
@@ -605,7 +635,9 @@
   border-radius: 12px;
   cursor: pointer;
   padding: 0;
-  transition: background 160ms ease, border-color 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
 }
 .hotspotButton:hover,
 .hotspotButton:focus-visible {
@@ -627,7 +659,9 @@
   font-weight: 700;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 .hotspotButton:hover .hotspotLabel,
 .hotspotButton:focus-visible .hotspotLabel,
@@ -682,7 +716,9 @@
   background: var(--color-surface-alt);
   cursor: pointer;
   font-weight: 600;
-  transition: border-color 160ms ease, transform 160ms ease;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
 }
 .listButton:hover {
   border-color: var(--color-primary);
@@ -757,7 +793,9 @@
   border-radius: 999px;
   cursor: pointer;
   font-weight: 600;
-  transition: border-color 160ms ease, background 160ms ease;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
 }
 .segment:has(input:checked) {
   border-color: var(--color-primary);
@@ -822,7 +860,9 @@
   flex-direction: column;
   background: #f6f8fb;
   border: 1px solid rgb(255 255 255 / 0.25);
-  box-shadow: 0 30px 80px rgb(0 0 0 / 0.55), 0 0 0 6px rgb(255 255 255 / 0.05);
+  box-shadow:
+    0 30px 80px rgb(0 0 0 / 0.55),
+    0 0 0 6px rgb(255 255 255 / 0.05);
 }
 .simModal::before {
   display: none;
@@ -965,11 +1005,15 @@
   }
   90% {
     transform: translate(-2px, 1px);
-    text-shadow: 2px 0 #22d3ee, -2px 0 #fb7185;
+    text-shadow:
+      2px 0 #22d3ee,
+      -2px 0 #fb7185;
   }
   93% {
     transform: translate(2px, -1px);
-    text-shadow: -2px 0 #22d3ee, 2px 0 #fb7185;
+    text-shadow:
+      -2px 0 #22d3ee,
+      2px 0 #fb7185;
   }
   96% {
     transform: translate(0);
@@ -1033,7 +1077,10 @@
   font-size: 1rem;
   text-align: left;
   cursor: pointer;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
 }
 .selectTrigger:hover {
   border-color: rgb(61 214 198 / 0.6);
@@ -1086,7 +1133,9 @@
   border: 1px solid var(--color-border-strong);
   background: var(--color-surface-strong);
   backdrop-filter: var(--blur);
-  box-shadow: var(--shadow), 0 0 0 1px rgb(61 214 198 / 0.15);
+  box-shadow:
+    var(--shadow),
+    0 0 0 1px rgb(61 214 198 / 0.15);
   transform-origin: top center;
   scrollbar-width: thin;
 }

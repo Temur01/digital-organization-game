@@ -1,409 +1,410 @@
-# «Raqamli Qalqon» — MVP spetsifikatsiyasi
+# "Raqamli Qalqon" — MVP Specification
 
-> Tashkilot xodimlariga raqamli gigiyenani o‘rgatuvchi brauzerdagi 2D sarguzasht o‘yini.
-> Hujjat turi: product + texnik spetsifikatsiya (MVP). Ishlab chiqish rejasi va vaqt bahosi bu hujjatga kirmaydi.
+> A browser-based 2D adventure game that teaches digital hygiene to employees of an organization.
+> Document type: product + technical specification (MVP). Delivery planning and estimates are out of scope.
 
-> **Hozirgi holat (2026):** bu hujjat dastlabki mahsulot rejasidir; amaldagi kod undan bir necha joyda farq qiladi.
-> Kod — haqiqat manbai. Joriy arxitektura, buyruqlar va qoidalar uchun [`../CLAUDE.md`](../CLAUDE.md) va [`../README.md`](../README.md) ga qarang.
+> **Current status (2026):** this document is the original product plan; the implementation differs in several places.
+> The code is the source of truth. For the current architecture, commands, and rules, see [`../CLAUDE.md`](../CLAUDE.md) and [`../README.md`](../README.md).
 >
-> Asosiy farqlar:
-> - sahna **Three.js** (PixiJS emas), mantiqiy o‘lcham 960×540;
-> - **4 ta missiya** (`m1`–`m4`), oxirgisi «Kofe tanaffusi»;
-> - **Supabase** ixtiyoriy backend: email + parol bilan kirish, profil, natijalarni sinxronlash va reyting (magic link emas);
-> - **24 savollik bilim sinovi** va reyting jadvali qo‘shilgan;
-> - missiya o‘rtasidagi holat `sessionStorage`da saqlanadi (tab yopilganda tozalanadi);
-> - simulyatsiya ilovalari: pochta, ish stoli/fayllar, telefon, IT portal.
+> Main differences:
+> - the scene uses **Three.js** (not PixiJS) with a logical resolution of 960×540;
+> - there are **4 missions** (`m1`–`m4`), the last one being "Coffee break";
+> - **Supabase** is an optional backend: email + password auth, profiles, result sync, and a leaderboard (not magic links);
+> - a **24-question knowledge quiz** and leaderboard have been added;
+> - in-progress mission state is stored in `sessionStorage` (cleared when the tab closes);
+> - simulation apps: email, workstation/files, phone, IT portal.
 
 ---
 
-## 1. Konsepsiya, maqsad, auditoriya va MVP doirasi
+## 1. Concept, goals, audience, and MVP scope
 
-### 1.1. Konsepsiya
-O‘yinchi fiktiv «Kompaniya» tashkilotining yangi xodimi — **Bek** yoki **Guli** rolida ofisda ish kunini o‘tkazadi. Har bir missiya — bitta qisqa ish vaziyati (5–8 daqiqa): kelgan xat, topilgan fleshka, tungi MFA so‘rovlari. O‘yinchi ofis xonasida yuradi, obyektlarni ko‘zdan kechiradi, xavf belgilarini topadi va qaror qabul qiladi. Har bir qarordan keyin darhol tushuntirish beriladi, missiya oxirida esa qisqa xulosa ko‘rsatiladi.
+### 1.1 Concept
+The player is a new employee of the fictional "Company" organization, playing as **Bek** or **Guli** and spending a workday in the office. Each mission is one short work situation (5–8 minutes): an incoming email, a found USB drive, overnight MFA prompts. The player walks around the office, inspects objects, identifies risk signals, and makes decisions. Every decision immediately produces an explanation, and the mission ends with a short summary.
 
-Asosiy g‘oya: **«Xato qilish — xavfsiz joyda»**. O‘yinda xatoning oqibati faqat matn va illyustratsiya bilan simulyatsiya qilinadi.
+Core idea: **"Making mistakes is safe here."** In the game, the consequences of an error are simulated only with text and illustrations.
 
-### 1.2. Maqsad
-O‘yindan keyin xodim quyidagilarni qila olishi kerak:
-- fishing xatining kamida 4 ta belgisini tanish (yuboruvchi domeni, shoshiltirish, umumiy murojaat, havola manzili mos kelmasligi);
-- notanish fayl va qurilmalarni ochmaslik, ikki kengaytmali faylni aniqlash;
-- MFA kodini hech kimga aytmaslik, so‘ralmagan MFA so‘rovini rad etish;
-- shubhali hodisani rasmiy kanal orqali darhol xabar qilish;
-- kuchli va takrorlanmaydigan parol (parol iborasi) tanlash.
+### 1.2 Goals
+After playing, an employee should be able to:
+- recognize at least 4 signs of a phishing email (sender domain, urgency, generic greeting, mismatched link address);
+- avoid opening unknown files and devices, and identify double extensions;
+- never share an MFA code, and reject unsolicited MFA requests;
+- report a suspicious incident immediately through an official channel;
+- choose strong, unique passwords (passphrases).
 
-### 1.3. Auditoriya
-- Har qanday bo‘lim xodimlari (buxgalteriya, HR, savdo, rahbariyat) — IT bilimi talab qilinmaydi.
-- Yosh oralig‘i keng (20–60), o‘yin tajribasi kam bo‘lishi mumkin → boshqaruv minimal, vaqt bosimi yo‘q, matn qisqa va aniq.
-- Ish kompyuteri (asosiy) va telefon brauzeri (ikkilamchi).
-- Ohang: professional, hurmatli, hazil yengil; qo‘rqitish va ayblash yo‘q.
+### 1.3 Audience
+- Employees of any department (accounting, HR, sales, management) — no IT knowledge required.
+- Wide age range (20–60); gaming experience may be limited → minimal controls, no time pressure, short and clear text.
+- Work computer (primary) and phone browser (secondary).
+- Tone: professional, respectful, lightly humorous; no fear-mongering or blame.
 
-### 1.4. MVP doirasi
+### 1.4 MVP scope
 
-**Kiradi:**
-- Bosh menyu, personaj tanlash (Bek / Guli), missiyalar xaritasi, brifing, o‘yin sahnasi, dialog va simulyatsiya oynalari, fikr-mulohaza, natija ekrani, sozlamalar.
-- 3 ta missiya (2-bo‘limga qarang), ketma-ket ochiladi.
-- Ballar va 1–3 yulduz tizimi.
-- Progressni `localStorage`da saqlash.
-- To‘liq klaviatura, sichqoncha va sensorli boshqaruv; WCAG 2.1 AA darajasiga yo‘naltirilgan accessibility.
-- Bitta til: o‘zbek (lotin). Matnlar keyin tarjima qilishga tayyor tarzda alohida fayllarda saqlanadi.
-- Tashkilot nomi, domeni va IT ichki raqami — bitta konfiguratsiya faylidan (build vaqtida) sozlanadi.
+**Included:**
+- Main menu, character selection (Bek / Guli), mission map, briefing, game scene, dialogs and simulation windows, feedback, result screen, settings.
+- 3 missions (see section 2), unlocked sequentially.
+- Scoring and a 1–3 star system.
+- Progress stored in `localStorage`.
+- Full keyboard, mouse, and touch controls; accessibility targeting WCAG 2.1 AA.
+- One language: Uzbek (Latin). Text is kept in separate files so it can be translated later.
+- Organization name, domain, and internal IT number configured from a single file at build time.
 
-**Kirmaydi:**
-- Akkauntlar, backend, server API, analitika, LMS/SCORM integratsiyasi.
-- Multiplayer, reyting jadvali, admin panel, kontent muharriri.
-- Ko‘p tillilik, ovozli dublyaj.
-- Missiya o‘rtasida saqlash (sahifa yangilansa, joriy missiya qaytadan boshlanadi).
+**Excluded:**
+- Accounts, backend, server API, analytics, LMS/SCORM integration.
+- Multiplayer, leaderboard, admin panel, content editor.
+- Multiple languages, voice dubbing.
+- Mid-mission saving (if the page is refreshed, the current mission restarts).
 
-### 1.5. Xavfsizlik tamoyillari (majburiy)
-O‘yin kiberhujumlarni **faqat simulyatsiya** qiladi:
-1. **Haqiqiy zararli kod yo‘q.** «Zararli fayl» — bu shunchaki ma’lumot obyekti (nom, ikonka, hajm). Hech qanday fayl yaratilmaydi, yuklab olinmaydi va ishga tushirilmaydi.
-2. **Tashqi havola yo‘q.** O‘yindagi barcha «havolalar» `<a href>` emas, balki `<button>`/`<span>` sifatida chiziladi; bosilganda faqat o‘yin ichidagi simulyatsiya ochiladi. `window.open`, `location` o‘zgartirish ishlatilmaydi.
-3. **Maxfiy ma’lumot so‘ralmaydi.** O‘yinda parol, login, telefon raqami yoki ism kiritish uchun erkin matn maydoni **yo‘q**. «Soxta kirish sahifasi» faqat rasm/statik karta sifatida ko‘rsatiladi; parol tanlash — tayyor variantlardan tanlash orqali.
-4. **Tarmoq so‘rovi yo‘q.** Ilova faqat o‘zining statik fayllarini yuklaydi. `Content-Security-Policy`: `default-src 'self'; img-src 'self' data:; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'` (Pixi uchun kerak bo‘lsa `worker-src 'self' blob:`).
-5. **Fiktiv domenlar.** Barcha domenlar RFC 2606 bo‘yicha zaxiralangan `.example` zonasidan: `kompaniya.example`, `kompaniya-tolov.example`. Haqiqiy brend, bank yoki davlat tashkiloti nomi ishlatilmaydi.
-6. **HTML in’ektsiya yo‘q.** Xat matnlari tuzilgan ma’lumotdan React komponentlari orqali chiziladi; `dangerouslySetInnerHTML` va `eval` taqiqlanadi (ESLint qoidasi bilan).
+### 1.5 Security principles (mandatory)
+The game simulates cyberattacks **only**:
+1. **No real malicious code.** A "malicious file" is just a data object (name, icon, size). No file is created, downloaded, or executed.
+2. **No external links.** Every "link" in the game is rendered as a `<button>`/`<span>`, not `<a href>`; clicking it only opens an in-game simulation. `window.open` and changing `location` are not used.
+3. **No secret data is requested.** There is **no** free-text field for entering a password, login, phone number, or name in the game. A "fake login page" is shown only as an image/static card; password selection is done by choosing a prepared option.
+4. **No network requests.** The app loads only its own static files. `Content-Security-Policy`: `default-src 'self'; img-src 'self' data:; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'` (`worker-src 'self' blob:` if required by Pixi).
+5. **Fictional domains.** All domains come from the reserved `.example` zone per RFC 2606: `kompaniya.example`, `kompaniya-tolov.example`. No real brand, bank, or government organization names are used.
+6. **No HTML injection.** Email bodies are rendered from structured data through React components; `dangerouslySetInnerHTML` and `eval` are forbidden (enforced by an ESLint rule).
 
 ---
 
 ## 2. Gameplay loop
 
-### 2.1. Makro-loop (o‘yin darajasi)
+### 2.1 Macro loop (game level)
 ```
-Personaj tanlash → Missiyalar xaritasi → Brifing → Missiya → Natija → (keyingi missiya ochiladi) → Xarita
+Character selection → Mission map → Briefing → Mission → Result → (next mission unlocks) → Map
                                    ↑___________________________________________|
 ```
 
-### 2.2. Mikro-loop (missiya ichida)
-1. **Kuzatish** — o‘yinchi xonada yuradi, interaktiv obyektlar ustida yorliq chiqadi.
-2. **O‘rganish** — obyekt bilan interaksiya: hamkasb bilan suhbat, plakatni o‘qish, kompyuter/telefonda simulyatsiya ilovasini ochish.
-3. **Belgilarni topish** — simulyatsiya ichida shubhali joylarni bosib «belgi» (clue) sifatida belgilash. Har topilgan belgi +5 ball va qisqa izoh beradi.
-4. **Qaror** — muhim nuqtada 3–4 ta tanlovdan biri.
-5. **Fikr-mulohaza** — darhol natija:
-   - ✔ **Xavfsiz** → +10 ball, keyingi bosqich ochiladi.
-   - ⚠ **Xavfli** → 0 ball, tushuntirish, o‘yinchi shu qarorni qayta tanlaydi.
-   - ✖ **Jiddiy xato** → «Agar bu haqiqatda bo‘lganida…» oqibat ekrani, missiya muvaffaqiyatsiz tugaydi, qayta urinish taklif qilinadi.
-6. Barcha majburiy maqsadlar bajarilgach → **Natija ekrani**.
+### 2.2 Micro loop (inside a mission)
+1. **Observe** — the player walks around the room; interactive objects show labels.
+2. **Inspect** — interact with an object: talk to a colleague, read a poster, open a simulation app on a computer/phone.
+3. **Find signals** — mark suspicious places inside the simulation as "clues". Each found clue gives +5 points and a short explanation.
+4. **Decide** — at a key point, choose one of 3–4 options.
+5. **Feedback** — immediate outcome:
+   - ✔ **Safe** → +10 points, the next step unlocks.
+   - ⚠ **Risky** → 0 points, explanation, the player re-chooses this decision.
+   - ✖ **Critical error** → a "If this were real…" consequence screen, the mission fails, and a retry is offered.
+6. Once all mandatory objectives are complete → **Result screen**.
 
-### 2.3. Ball va yulduzlar
-- Ball faqat **birinchi urinishdagi** tanlov uchun beriladi (qayta tanlangan xavfsiz javob 0 ball).
-- `maxScore = qarorlar soni × 10 + belgilar soni × 5`.
-- Yulduzlar (faqat muvaffaqiyatli missiya uchun):
-  - ★★★ — barcha qarorlar birinchi urinishda xavfsiz va belgilarning ≥ 80 % topilgan;
-  - ★★ — ball ≥ 60 % `maxScore`;
-  - ★ — missiya bajarilgan.
-- Jiddiy xato → 0 yulduz, `outcome: 'failed'`. Eng yaxshi natija saqlanadi, yomonroq natija uni almashtirmaydi.
-- Vaqt bo‘yicha jarima yo‘q.
-
----
-
-## 3. Missiyalar
-
-Umumiy: har missiyada **1 xona**, **3–5 interaktiv obyekt**, **2–4 qaror**, **4–5 belgi**. Missiyalar tartib bilan ochiladi: M1 → M2 → M3.
-
-Konfiguratsiyadagi qiymatlar: `{company}` = «Kompaniya», `{domain}` = `kompaniya.example`, `{itPhone}` = `1234` (IT xavfsizlik ichki raqami), `{reportButton}` = «Fishingni xabar qilish».
+### 2.3 Scoring and stars
+- Points are awarded only for the choice made on the **first attempt** (re-choosing a safe answer gives 0 points).
+- `maxScore = number of decisions × 10 + number of clues × 5`.
+- Stars (only for a successful mission):
+  - ★★★ — all decisions were safe on the first attempt and at least 80% of clues were found;
+  - ★★ — score ≥ 60% of `maxScore`;
+  - ★ — mission completed.
+- Critical error → 0 stars, `outcome: 'failed'`. The best result is kept; a worse result does not replace it.
+- No time penalty.
 
 ---
 
-### M1. «Shoshilinch hisob-faktura» — fishing xati
+## 3. Missions
 
-**Xona:** ochiq ofis, o‘yinchining ish stoli.
+Common: each mission has **1 room**, **3–5 interactive objects**, **2–4 decisions**, and **4–5 clues**. Missions unlock in order: M1 → M2 → M3.
 
-**Vaziyat (brifing):**
-> Dushanba, ertalab. Rahbaringiz: «Pochtani ko‘rib chiq, bugun muhim xatlar bor». Pochtada uchta yangi xat bor. Ulardan biri sizni shoshiltirmoqda.
-
-**Interaktiv obyektlar:**
-| ID | Obyekt | Harakat |
-|---|---|---|
-| `m1-computer` | Ish kompyuteri | «Pochta» simulyatsiyasini ochadi |
-| `m1-colleague` | Hamkasb Dilnoza (NPC) | Dialog: «Kecha menga ham “buxgalteriya”dan g‘alati xat keldi…» (yo‘naltiruvchi maslahat) |
-| `m1-poster` | «Fishing belgilari» plakati | Qisqa eslatma (4 belgi). Ixtiyoriy |
-| `m1-manager` | Rahbar xonasi eshigi | Missiya oxirida tasdiqlovchi dialog |
-
-**Pochta qutisi (simulyatsiya):**
-1. HR: «Noyabr oyi tadbirlari» — oddiy xat (`hr@kompaniya.example`).
-2. Rahbar: «Seshanba kungi yig‘ilish» — oddiy xat.
-3. **Fishing xati:**
-   - Kimdan: `Buxgalteriya bo‘limi <buxgalteriya@kompaniya-tolov.example>`
-   - Mavzu: «SHOSHILINCH: to‘lov 2 soat ichida tasdiqlanmasa, hisobingiz bloklanadi»
-   - Murojaat: «Hurmatli xodim,»
-   - Havola matni: `kompaniya.example/hisob` → ustiga olib borilganda/fokuslanganda haqiqiy manzil: `kompaniya-tolov.example/login`
-   - Ilova: `Hisob_faktura.html` (faqat ikonka)
-
-**Belgilar (clue):**
-| ID | Belgi | Izoh |
-|---|---|---|
-| `m1-c-domain` | Yuboruvchi domeni | `kompaniya-tolov.example` ≠ `kompaniya.example` |
-| `m1-c-urgency` | Shoshiltirish va tahdid | «2 soat ichida», «bloklanadi» — bosim o‘tkazish usuli |
-| `m1-c-greeting` | Umumiy murojaat | Ismingiz o‘rniga «Hurmatli xodim» |
-| `m1-c-link` | Havola manzili | Ko‘rinadigan matn va haqiqiy manzil farq qiladi |
-| `m1-c-attachment` | Kutilmagan ilova | Buxgalteriya `.html` ilova yubormaydi |
-
-**Qaror `m1-d-action`** — «Bu xat bilan nima qilasiz?»
-| Tanlov | Natija | Fikr-mulohaza |
-|---|---|---|
-| Havolani bosib, hisobni tasdiqlash | ✖ jiddiy | Oqibat ekrani: soxta kirish sahifasi (statik rasm) → «Login va parolingiz hujumchiga o‘tgan bo‘lardi, u sizning nomingizdan hamkasblarga xat yuborardi». |
-| Xatga javob yozib, haqiqiymi deb so‘rash | ⚠ xavfli | Javob hujumchiga boradi va u sizni yanada ishontiradi. |
-| Hamkasbga «qarab ber» deb yuborish | ⚠ xavfli | Xavfni boshqa odamga tarqatasiz. |
-| Xatni shunchaki o‘chirish | ⚠ xavfli | Siz himoyalandingiz, lekin xavfsizlik jamoasi hujumdan bexabar — boshqalar xatni ochishi mumkin. |
-| **«{reportButton}» tugmasini bosish** | ✔ xavfsiz | To‘g‘ri: xat xavfsizlik jamoasiga yuboriladi va pochtadan olib tashlanadi. |
-
-**Qaror `m1-d-verify`** (rahbar eshigi yonida, xabar qilgandan keyin) — «Buxgalteriyada haqiqatan qarz bormi, qanday tekshirasiz?»
-| Tanlov | Natija | Izoh |
-|---|---|---|
-| Xatdagi telefon raqamiga qo‘ng‘iroq qilish | ⚠ xavfli | Raqam hujumchiniki bo‘lishi mumkin. |
-| **Buxgalteriyaga ichki ma’lumotnomadagi raqam orqali qo‘ng‘iroq qilish** | ✔ xavfsiz | Har doim mustaqil, ma’lum kanal orqali tekshiring. |
-| Tekshirmaslik | ⚠ xavfli | Agar haqiqiy masala bo‘lsa, u hal bo‘lmay qoladi. |
-
-**Missiya tugashi:** `m1-d-action` va `m1-d-verify` xavfsiz hal qilingan.
-
-**Saboq:**
-- Yuboruvchi domenini harfma-harf tekshiring.
-- Havolani bosishdan oldin haqiqiy manzilini ko‘ring.
-- Shoshiltirish va tahdid — fishingning asosiy belgisi.
-- Shubhali xatni o‘chirish emas, **xabar qilish** kerak.
+Configuration values: `{company}` = "Company" (`Kompaniya`), `{domain}` = `kompaniya.example`, `{itPhone}` = `1234` (internal IT security number), `{reportButton}` = "Report phishing" (`Fishingni xabar qilish`).
 
 ---
 
-### M2. «Topilgan fleshka» — shubhali fayl va qurilma
+### M1. "Urgent invoice" — phishing email
 
-**Xona:** ofis qabulxonasi + o‘yinchining stoli (bitta keng xona, ikki zona).
+**Room:** open office, the player's desk.
 
-**Vaziyat:**
-> Ishga kelayotib, qabulxona yonida polda «Mukofotlar_2026» yozuvli fleshka yotganini ko‘rasiz. Stolingizga yetganingizda messenjerda notanish hamkordan fayl kelgan.
+**Situation (briefing):**
+> Monday morning. Your manager: "Check the mail, there are important emails today." There are three new emails in the inbox. One of them is rushing you.
 
-**Interaktiv obyektlar:**
-| ID | Obyekt | Harakat |
+**Interactive objects:**
+| ID | Object | Action |
 |---|---|---|
-| `m2-usb` | Fleshka | Qaror `m2-d-usb` |
-| `m2-reception` | Qabulxona xodimi (NPC) | Dialog: «Yo‘qolgan buyumlarni odatda menga berishadi… lekin qurilmalarni IT oladi.» |
-| `m2-it-box` | IT bo‘limi «Topilgan qurilmalar» qutisi | Fleshkani topshirish nuqtasi |
-| `m2-computer` | Ish kompyuteri | «Messenjer» va «Fayllar» simulyatsiyasi |
+| `m1-computer` | Work computer | Opens the "Email" simulation |
+| `m1-colleague` | Colleague Dilnoza (NPC) | Dialog: "A weird email from 'accounting' came to me yesterday too…" (a hint) |
+| `m1-poster` | "Phishing signs" poster | Short reminder (4 signs). Optional |
+| `m1-manager` | Manager's office door | Confirmation dialog at the end of the mission |
 
-**Messenjer va fayl (simulyatsiya):**
-- Yuboruvchi: «Hamkor_Logistika» (kontaktlar ro‘yxatida yo‘q).
-- Xabar: «Assalomu alaykum! Shartnomani tez ko‘rib chiqing, bugun imzolashimiz kerak.»
-- Fayl: `Shartnoma_oktabr.pdf` (PDF ikonka), hajmi 2,4 MB.
-- «Fayllar» oynasida «Fayl kengaytmalarini ko‘rsatish» belgisi yoqilsa, haqiqiy nom ko‘rinadi: `Shartnoma_oktabr.pdf.exe`, turi: «Dastur».
+**Mailbox (simulation):**
+1. HR: "November events" — normal email (`hr@kompaniya.example`).
+2. Manager: "Tuesday meeting" — normal email.
+3. **Phishing email:**
+   - From: `Accounting Department <buxgalteriya@kompaniya-tolov.example>`
+   - Subject: "URGENT: if the payment is not confirmed within 2 hours, your account will be blocked"
+   - Greeting: "Dear employee,"
+   - Link text: `kompaniya.example/hisob` → the real address shown on hover/focus: `kompaniya-tolov.example/login`
+   - Attachment: `Hisob_faktura.html` (icon only)
 
-**Belgilar:**
-| ID | Belgi | Izoh |
+**Clues:**
+| ID | Clue | Explanation |
 |---|---|---|
-| `m2-c-label` | Jozibador yozuv | «Mukofotlar» — qiziqish uyg‘otish uchun ataylab yozilgan |
-| `m2-c-unknown` | Notanish yuboruvchi | Kontaktda yo‘q, kutilmagan fayl |
-| `m2-c-pressure` | Shoshiltirish | «Bugun imzolashimiz kerak» |
-| `m2-c-extension` | Ikki kengaytma | `.pdf.exe` — hujjat emas, dastur |
-| `m2-c-type` | Fayl turi | «Dastur» turi PDF uchun mantiqsiz |
+| `m1-c-domain` | Sender domain | `kompaniya-tolov.example` ≠ `kompaniya.example` |
+| `m1-c-urgency` | Urgency and threat | "within 2 hours", "will be blocked" — pressure tactics |
+| `m1-c-greeting` | Generic greeting | "Dear employee" instead of your name |
+| `m1-c-link` | Link address | Visible text and real address differ |
+| `m1-c-attachment` | Unexpected attachment | Accounting does not send `.html` attachments |
 
-**Qaror `m2-d-usb`** — «Fleshka bilan nima qilasiz?»
-| Tanlov | Natija | Izoh |
+**Decision `m1-d-action`** — "What do you do with this email?"
+| Choice | Outcome | Feedback |
 |---|---|---|
-| Ish kompyuteriga ulab, egasini aniqlash | ✖ jiddiy | Oqibat: «Fleshka ulanganda yashirin dastur tarmoqqa tarqalishi mumkin edi.» |
-| Uyga olib ketib, shaxsiy kompyuterda ko‘rish | ⚠ xavfli | Shaxsiy qurilma ham, keyinchalik ish ma’lumotlari ham xavf ostida. |
-| Axlatga tashlash | ⚠ xavfli | Bu hujum urinishi bo‘lishi mumkin — xavfsizlik jamoasi bilishi kerak. |
-| **IT xavfsizlik bo‘limiga topshirish** | ✔ xavfsiz | O‘yinchi `m2-it-box`ga borib fleshkani topshiradi (flag `usbHandedOver`). |
+| Click the link and confirm the account | ✖ critical | Consequence screen: fake login page (static image) → "Your login and password would have gone to the attacker, who would then send emails to colleagues in your name." |
+| Reply and ask whether it is real | ⚠ risky | The reply goes to the attacker, who uses it to gain more trust. |
+| Forward it to a colleague to "take a look" | ⚠ risky | You spread the risk to another person. |
+| Simply delete the email | ⚠ risky | You protected yourself, but the security team is unaware — others may open it. |
+| **Press the "{reportButton}" button** | ✔ safe | Correct: the email is sent to the security team and removed from the inbox. |
 
-**Qaror `m2-d-file`** — «Fayl bilan nima qilasiz?»
-| Tanlov | Natija | Izoh |
+**Decision `m1-d-verify`** (by the manager's door, after reporting) — "Is there really a debt in accounting, and how do you verify it?"
+| Choice | Outcome | Explanation |
 |---|---|---|
-| Faylni ochish | ✖ jiddiy | Oqibat: «Bu fayl dastur edi. U fayllaringizni shifrlab, to‘lov talab qilishi mumkin edi.» (faqat matn va illyustratsiya) |
-| Antivirus bilan tekshirib, keyin ochish | ⚠ xavfli | Antivirus hamma narsani ushlay olmaydi; kutilmagan dasturni umuman ochmaslik kerak. |
-| Messenjerda yuboruvchidan «bu nima?» deb so‘rash | ⚠ xavfli | Hujumchi albatta «hammasi joyida» deydi. |
-| **Ochmasdan, IT xavfsizlikka xabar qilish va hamkor bilan rasmiy kanal orqali tekshirish** | ✔ xavfsiz | To‘g‘ri yo‘l. |
+| Call the phone number in the email | ⚠ risky | The number may belong to the attacker. |
+| **Call accounting using the number in the internal directory** | ✔ safe | Always verify through an independent, known channel. |
+| Do not verify | ⚠ risky | If it is a real issue, it remains unresolved. |
 
-**Missiya tugashi:** `m2-d-usb` va `m2-d-file` xavfsiz hal qilingan.
+**Mission completion:** `m1-d-action` and `m1-d-verify` resolved safely.
 
-**Saboq:**
-- Topilgan qurilmani hech qachon ulamang — IT ga topshiring.
-- Fayl kengaytmasini ko‘ring: `.exe`, `.scr`, `.js`, `.html` ilovalar — xavf belgisi.
-- Kutilmagan faylni boshqa, ishonchli kanal orqali tekshiring.
+**Lessons:**
+- Check the sender domain letter by letter.
+- Before clicking a link, inspect the real address.
+- Urgency and threats are the main signs of phishing.
+- Do not delete a suspicious email — **report** it.
 
 ---
 
-### M3. «Tungi bildirishnomalar» — parol, MFA va hodisani xabar qilish
+### M2. "Found USB drive" — suspicious file and device
 
-**Xona:** ofis, kechqurun (yoritish qorong‘iroq, palitra o‘zgaradi).
+**Room:** office reception + the player's desk (one wide room, two zones).
 
-**Vaziyat:**
-> Kech qolib ishlayapsiz. Telefoningizga ketma-ket «Kirishni tasdiqlaysizmi?» so‘rovlari kela boshladi, lekin siz hech qayerga kirmayapsiz. Bir daqiqadan keyin «IT yordam»dan qo‘ng‘iroq bo‘ladi.
+**Situation:**
+> On the way to work, you see a USB drive labeled "Awards_2026" on the floor near reception. When you reach your desk, a stranger has sent you a file in a messenger.
 
-**Interaktiv obyektlar:**
-| ID | Obyekt | Harakat |
+**Interactive objects:**
+| ID | Object | Action |
 |---|---|---|
-| `m3-phone` | Telefon | MFA so‘rovlari, qo‘ng‘iroq |
-| `m3-poster` | «IT xavfsizlik: ichki raqam {itPhone}» plakati | Belgi + rasmiy raqam manbasi |
-| `m3-sticky` | Hamkasb monitoridagi stiker «Parol: Kompaniya2026!» | Belgi; ixtiyoriy harakat «Stikerni olib, hamkasbga eslatma qoldirish» |
-| `m3-computer` | Ish kompyuteri | «Hodisani xabar qilish» shakli va «Parolni almashtirish» oynasi |
+| `m2-usb` | USB drive | Decision `m2-d-usb` |
+| `m2-reception` | Receptionist (NPC) | Dialog: "Lost items are usually given to me… but devices go to IT." |
+| `m2-it-box` | IT department "Found devices" box | Drop-off point for the USB drive |
+| `m2-computer` | Work computer | "Messenger" and "Files" simulation |
 
-**MFA so‘rovi (simulyatsiya):** «{company} hisobiga kirish so‘rovi. Joylashuv: noma’lum. Qurilma: Windows. [Tasdiqlash] [Rad etish]». So‘rovlar har 4 soniyada qayta ko‘rinadi (faqat vizual; vaqt bo‘yicha jarima yo‘q, «Harakatni kamaytirish» rejimida animatsiyasiz, son bilan ko‘rsatiladi: «7 ta so‘rov»).
+**Messenger and file (simulation):**
+- Sender: "Partner_Logistics" (not in the contacts list).
+- Message: "Hello! Please review the contract quickly, we need to sign it today."
+- File: `Contract_October.pdf` (PDF icon), size 2.4 MB.
+- In the "Files" window, if "Show file extensions" is enabled, the real name is visible: `Contract_October.pdf.exe`, type: "Application".
 
-**Belgilar:**
-| ID | Belgi | Izoh |
+**Clues:**
+| ID | Clue | Explanation |
 |---|---|---|
-| `m3-c-unrequested` | So‘ralmagan so‘rov | Siz kirmayapsiz — demak, parolingiz kimdadir bor |
-| `m3-c-location` | Noma’lum joylashuv | Sizning qurilmangiz emas |
-| `m3-c-caller` | Qo‘ng‘iroq qiluvchi kod so‘raydi | IT hech qachon kod so‘ramaydi |
-| `m3-c-official` | Rasmiy raqam | Raqam plakatda, qo‘ng‘iroq qiluvchidan emas |
-| `m3-c-sticky` | Ochiq yozilgan parol | Parolni ko‘rinadigan joyda saqlamang |
+| `m2-c-label` | Attractive label | "Awards" — deliberately written to spark curiosity |
+| `m2-c-unknown` | Unknown sender | Not in contacts, unexpected file |
+| `m2-c-pressure` | Urgency | "We need to sign it today" |
+| `m2-c-extension` | Double extension | `.pdf.exe` — not a document, but an application |
+| `m2-c-type` | File type | "Application" is illogical for a PDF |
 
-**Qaror `m3-d-push`** — «MFA so‘roviga nima qilasiz?»
-| Tanlov | Natija | Izoh |
+**Decision `m2-d-usb`** — "What do you do with the USB drive?"
+| Choice | Outcome | Explanation |
 |---|---|---|
-| To‘xtashi uchun «Tasdiqlash» | ✖ jiddiy | Oqibat: «Hujumchi hisobingizga kirdi va pochtangizni o‘qiy boshladi.» |
-| E’tibor bermay, ishni davom ettirish | ⚠ xavfli | Charchagan payt tasodifan tasdiqlab yuborish mumkin; hodisa xabar qilinmaydi. |
-| **«Rad etish»** | ✔ xavfsiz | To‘g‘ri, lekin bu yetarli emas — parol oshkor bo‘lgan. |
+| Plug it into the work computer to identify the owner | ✖ critical | Consequence: "If the drive had been connected, hidden software could have spread across the network." |
+| Take it home and inspect it on a personal computer | ⚠ risky | Both the personal device and later work data are at risk. |
+| Throw it in the trash | ⚠ risky | This could be an attack attempt — the security team must know. |
+| **Hand it to the IT security department** | ✔ safe | The player walks to `m2-it-box` and hands over the drive (flag `usbHandedOver`). |
 
-**Qaror `m3-d-call`** — Qo‘ng‘iroq: «Men IT bo‘limidanman. Hisobingizda muammo bor, tiklash uchun SMS’dagi 6 xonali kodni ayting.»
-| Tanlov | Natija | Izoh |
+**Decision `m2-d-file`** — "What do you do with the file?"
+| Choice | Outcome | Explanation |
 |---|---|---|
-| Kodni aytish | ✖ jiddiy | Oqibat: kod bilan hujumchi MFA himoyasidan o‘tadi. |
-| Qo‘ng‘iroq qiluvchi bergan raqamga qayta qo‘ng‘iroq qilish | ⚠ xavfli | Raqam hujumchining o‘ziniki. |
-| **Qo‘ng‘iroqni tugatib, plakatdagi ichki raqam {itPhone} ga qo‘ng‘iroq qilish** | ✔ xavfsiz | Mustaqil, ma’lum kanal orqali tekshirish. |
+| Open the file | ✖ critical | Consequence: "This file was an application. It could have encrypted your files and demanded payment." (text and illustration only) |
+| Scan it with antivirus, then open it | ⚠ risky | Antivirus does not catch everything; an unexpected application should not be opened at all. |
+| Ask the sender "what is this?" in the messenger | ⚠ risky | The attacker will of course say "everything is fine." |
+| **Do not open it, report it to IT security, and verify with the partner through an official channel** | ✔ safe | The correct path. |
 
-**Qaror `m3-d-report`** — «Hodisani xabar qilish» shakli (kompyuterda). Shakl faqat tanlov elementlaridan iborat (radio/checkbox), erkin matn maydoni yo‘q:
-- Nima bo‘ldi? `[✓] So‘ralmagan MFA so‘rovlari` `[✓] Kod so‘rab qo‘ng‘iroq` `[ ] Shubhali xat`
-- Biror narsani tasdiqladingizmi yoki aytdingizmi? `(•) Yo‘q` `( ) Ha` `( ) Bilmayman`
-- Yuborish tugmasi.
+**Mission completion:** `m2-d-usb` and `m2-d-file` resolved safely.
 
-To‘g‘ri belgilangan maydonlar → ✔. Noto‘g‘ri belgilash → ⚠ (qaysi maydon noto‘g‘ri ekani tushuntiriladi, qayta to‘ldiriladi). Shakl ma’lumotlari hech qayerga yuborilmaydi va saqlanmaydi — faqat qaror natijasi.
-
-**Qaror `m3-d-password`** — «Parolni almashtirish» (IT tavsiyasi bilan). Parol **yozilmaydi**, tayyor variantdan tanlanadi:
-| Variant | Natija | Izoh |
-|---|---|---|
-| `Kompaniya2027!` | ⚠ xavfli | Eski parolning taxmin qilinadigan varianti. |
-| `Guli1999` / `Bek1999` (tanlangan personajga qarab) | ⚠ xavfli | Ism va tug‘ilgan yil — birinchi tekshiriladigan narsa. |
-| Shaxsiy pochtadagi parolni takrorlash | ⚠ xavfli | Bitta parol oshkor bo‘lsa, hamma hisoblar ochiladi. |
-| **`choynak-yomg‘ir-velosiped-73` (parol iborasi, parol menejerida saqlanadi)** | ✔ xavfsiz | Uzun, takrorlanmas, eslab qolish oson. |
-
-> Eslatma: parol varianti personaj ismiga qarab o‘zgaradi, lekin natija va ball bir xil — personaj mexanikaga ta’sir qilmaydi.
-
-**Missiya tugashi:** `m3-d-push`, `m3-d-call`, `m3-d-report`, `m3-d-password` xavfsiz hal qilingan. (`m3-sticky` harakati ixtiyoriy, faqat belgi beradi.)
-
-**Saboq:**
-- So‘ralmagan MFA so‘rovi = parolingiz oshkor bo‘lgan. Rad eting va xabar qiling.
-- MFA/SMS kodni hech kimga, hatto «IT»ga ham aytmang.
-- Tekshirish uchun faqat o‘zingiz bilgan rasmiy raqamdan foydalaning.
-- Hodisani darhol xabar qiling — hatto ishonchingiz komil bo‘lmasa ham.
-- Har bir hisob uchun alohida uzun parol iborasi.
+**Lessons:**
+- Never plug in a found device — hand it to IT.
+- Check the file extension: `.exe`, `.scr`, `.js`, `.html` are risk signals.
+- Verify unexpected files through another trusted channel.
 
 ---
 
-## 4. Ekranlar va UI elementlari
+### M3. "Night notifications" — password, MFA, and incident reporting
 
-Barcha ekranlar — React DOM. Faqat «O‘yin sahnasi» ekranining markazida Pixi canvas bor.
+**Room:** office, evening (darker lighting, different palette).
 
-### 4.1. Bosh menyu (`TitleScreen`)
-- Logotip «Raqamli Qalqon», qisqa shior.
-- Tugmalar: **Davom etish** (progress bo‘lsa), **Yangi o‘yin**, **Sozlamalar**, **O‘yin haqida** (xavfsizlik tamoyillari: «Bu simulyatsiya, hech qanday ma’lumot yig‘ilmaydi»).
-- «Yangi o‘yin» progress mavjud bo‘lsa → tasdiqlash dialogi.
+**Situation:**
+> You are working late. Your phone starts receiving a series of "Approve sign-in?" requests, but you are not signing in anywhere. A minute later, "IT support" calls.
 
-### 4.2. Personaj tanlash (`CharacterSelectScreen`)
-- Ikki karta: portret, ism, bir qatorli tavsif. Karta — `radio` guruh (`role="radiogroup"`), ←/→ bilan almashadi.
-- Tanlangan personajning idle animatsiyasi (reduced-motion’da statik).
-- Matn: «Ikkala personajning imkoniyatlari bir xil. Tanlov faqat ko‘rinishni o‘zgartiradi.»
-- Tugmalar: **Tasdiqlash**, **Orqaga**.
+**Interactive objects:**
+| ID | Object | Action |
+|---|---|---|
+| `m3-phone` | Phone | MFA requests, incoming call |
+| `m3-poster` | "IT security: internal number {itPhone}" poster | Clue + source of the official number |
+| `m3-sticky` | Sticky note on a colleague's monitor: "Password: Kompaniya2026!" | Clue; optional action "Remove the note and leave a reminder for the colleague" |
+| `m3-computer` | Work computer | "Report incident" form and "Change password" window |
 
-**Vaqtinchalik vizual konsept (MVP):**
+**MFA request (simulation):** "{company} account sign-in request. Location: unknown. Device: Windows. [Approve] [Deny]". Requests reappear every 4 seconds (visual only; no time penalty; in "Reduce motion" mode, no animation, shown as a counter: "7 requests").
+
+**Clues:**
+| ID | Clue | Explanation |
+|---|---|---|
+| `m3-c-unrequested` | Unsolicited request | You are not signing in — so someone else has your password |
+| `m3-c-location` | Unknown location | Not your device |
+| `m3-c-caller` | Caller asks for a code | IT never asks for a code |
+| `m3-c-official` | Official number | The number is on the poster, not from the caller |
+| `m3-c-sticky` | Password written in the open | Do not store passwords in a visible place |
+
+**Decision `m3-d-push`** — "What do you do with the MFA request?"
+| Choice | Outcome | Explanation |
+|---|---|---|
+| Approve to make it stop | ✖ critical | Consequence: "The attacker signed into your account and started reading your email." |
+| Ignore it and continue working | ⚠ risky | When tired, you might accidentally approve; the incident is not reported. |
+| **Deny** | ✔ safe | Correct, but not enough — the password is already exposed. |
+
+**Decision `m3-d-call`** — Call: "I'm from IT. There is a problem with your account; tell me the 6-digit code from the SMS to restore it."
+| Choice | Outcome | Explanation |
+|---|---|---|
+| Tell them the code | ✖ critical | Consequence: with the code, the attacker gets past MFA. |
+| Call back the number the caller gave | ⚠ risky | The number belongs to the attacker. |
+| **Hang up and call the internal number {itPhone} from the poster** | ✔ safe | Verify through an independent, known channel. |
+
+**Decision `m3-d-report`** — "Report incident" form (on the computer). The form contains only choice elements (radio/checkbox); there is no free-text field:
+- What happened? `[✓] Unsolicited MFA requests` `[✓] Call asking for a code` `[ ] Suspicious email`
+- Did you approve or tell anyone anything? `(•) No` `( ) Yes` `( ) I don't know`
+- Submit button.
+
+Correct fields → ✔. Incorrect selection → ⚠ (the incorrect field is explained and the form is refilled). Form data is never sent anywhere or stored — only the decision outcome is kept.
+
+**Decision `m3-d-password`** — "Change password" (with IT advice). The password is **not typed**; the player chooses a prepared option:
+| Option | Outcome | Explanation |
+|---|---|---|
+| `Kompaniya2027!` | ⚠ risky | A predictable variation of the old password. |
+| `Guli1999` / `Bek1999` (depending on the selected character) | ⚠ risky | Name and birth year — the first thing anyone checks. |
+| Reuse the password from a personal mailbox | ⚠ risky | If one password is exposed, all accounts are exposed. |
+| **`choynak-yomg‘ir-velosiped-73` (a passphrase stored in a password manager)** | ✔ safe | Long, unique, easy to remember. |
+
+> Note: the password option depends on the character's name, but the outcome and score are identical — the character does not affect mechanics.
+
+**Mission completion:** `m3-d-push`, `m3-d-call`, `m3-d-report`, `m3-d-password` resolved safely. (`m3-sticky` is optional and only gives a clue.)
+
+**Lessons:**
+- An unsolicited MFA request means your password is exposed. Deny it and report it.
+- Never share an MFA/SMS code with anyone, even "IT".
+- Verify only through an official number you know yourself.
+- Report the incident immediately — even if you are not certain.
+- Use a separate long passphrase for every account.
+
+---
+
+## 4. Screens and UI elements
+
+All screens are React DOM. Only the center of the "Game scene" screen contains a Pixi canvas.
+
+### 4.1 Main menu (`TitleScreen`)
+- Logo "Raqamli Qalqon", short tagline.
+- Buttons: **Continue** (if progress exists), **New game**, **Settings**, **About the game** (security principles: "This is a simulation, no data is collected").
+- "New game" with existing progress → confirmation dialog.
+
+### 4.2 Character selection (`CharacterSelectScreen`)
+- Two cards: portrait, name, one-line description. Cards form a `radio` group (`role="radiogroup"`), switched with ←/→.
+- The selected character's idle animation (static under reduced motion).
+- Text: "Both characters have identical abilities. The choice only changes appearance."
+- Buttons: **Confirm**, **Back**.
+
+**Temporary visual concept (MVP):**
 | | Bek | Guli |
 |---|---|---|
-| Uslub | Flat vektor, 2,5 bosh proporsiya, yumshoq soya, kontur yo‘q | Xuddi shunday |
-| Soch | Qisqa, to‘q jigarrang, yon tomonga taralgan | Uzun to‘q jigarrang soch, bitta o‘rilgan soch (kokil) yelkada |
-| Kiyim | Och-ko‘k ko‘ylak (`#7FB3E0`), to‘q ko‘k shim (`#2C3E66`), jigarrang poyabzal | Firuza blazer (`#2A9D8F`), oq bluzka, kulrang shim (`#4A4E5A`) |
-| Milliy aksent | Bo‘yin bog‘ichi (lanyard)da atlas (ikat) naqshi | Blazer cho‘ntagida atlas naqshli kichik ro‘mol |
-| Aksessuar | Xodim beyji, noutbuk sumkasi | Xodim beyji, planshet |
-| Teri ranglari | `#D9A77E` / soya `#B9875F` | `#E1B48C` / soya `#C29470` |
+| Style | Flat vector, 2.5-head proportions, soft shadow, no outline | Same |
+| Hair | Short, dark brown, side-parted | Long dark brown hair, one braid on the shoulder |
+| Clothing | Light blue shirt (`#7FB3E0`), dark blue trousers (`#2C3E66`), brown shoes | Turquoise blazer (`#2A9D8F`), white blouse, gray trousers (`#4A4E5A`) |
+| National accent | Atlas (ikat) pattern on the lanyard | Small atlas-patterned scarf in the blazer pocket |
+| Accessory | Employee badge, laptop bag | Employee badge, tablet |
+| Skin tones | `#D9A77E` / shadow `#B9875F` | `#E1B48C` / shadow `#C29470` |
 
-Sprayt talablari: 4 yo‘nalish (past, yuqori, chap, o‘ng — o‘ng chapning ko‘zgusi bo‘lishi mumkin), `idle` 2 kadr, `walk` 4 kadr, `interact` 2 kadr; kadr 64×96 px (1x) va 2x versiya; bitta sprite sheet + JSON atlas. Portret 256×256. Dastlab placeholder (rangli geometrik shakllar) bilan ishlash mumkin — atlas formati bir xil bo‘lgani uchun keyin almashtirish faqat assetni almashtirish.
+Sprite requirements: 4 directions (down, up, left, right — right may mirror left), `idle` 2 frames, `walk` 4 frames, `interact` 2 frames; frame 64×96 px (1x) and a 2x version; one sprite sheet + JSON atlas. Portrait 256×256. A placeholder (colored geometric shapes) is acceptable initially — because the atlas format is the same, replacing it later only requires swapping the asset.
 
-### 4.3. Missiyalar xaritasi (`MissionMapScreen`)
-- Ofis qavatining sxematik rejasi, 3 ta tugun (xona): har birida nom, mavzu ikonkasi, holat (🔒 yopiq / ● ochiq / ✔ bajarilgan + yulduzlar).
-- Tugunlar DOM tugmalari (`aria-disabled` yopiqlar uchun, «Avval “Shoshilinch hisob-faktura”ni bajaring» izohi bilan).
-- Yon panel: tanlangan personaj, umumiy yulduzlar (x/9), **Personajni almashtirish**, **Sozlamalar**, **Bosh menyu**.
+### 4.3 Mission map (`MissionMapScreen`)
+- Schematic floor plan of the office with 3 nodes (rooms): each shows a name, topic icon, and status (🔒 locked / ● available / ✔ completed + stars).
+- Nodes are DOM buttons (`aria-disabled` for locked ones, with an explanation "Complete 'Urgent invoice' first").
+- Side panel: selected character, total stars (x/9), **Change character**, **Settings**, **Main menu**.
 
-### 4.4. Brifing (`BriefingScreen`) — modal yoki alohida ekran
-- Missiya nomi, vaziyat matni (2–4 qisqa abzats), maqsadlar ro‘yxati, boshqaruv eslatmasi.
-- Tugmalar: **Boshlash**, **Xaritaga qaytish**.
+### 4.4 Briefing (`BriefingScreen`) — modal or separate screen
+- Mission name, situation text (2–4 short paragraphs), objectives list, controls reminder.
+- Buttons: **Start**, **Back to map**.
 
-### 4.5. O‘yin sahnasi (`GameScreen`)
-- **Canvas** (16:9, mantiqiy o‘lcham 960×540, `aria-hidden="true"`).
-- **Hotspot overlay**: har bir interaktiv obyekt uchun canvas ustida shaffof DOM `<button>` (aria-label: «Kompyuter — pochtani ochish»). Klaviatura fokusi va screen reader shu orqali ishlaydi.
-- **HUD** (yuqori panel): missiya nomi, joriy maqsad, belgilar `3/5`, ball, ⏸ Pauza tugmasi.
-- **Interaksiya maslahati**: yaqin obyekt bo‘lsa pastda «E — Kompyuter bilan ishlash».
-- **Obyektlar ro‘yxati** (ixtiyoriy yon panel, «Ro‘yxat rejimi» sozlamasi yoqilsa doim ko‘rinadi): barcha hotspotlar tugma sifatida — canvas’siz o‘ynash imkoniyati.
+### 4.5 Game scene (`GameScreen`)
+- **Canvas** (16:9, logical size 960×540, `aria-hidden="true"`).
+- **Hotspot overlay**: a transparent DOM `<button>` above the canvas for every interactive object (aria-label: "Computer — open email"). Keyboard focus and screen readers work through these.
+- **HUD** (top panel): mission name, current objective, clues `3/5`, score, ⏸ Pause button.
+- **Interaction hint**: when near an object, "E — Work with the computer" appears at the bottom.
+- **Object list** (optional side panel, always visible when the "List mode" setting is on): all hotspots as buttons — allows playing without the canvas.
 
-### 4.6. Interaksiya oynalari
-| Komponent | Vazifa |
+### 4.6 Interaction windows
+| Component | Purpose |
 |---|---|
-| `DialogPanel` | NPC suhbati: portret, ism, matn, 1–3 javob tugmasi yoki «Davom etish» |
-| `DecisionPanel` | Qaror: savol, kontekst, 3–5 tanlov (raqamlangan 1–5) |
-| `SimEmailClient` | Xatlar ro‘yxati + xat ko‘rinishi; «Belgilash rejimi» (🔍) — shubhali qismni bosib belgi qilish; havola ustida haqiqiy manzil tooltip’i; «{reportButton}» tugmasi |
-| `SimMessenger` | Chat ko‘rinishi, fayl kartasi |
-| `SimFileExplorer` | Fayllar ro‘yxati, «Kengaytmalarni ko‘rsatish» checkbox |
-| `SimPhone` | MFA so‘rovi, kiruvchi qo‘ng‘iroq (matnli subtitr bilan) |
-| `SimReportForm` | Hodisani xabar qilish shakli (faqat tanlov maydonlari) |
-| `SimPasswordChange` | Parol variantlari kartalari, kuch indikatori (matn + ikonka) |
+| `DialogPanel` | NPC conversation: portrait, name, text, 1–3 answer buttons or "Continue" |
+| `DecisionPanel` | Decision: question, context, 3–5 choices (numbered 1–5) |
+| `SimEmailClient` | Email list + message view; "Marking mode" (🔍) — mark a suspicious part as a clue; real-address tooltip on hover; "{reportButton}" button |
+| `SimMessenger` | Chat view, file card |
+| `SimFileExplorer` | File list, "Show extensions" checkbox |
+| `SimPhone` | MFA request, incoming call (with text subtitles) |
+| `SimReportForm` | Incident report form (choice fields only) |
+| `SimPasswordChange` | Password option cards, strength indicator (text + icon) |
 
-Barcha sim-oynalar: modal (`role="dialog"`, `aria-modal`), fokus tuzog‘i, Esc bilan yopiladi (qaror kutilayotgan bo‘lsa — yopilmaydi, faqat pauza), yuqorisida doim «SIMULYATSIYA» yorlig‘i.
+All simulation windows: modal (`role="dialog"`, `aria-modal`), focus trap, closes with Esc (if a decision is pending — does not close, only pauses), always labeled "SIMULATION" at the top.
 
-### 4.7. Fikr-mulohaza (`FeedbackPanel`)
-- Ikonka + rang + matn (rangga tayanmaslik): ✔ «To‘g‘ri qaror», ⚠ «Bu xavfli», ✖ «Jiddiy xato».
-- 1–2 jumlali tushuntirish, `+10` / `+5` ball animatsiyasi.
-- `aria-live="polite"` hududiga ham e’lon qilinadi.
-- Tugma: ✔ → **Davom etish**; ⚠ → **Qayta tanlash**; ✖ → **Nima bo‘lardi?** (oqibat ekraniga).
-- Belgi topilganda kichik toast (3 soniya, `aria-live`).
+### 4.7 Feedback (`FeedbackPanel`)
+- Icon + color + text (never rely on color alone): ✔ "Correct decision", ⚠ "This is risky", ✖ "Critical error".
+- 1–2 sentence explanation, `+10` / `+5` point animation.
+- Also announced in an `aria-live="polite"` region.
+- Button: ✔ → **Continue**; ⚠ → **Choose again**; ✖ → **What would happen?** (opens the consequence screen).
 
-### 4.8. Oqibat ekrani (`ConsequencePanel`)
-- Sarlavha: «Simulyatsiya: agar bu haqiqatda bo‘lganida…»
-- 3 qadamli qisqa vaqt chizig‘i (illyustratsiya + matn), oxirida «Buning oldini olish uchun: …».
-- Tugmalar: **Missiyani qayta boshlash**, **Natijani ko‘rish**.
+A small toast appears when a clue is found (3 seconds, `aria-live`).
 
-### 4.9. Natija (`ResultScreen`)
-- Holat: «Missiya bajarildi» / «Missiya bajarilmadi».
-- Yulduzlar, ball `45/60`, eng yaxshi natija.
-- Qarorlar ro‘yxati: har biri uchun birinchi tanlov va natija ikonkasi.
-- Belgilar: topilganlar ✔, topilmaganlar — izohi bilan ko‘rsatiladi (o‘rganish uchun).
-- «Eslab qoling» bloki — missiya saboqlari (3–5 band).
-- Tugmalar: **Keyingi missiya** (ochilgan bo‘lsa), **Qayta o‘ynash**, **Xaritaga**.
-- Barcha 3 missiya bajarilganda: «Tabriklaymiz» bloki va umumiy xulosa (barcha saboqlar bitta ro‘yxatda, chop etish uchun `window.print()` qulay CSS).
+### 4.8 Consequence screen (`ConsequencePanel`)
+- Title: "Simulation: if this were real…"
+- A short 3-step timeline (illustration + text), ending with "To prevent this: …".
+- Buttons: **Restart mission**, **View result**.
 
-### 4.10. Sozlamalar (`SettingsScreen`) va Pauza (`PauseMenu`)
-- Sozlamalar: matn o‘lchami (100 / 125 / 150 %), harakatni kamaytirish (Tizim / Yoqilgan / O‘chirilgan), yuqori kontrast, ro‘yxat rejimi, tovush (yoqish/o‘chirish), **Progressni tozalash** (tasdiqlash bilan).
-- Pauza: **Davom etish**, **Missiyani qayta boshlash**, **Sozlamalar**, **Xaritaga chiqish** (tasdiqlash: «Joriy missiya progressi yo‘qoladi»).
+### 4.9 Result (`ResultScreen`)
+- Status: "Mission completed" / "Mission failed".
+- Stars, score `45/60`, best result.
+- List of decisions: first choice and outcome icon for each.
+- Clues: found ✔, not found — shown with an explanation (for learning).
+- "Remember" block — the mission lessons (3–5 items).
+- Buttons: **Next mission** (if unlocked), **Replay**, **Map**.
+- When all 3 missions are completed: a "Congratulations" block and an overall summary (all lessons in one list, with print-friendly CSS using `window.print()`).
+
+### 4.10 Settings (`SettingsScreen`) and Pause (`PauseMenu`)
+- Settings: text size (100 / 125 / 150%), reduce motion (System / On / Off), high contrast, list mode, sound (on/off), **Clear progress** (with confirmation).
+- Pause: **Continue**, **Restart mission**, **Settings**, **Exit to map** (confirmation: "Current mission progress will be lost").
 
 ---
 
-## 5. Texnologiya va arxitektura
+## 5. Technology and architecture
 
-> **Diqqat:** quyidagi 5-bo‘lim dastlabki reja sifatida yozilgan. Amaldagi kodda PixiJS o‘rniga
-> Three.js ishlatiladi (`src/game/three/`, `src/game/bridge.ts`), savol-javob va reyting qatlamlari ham qo‘shilgan.
-> Arxitektura qoidalari (sof engine, store — yagona holat manbai, sahna faqat render/input) o‘zgarishsiz amal qiladi.
+> **Note:** section 5 was written as the original plan. The current code uses Three.js instead of PixiJS
+> (`src/game/three/`, `src/game/bridge.ts`), and quiz/leaderboard layers have been added.
+> The architecture rules (pure engine, store as the single source of truth, scene renders/input only) still apply.
 
-### 5.1. Stek
-| Qism | Tanlov | Sabab |
+### 5.1 Stack
+| Part | Choice | Reason |
 |---|---|---|
-| Build | Vite | Tez, sodda, statik build |
-| UI | React 18 + TypeScript (`strict`) | Talab; DOM UI, accessibility |
-| 2D sahna | **PixiJS v8** | Pastga qarang |
-| Holat | Zustand | Kichik, React’dan tashqarida ham (Pixi ko‘prigida) o‘qish/yozish mumkin |
-| Stil | CSS Modules + CSS o‘zgaruvchilari (tokenlar) | Qo‘shimcha kutubxonasiz |
-| Validatsiya | Zod (faqat saqlangan progress uchun) | `localStorage`dagi buzilgan ma’lumotdan himoya |
-| Test | Vitest + React Testing Library | Vite bilan bir ekotizim |
-| Lint | ESLint + `jsx-a11y` + `react-hooks` | Accessibility va xavfsizlik qoidalari |
+| Build | Vite | Fast, simple, static build |
+| UI | React 18 + TypeScript (`strict`) | Required; DOM UI, accessibility |
+| 2D scene | **PixiJS v8** | See below |
+| State | Zustand | Small; readable/writable outside React too (in the Pixi bridge) |
+| Styling | CSS Modules + CSS variables (tokens) | No extra library |
+| Validation | Zod (only for saved progress) | Protects against corrupted `localStorage` data |
+| Test | Vitest + React Testing Library | Same ecosystem as Vite |
+| Lint | ESLint + `jsx-a11y` + `react-hooks` | Accessibility and security rules |
 
-### 5.2. Nega PixiJS
-- **Faqat render** — fizika, sahna menejeri, o‘z UI tizimi yo‘q. Bizga faqat xona foni, personaj spraytlari, hotspot ajratib ko‘rsatish va oddiy harakat kerak; qolgan hamma narsa (dialog, menyu, sim-oynalar) React’da.
-- **Yengil va tez**: WebGL/WebGPU, Canvas fallback; tree-shaking bilan faqat kerakli modullar.
-- **React bilan to‘qnashmaydi**: Pixi ilovasi bitta `div`ga imperativ tarzda ulanadi; holat va logika React/Zustand tomonda qoladi.
-- Phaser bilan solishtirish: Phaser to‘liq o‘yin dvigateli (fizika, sahnalar, input, o‘z UI) — bu loyiha uchun ortiqcha, hajmi katta va o‘zining holat/sahna boshqaruvi React bilan ikki markazli arxitektura yaratadi.
-- `@pixi/react` **ishlatilmaydi**: sahna kichik, imperativ kod soddaroq va o‘yin sikli React render’laridan mustaqil bo‘ladi.
+### 5.2 Why PixiJS
+- **Rendering only** — no physics, scene manager, or UI system. We only need room backgrounds, character sprites, hotspot highlighting, and simple movement; everything else (dialogs, menus, simulation windows) is React.
+- **Light and fast**: WebGL/WebGPU with a Canvas fallback; tree-shaking keeps only the modules used.
+- **Does not conflict with React**: the Pixi app attaches imperatively to a single `div`; state and logic stay in React/Zustand.
+- Compared with Phaser: Phaser is a full game engine (physics, scenes, input, its own UI) — overkill for this project, larger, and its state/scene management would create two centers of architecture alongside React.
+- `@pixi/react` is **not used**: the scene is small, imperative code is simpler, and the game loop stays independent of React renders.
 
-### 5.3. Qatlamlar
+### 5.3 Layers
 ```
 ┌──────────────────────────── React (DOM) ────────────────────────────┐
-│ Screens · UI · Sim-ilovalar · Hotspot overlay · HUD · Feedback      │
-│            ▲ selectors                         │ dispatch(action)   │
+│ Screens · UI · Sim apps · Hotspot overlay · HUD · Feedback           │
+│            ▲ selectors                         │ dispatch(action)    │
 │ ┌──────────┴───────────────────────────────────▼───────────────────┐ │
-│ │ Zustand store: appSlice (ekran, sozlamalar, progress)            │ │
-│ │                missionSlice → missionReducer (sof TS)            │ │
+│ │ Zustand store: appSlice (screen, settings, progress)             │ │
+│ │                missionSlice → missionReducer (pure TS)           │ │
 │ └──────────▲───────────────────────────────────┬───────────────────┘ │
 └────────────┼───────────────────────────────────┼─────────────────────┘
        SceneEvent                          SceneCommand
@@ -413,77 +414,77 @@ Barcha sim-oynalar: modal (`role="dialog"`, `aria-modal`), fokus tuzog‘i, Esc 
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Qoidalar:**
-1. **Missiya logikasi sof TypeScript** (`missions/engine`) — React’ga ham, Pixi’ga ham bog‘liq emas. Shuning uchun to‘liq unit test qilinadi.
-2. **Pixi faqat ko‘rsatadi va input beradi.** U qaror qabul qilmaydi, ball hisoblamaydi. U faqat «o‘yinchi hotspot X yonida», «hotspot X faollashtirildi» kabi hodisalarni yuboradi.
-3. **React — yagona haqiqat manbai** (store orqali). Sahna store’dan `phase`ni kuzatadi: `exploring` bo‘lmasa, harakat to‘xtaydi.
-4. **Kontent — ma’lumot.** Missiyalar `missions/data/*.ts` fayllarida tiplangan obyekt sifatida; yangi missiya qo‘shish = yangi ma’lumot fayli + (kerak bo‘lsa) xona asseti.
+**Rules:**
+1. **Mission logic is pure TypeScript** (`missions/engine`) — independent of React and Pixi. It can therefore be fully unit-tested.
+2. **Pixi only renders and provides input.** It does not make decisions or calculate scores. It only emits events such as "player is near hotspot X" and "hotspot X was activated".
+3. **React is the single source of truth** (through the store). The scene watches `phase` from the store: if it is not `exploring`, movement stops.
+4. **Content is data.** Missions are typed objects in `missions/data/*.ts`; adding a new mission means adding a data file plus (if needed) a room asset.
 
-### 5.4. Ko‘prik (bridge) shartnomasi
+### 5.4 Bridge contract
 ```ts
 // game/bridge.ts
 export type SceneCommand =
   | { type: 'loadRoom'; room: RoomDefinition; characterId: CharacterId }
   | { type: 'setPaused'; paused: boolean }
-  | { type: 'walkToHotspot'; hotspotId: string }          // klaviatura/ro‘yxat orqali tanlanganda
+  | { type: 'walkToHotspot'; hotspotId: string }          // when selected via keyboard/list
   | { type: 'setHotspotState'; hotspotId: string; state: HotspotVisualState }
   | { type: 'setReducedMotion'; value: boolean };
 
 export type SceneEvent =
   | { type: 'ready' }
   | { type: 'nearHotspotChanged'; hotspotId: string | null }
-  | { type: 'hotspotActivated'; hotspotId: string }        // yetib borildi va interaksiya
-  | { type: 'hotspotLayout'; rects: Record<string, ScreenRect> }; // DOM overlay uchun, resize’da
+  | { type: 'hotspotActivated'; hotspotId: string }        // arrived and interacted
+  | { type: 'hotspotLayout'; rects: Record<string, ScreenRect> }; // for the DOM overlay, on resize
 
 export interface GameBridge {
   send(cmd: SceneCommand): void;
-  on(handler: (e: SceneEvent) => void): () => void;       // unsubscribe qaytaradi
+  on(handler: (e: SceneEvent) => void): () => void;       // returns unsubscribe
 }
 ```
-`GameScreen` mount bo‘lganda `createScene(container, bridge)` chaqiriladi, unmount’da `destroy()` (Pixi app, ticker, listenerlar tozalanadi — React StrictMode’dagi ikki marta mount’ga chidamli bo‘lishi shart).
+When `GameScreen` mounts, `createScene(container, bridge)` is called; on unmount, `destroy()` is called (stop the Pixi app, ticker, and listeners — it must be resilient to React StrictMode's double mount).
 
-### 5.5. Sahna (Pixi) tafsilotlari
-- Mantiqiy o‘lcham 960×540; konteynerga `contain` usulida masshtablanadi (letterbox), `resolution = devicePixelRatio` (max 2).
-- **Xona**: fon rasmi (bitta PNG/WebP), `walkable` to‘rtburchak, `blockers` (AABB to‘rtburchaklar — stol, shkaf).
-- **Harakat**: tezlik 180 px/s; klaviatura — yo‘nalish vektori; sichqoncha/sensor — bosilgan nuqtaga to‘g‘ri chiziq bo‘ylab (walkable ichiga clamp), to‘siqqa urilsa o‘qlar bo‘yicha sirpanish. Pathfinding MVPda yo‘q — xonalar to‘siqlari sodda joylashtiriladi.
-- **Hotspot**: `interactPoint` (personaj turadigan nuqta) va `radius` 56 px. Radius ichida — konturli yorug‘lik + maslahat. Hotspot bosilsa → personaj `interactPoint`ga boradi → `hotspotActivated`.
-- **Chuqurlik**: spraytlar `y` bo‘yicha saralanadi.
-- Yuklash: `Assets.load` bilan xona assetlari missiya boshlanishida; yuklanish ko‘rsatkichi React’da.
+### 5.5 Scene (Pixi) details
+- Logical size 960×540; scaled into the container with `contain` (letterbox), `resolution = devicePixelRatio` (max 2).
+- **Room**: background image (a single PNG/WebP), `walkable` rectangle, `blockers` (AABB rectangles — desk, cabinet).
+- **Movement**: speed 180 px/s; keyboard — direction vector; mouse/touch — a straight line toward the clicked point (clamped inside `walkable`), sliding along axes when hitting an obstacle. No pathfinding in the MVP — room obstacles are placed simply.
+- **Hotspot**: `interactPoint` (where the character stands) and `radius` 56 px. Inside the radius — an outlined highlight plus a hint. Clicking a hotspot → the character walks to `interactPoint` → `hotspotActivated`.
+- **Depth**: sprites are sorted by `y`.
+- Loading: room assets are loaded with `Assets.load` when the mission starts; the loading indicator is rendered in React.
 
-### 5.6. Papkalar tuzilmasi
+### 5.6 Folder structure
 ```
 src/
 ├─ main.tsx
 ├─ app/
-│  ├─ App.tsx                 # ekran almashtirgich (screen → komponent)
+│  ├─ App.tsx                 # screen switcher (screen → component)
 │  ├─ store.ts                # Zustand: appSlice + missionSlice
-│  ├─ transitions.ts          # ekranlar o‘tish jadvali va guardlar
-│  └─ config.ts               # companyConfig: nom, domen, IT raqam, tugma matni
+│  ├─ transitions.ts          # screen transition table and guards
+│  └─ config.ts               # companyConfig: name, domain, IT number, button text
 ├─ screens/
 │  ├─ TitleScreen/  CharacterSelectScreen/  MissionMapScreen/
 │  ├─ BriefingScreen/  GameScreen/  ResultScreen/  SettingsScreen/
-├─ ui/                        # qayta ishlatiladigan DOM komponentlar
+├─ ui/                        # reusable DOM components
 │  ├─ Button  Modal  Toast  LiveRegion  Stars  ConfirmDialog
 │  ├─ HUD  DialogPanel  DecisionPanel  FeedbackPanel  ConsequencePanel  PauseMenu
 │  └─ HotspotOverlay  HotspotList
-├─ sim/                       # xavfsiz simulyatsiya ilovalari (faqat DOM)
+├─ sim/                       # safe simulation apps (DOM only)
 │  ├─ SimEmailClient  SimMessenger  SimFileExplorer
 │  ├─ SimPhone  SimReportForm  SimPasswordChange
-│  └─ SimFrame.tsx            # «SIMULYATSIYA» ramkasi
-├─ game/                      # PixiJS qatlami
+│  └─ SimFrame.tsx            # "SIMULATION" frame
+├─ game/                      # PixiJS layer
 │  ├─ bridge.ts  createScene.ts
 │  ├─ Room.ts  Player.ts  HotspotView.ts  input.ts  layout.ts
 ├─ missions/
 │  ├─ engine/
-│  │  ├─ missionReducer.ts    # sof funksiya
+│  │  ├─ missionReducer.ts    # pure function
 │  │  ├─ conditions.ts  scoring.ts  validateMission.ts
 │  ├─ data/
 │  │  ├─ m1-phishing.ts  m2-suspicious-file.ts  m3-mfa-incident.ts
-│  │  └─ index.ts             # MISSIONS ro‘yxati va tartib
-│  └─ rooms/                  # RoomDefinition’lar (koordinatalar)
+│  │  └─ index.ts             # MISSIONS list and order
+│  └─ rooms/                  # RoomDefinitions (coordinates)
 ├─ content/
 │  ├─ characters.ts
-│  └─ uz/ui.ts                # barcha UI matnlari
+│  └─ uz/ui.ts                # all UI text
 ├─ persistence/
 │  ├─ storage.ts  schema.ts  migrate.ts
 ├─ types/
@@ -491,84 +492,84 @@ src/
 ├─ styles/
 │  └─ tokens.css  global.css
 └─ assets/
-   ├─ characters/ (bek.png, bek.json, guli.png, guli.json, portretlar)
+   ├─ characters/ (bek.png, bek.json, guli.png, guli.json, portraits)
    └─ rooms/ (m1-office.webp, m2-lobby.webp, m3-office-night.webp)
-tests/ — engine, persistence, content-validatsiya, asosiy UI oqimlari
+tests/ — engine, persistence, content validation, core UI flows
 ```
 
 ---
 
-## 6. Holatlar va o‘tish qoidalari
+## 6. States and transition rules
 
-### 6.1. Ilova ekranlari
+### 6.1 App screens
 ```ts
 type AppScreen =
   | 'title' | 'characterSelect' | 'map' | 'briefing'
   | 'playing' | 'result' | 'settings';
 ```
 
-| Joriy | Hodisa | Keyingi | Guard / izoh |
+| Current | Event | Next | Guard / note |
 |---|---|---|---|
-| — (start) | ilova yuklandi | `title` | progress o‘qiladi |
-| `title` | Davom etish | `map` | `selectedCharacter` bor bo‘lsa; yo‘q bo‘lsa → `characterSelect` |
-| `title` | Yangi o‘yin | `characterSelect` | progress bo‘lsa — tasdiqlash, keyin tozalash |
-| `characterSelect` | Tasdiqlash | `map` | personaj saqlanadi |
-| `characterSelect` | Orqaga | oldingi ekran (`title` yoki `map`) | |
-| `map` | Missiya tuguni | `briefing` | `status !== 'locked'` |
-| `map` | Personajni almashtirish | `characterSelect` | progress saqlanadi |
-| `briefing` | Boshlash | `playing` | `START_MISSION` |
-| `briefing` | Orqaga | `map` | |
-| `playing` | missiya `completed`/`failed` + natija tasdiqlandi | `result` | natija **avval** saqlanadi |
-| `playing` | Pauza → Xaritaga chiqish | `map` | tasdiqlash; missiya holati tashlanadi |
-| `result` | Keyingi missiya | `briefing` | keyingisi ochiq bo‘lsa |
-| `result` | Qayta o‘ynash | `briefing` | |
-| `result` | Xaritaga | `map` | |
-| istalgan | Sozlamalar | `settings` | `returnTo` eslab qolinadi; `playing`dan faqat pauza orqali (overlay sifatida) |
-| `settings` | Orqaga | `returnTo` | |
+| — (start) | app loaded | `title` | progress is read |
+| `title` | Continue | `map` | if `selectedCharacter` exists; otherwise → `characterSelect` |
+| `title` | New game | `characterSelect` | if progress exists — confirm, then clear |
+| `characterSelect` | Confirm | `map` | character is saved |
+| `characterSelect` | Back | previous screen (`title` or `map`) | |
+| `map` | Mission node | `briefing` | `status !== 'locked'` |
+| `map` | Change character | `characterSelect` | progress is preserved |
+| `briefing` | Start | `playing` | `START_MISSION` |
+| `briefing` | Back | `map` | |
+| `playing` | mission `completed`/`failed` + result confirmed | `result` | result is saved **first** |
+| `playing` | Pause → Exit to map | `map` | confirm; mission state is discarded |
+| `result` | Next mission | `briefing` | if the next one is unlocked |
+| `result` | Replay | `briefing` | |
+| `result` | Map | `map` | |
+| any | Settings | `settings` | `returnTo` is remembered; from `playing` only via pause (as an overlay) |
+| `settings` | Back | `returnTo` | |
 
-### 6.2. Missiya fazalari (`playing` ichida)
+### 6.2 Mission phases (inside `playing`)
 ```ts
 type MissionPhase =
-  | 'loading'      // assetlar yuklanmoqda
-  | 'exploring'    // yurish mumkin
-  | 'interacting'  // dialog yoki sim-oyna ochiq (harakat to‘xtagan)
-  | 'deciding'     // DecisionPanel ochiq
-  | 'feedback'     // FeedbackPanel ko‘rsatilmoqda
-  | 'consequence'  // jiddiy xato oqibati
+  | 'loading'      // assets are loading
+  | 'exploring'    // movement allowed
+  | 'interacting'  // dialog or simulation window is open (movement stopped)
+  | 'deciding'     // DecisionPanel is open
+  | 'feedback'     // FeedbackPanel is visible
+  | 'consequence'  // critical-error consequence
   | 'paused'
   | 'completed' | 'failed';
 ```
 
-| Joriy | Action | Keyingi |
+| Current | Action | Next |
 |---|---|---|
 | `loading` | `SCENE_READY` | `exploring` |
 | `exploring` | `ACTIVATE_HOTSPOT` (dialog/sim) | `interacting` |
-| `exploring` / `interacting` | `ACTIVATE_HOTSPOT` / sim ichidagi tugma (qaror) | `deciding` |
+| `exploring` / `interacting` | `ACTIVATE_HOTSPOT` / a button inside the sim (decision) | `deciding` |
 | `interacting` | `CLOSE_OVERLAY` | `exploring` |
 | `interacting` | `FIND_CLUE` | `interacting` (toast) |
 | `deciding` | `CHOOSE` safe/risky | `feedback` |
 | `deciding` | `CHOOSE` critical | `feedback` → `consequence` |
-| `feedback` | `ACK` (safe) | `completeWhen` bajarilgan bo‘lsa `completed`, aks holda oldingi kontekst (`interacting`/`exploring`) |
-| `feedback` | `ACK` (risky) | `deciding` (shu qaror qaytadan) |
+| `feedback` | `ACK` (safe) | `completed` if `completeWhen` is satisfied, otherwise the previous context (`interacting`/`exploring`) |
+| `feedback` | `ACK` (risky) | `deciding` (the same decision again) |
 | `consequence` | `ACK` | `failed` |
-| har qanday faol faza | `PAUSE` | `paused` (`resumeTo` saqlanadi) |
+| any active phase | `PAUSE` | `paused` (`resumeTo` is saved) |
 | `paused` | `RESUME` | `resumeTo` |
 | `paused` | `RESTART` | `loading` |
 
-Qoidalar:
-- Pixi harakati faqat `exploring`da yoqiq.
-- Bitta vaqtda faqat bitta overlay ochiq bo‘ladi (`activeOverlay`).
-- `CHOOSE` faqat `deciding` fazada qabul qilinadi; boshqa fazada e’tiborsiz qoldiriladi (ikki marta bosishdan himoya).
-- Hal qilingan (`safe`) qarorning hotspoti `done` holatiga o‘tadi va qayta qaror ochmaydi (faqat ma’lumot dialogi).
+Rules:
+- Pixi movement is enabled only in `exploring`.
+- Only one overlay is open at a time (`activeOverlay`).
+- `CHOOSE` is accepted only in the `deciding` phase; in other phases it is ignored (double-click protection).
+- A resolved (`safe`) decision's hotspot switches to `done` and no longer opens a decision (only an informational dialog).
 
 ---
 
-## 7. TypeScript ma’lumotlar modellari
+## 7. TypeScript data models
 
 ```ts
 // types/models.ts
 
-// ---------- Personaj ----------
+// ---------- Character ----------
 export type CharacterId = 'bek' | 'guli';
 export type Direction = 'down' | 'up' | 'left' | 'right';
 export type AnimationName = 'idle' | 'walk' | 'interact';
@@ -577,14 +578,14 @@ export interface Character {
   id: CharacterId;
   name: string;                // 'Bek' | 'Guli'
   shortDescription: string;
-  portrait: string;            // asset yo‘li
-  spriteSheet: string;         // atlas JSON yo‘li
+  portrait: string;            // asset path
+  spriteSheet: string;         // atlas JSON path
   frameSize: { width: number; height: number };
   animations: Record<AnimationName, Record<Direction, { frames: string[]; fps: number }>>;
 }
-// Muhim: Character’da mexanikaga ta’sir qiluvchi maydon (tezlik, bonus) YO‘Q.
+// Important: Character has NO field that affects mechanics (speed, bonus).
 
-// ---------- Xona ----------
+// ---------- Room ----------
 export interface Rect { x: number; y: number; width: number; height: number }
 export interface Point { x: number; y: number }
 
@@ -596,7 +597,7 @@ export interface RoomDefinition {
   spawn: Point;
 }
 
-// ---------- Interaktiv obyekt ----------
+// ---------- Interactive object ----------
 export type HotspotKind = 'computer' | 'phone' | 'device' | 'npc' | 'poster' | 'note' | 'door' | 'box';
 export type HotspotVisualState = 'idle' | 'highlight' | 'done' | 'hidden';
 export type SimAppId = 'email' | 'messenger' | 'files' | 'phone' | 'reportForm' | 'passwordChange';
@@ -610,18 +611,18 @@ export type InteractionAction =
 export interface InteractiveObject {
   id: string;
   kind: HotspotKind;
-  label: string;               // «Kompyuter»
-  ariaLabel: string;           // «Kompyuter — pochtani ochish»
+  label: string;               // "Computer"
+  ariaLabel: string;           // "Computer — open email"
   sprite?: string;
-  bounds: Rect;                // bosiladigan maydon (mantiqiy koordinata)
+  bounds: Rect;                // clickable area (logical coordinates)
   interactPoint: Point;
   visibleWhen?: Condition;
   enabledWhen?: Condition;
   action: InteractionAction;
-  actionWhenDone?: InteractionAction; // qaror hal bo‘lgandan keyin (masalan, ma’lumot dialogi)
+  actionWhenDone?: InteractionAction; // after a decision is resolved (for example, an informational dialog)
 }
 
-// ---------- Shart va effekt ----------
+// ---------- Condition and effect ----------
 export type Flag = string;
 export type Condition =
   | { all: Flag[] }
@@ -640,15 +641,15 @@ export interface Dialog {
   effectsOnEnd?: Effect[];
 }
 
-// ---------- Belgi ----------
+// ---------- Clue ----------
 export interface Clue {
   id: string;
   label: string;
   explanation: string;
-  points: number;              // odatda 5
+  points: number;              // usually 5
 }
 
-// ---------- Tanlov va qaror ----------
+// ---------- Choice and decision ----------
 export type ChoiceOutcome = 'safe' | 'risky' | 'critical';
 
 export interface Choice {
@@ -656,11 +657,11 @@ export interface Choice {
   label: string;
   outcome: ChoiceOutcome;
   feedbackTitle: string;
-  feedback: string;            // 1–2 jumla
-  points: number;              // safe: 10, boshqalar: 0
-  effects?: Effect[];          // odatda faqat safe uchun
-  consequenceId?: string;      // critical uchun majburiy
-  /** Personaj ismiga bog‘liq matn uchun: '{name}' o‘rniga qo‘yiladi */
+  feedback: string;            // 1–2 sentences
+  points: number;              // safe: 10, others: 0
+  effects?: Effect[];          // usually only for safe
+  consequenceId?: string;      // required for critical
+  /** For text that depends on the character name: replaces '{name}' */
   templated?: boolean;
 }
 
@@ -668,8 +669,8 @@ export interface Decision {
   id: string;
   prompt: string;
   context?: string;
-  choices: Choice[];           // 3–5 ta, kamida bittasi 'safe'
-  shuffle?: boolean;           // default: true (to‘g‘ri javob doim bir joyda bo‘lmasin)
+  choices: Choice[];           // 3–5, at least one 'safe'
+  shuffle?: boolean;           // default: true (the correct answer should not always be in the same place)
 }
 
 export interface Consequence {
@@ -679,7 +680,7 @@ export interface Consequence {
   prevention: string;
 }
 
-// ---------- Missiya ----------
+// ---------- Mission ----------
 export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident';
 export type MissionTopic = 'phishing' | 'malware' | 'mfa' | 'password' | 'incident';
 
@@ -703,13 +704,13 @@ export interface Mission {
   decisions: Record<string, Decision>;
   clues: Record<string, Clue>;
   consequences: Record<string, Consequence>;
-  simContent: SimContent;      // email/messenger/files/... ma’lumotlari
+  simContent: SimContent;      // email/messenger/files/... data
   completeWhen: Condition;
   lessons: string[];
   unlocks: MissionId[];
 }
 
-// Sim-ilovalar kontenti (faqat ma’lumot; hech narsa bajarilmaydi)
+// Simulation app content (data only; nothing is executed)
 export interface SimEmail {
   id: string;
   fromName: string;
@@ -718,17 +719,17 @@ export interface SimEmail {
   greeting: string;
   body: SimTextPart[];
   attachment?: { fileName: string; clueId?: string };
-  decisionId?: string;         // xat ochilganda/tugmada ochiladigan qaror
+  decisionId?: string;         // decision opened when the email is opened/clicked
 }
 export type SimTextPart =
   | { type: 'text'; text: string; clueId?: string }
-  | { type: 'link'; text: string; realUrl: string; clueId?: string }; // <a> emas!
+  | { type: 'link'; text: string; realUrl: string; clueId?: string }; // not <a>!
 
 export interface SimFile {
   id: string;
-  displayName: string;         // kengaytmalar yashirilganda
+  displayName: string;         // when extensions are hidden
   realName: string;
-  typeLabel: string;           // «Dastur»
+  typeLabel: string;           // "Application"
   size: string;
   clueIds?: string[];
 }
@@ -748,7 +749,7 @@ export interface ReportField {
   options: { id: string; label: string; correct: boolean }[];
 }
 
-// ---------- Runtime holat (saqlanmaydi) ----------
+// ---------- Runtime state (not persisted) ----------
 export type OverlayRef =
   | { type: 'dialog'; dialogId: string }
   | { type: 'sim'; app: SimAppId }
@@ -774,7 +775,7 @@ export interface MissionRuntimeState {
   score: number;
 }
 
-// ---------- Natija ----------
+// ---------- Result ----------
 export interface MissionResult {
   missionId: MissionId;
   outcome: 'passed' | 'failed';
@@ -783,10 +784,10 @@ export interface MissionResult {
   stars: 0 | 1 | 2 | 3;
   cluesFound: string[];
   decisions: DecisionLogEntry[];
-  finishedAt: string;          // ISO sana
+  finishedAt: string;          // ISO date
 }
 
-// ---------- Lokal progress ----------
+// ---------- Local progress ----------
 export type MissionStatus = 'locked' | 'available' | 'completed';
 
 export interface MissionProgress {
@@ -814,13 +815,13 @@ export interface LocalProgress {
 }
 ```
 
-### 7.1. Reducer action’lari
+### 7.1 Reducer actions
 ```ts
 export type MissionAction =
   | { type: 'START_MISSION'; missionId: MissionId }
   | { type: 'SCENE_READY' }
   | { type: 'ACTIVATE_HOTSPOT'; hotspotId: string }
-  | { type: 'OPEN_DECISION'; decisionId: string }       // sim ichidagi tugmalardan
+  | { type: 'OPEN_DECISION'; decisionId: string }       // from buttons inside a simulation
   | { type: 'FIND_CLUE'; clueId: string }
   | { type: 'CHOOSE'; decisionId: string; choiceId: string }
   | { type: 'ACK' }
@@ -831,30 +832,30 @@ export function missionReducer(state: MissionRuntimeState, action: MissionAction
 export function buildResult(state: MissionRuntimeState, mission: Mission): MissionResult;
 ```
 
-### 7.2. Kontent validatsiyasi (`validateMission`)
-Test va dev rejimida har bir missiya uchun tekshiriladi:
-- barcha `dialogId`, `decisionId`, `clueId`, `consequenceId` havolalari mavjud;
-- har bir qarorda kamida bitta `safe` va 3–5 ta tanlov bor;
-- har bir `critical` tanlovda `consequenceId` bor;
-- `completeWhen` dagi har bir flag biror `effects` orqali o‘rnatiladi (missiyani tugatish mumkin);
-- hotspot `bounds`/`interactPoint` xona `walkable` ichida;
-- matnlarda `http://`/`https://` va `.example` bo‘lmagan domen yo‘q.
+### 7.2 Content validation (`validateMission`)
+Checked for every mission in tests and development mode:
+- all `dialogId`, `decisionId`, `clueId`, and `consequenceId` references exist;
+- every decision has at least one `safe` choice and 3–5 choices;
+- every `critical` choice has a `consequenceId`;
+- every flag in `completeWhen` is set by some `effects` (the mission can be completed);
+- hotspot `bounds`/`interactPoint` are inside the room `walkable` area;
+- no text contains `http://`/`https://` or domains outside `.example`.
 
 ---
 
-## 8. Progressni lokal saqlash
+## 8. Local progress storage
 
-- **Joy:** `localStorage`, kalit `raqamli-qalqon:progress`.
-- **Format:** `LocalProgress` JSON, `version` maydoni bilan.
-- **Qachon yoziladi:** personaj tanlanganda, missiya tugaganda (`passed` yoki `failed`), sozlama o‘zgarganda. Missiya ichidagi holat saqlanmaydi.
-- **O‘qish:** ilova startida → `JSON.parse` → `migrate()` → Zod sxema bilan tekshirish. Xato bo‘lsa — standart progress (M1 `available`, qolganlari `locked`) va konsolga ogohlantirish; buzilgan qiymat `raqamli-qalqon:progress:corrupt` kalitiga ko‘chiriladi.
-- **Mavjud bo‘lmasa** (private rejim, bloklangan storage, kvota): `try/catch`, xotirada ishlash davom etadi, sozlamalarda «Progress bu brauzerda saqlanmaydi» ogohlantirishi.
-- **Natijani qo‘llash:**
-  - `attempts += 1`; `lastResult` yangilanadi;
-  - `passed` bo‘lsa `status = 'completed'`, `bestScore/bestStars = max(...)`, `unlocks` dagi missiyalar `locked → available`;
-  - `failed` eng yaxshi natijani pasaytirmaydi.
-- **Maxfiylik:** faqat o‘yin progressi va sozlamalar. Ism, email, qurilma ma’lumoti saqlanmaydi; sim-shakllardagi tanlovlar saqlanmaydi.
-- **Tozalash:** Sozlamalar → «Progressni tozalash» (tasdiqlash bilan) kalitni o‘chiradi.
+- **Location:** `localStorage`, key `raqamli-qalqon:progress`.
+- **Format:** `LocalProgress` JSON with a `version` field.
+- **When it is written:** when a character is selected, when a mission ends (`passed` or `failed`), and when a setting changes. Mid-mission state is not saved.
+- **Reading:** on app start → `JSON.parse` → `migrate()` → validate with the Zod schema. On error — default progress (M1 `available`, the rest `locked`) and a console warning; the corrupted value is moved to `raqamli-qalqon:progress:corrupt`.
+- **If unavailable** (private mode, blocked storage, quota): `try/catch`; the game continues in memory, and settings show "Progress will not be saved in this browser".
+- **Applying a result:**
+  - `attempts += 1`; `lastResult` is updated;
+  - if `passed`, `status = 'completed'`, `bestScore/bestStars = max(...)`, and missions in `unlocks` move from `locked` to `available`;
+  - a `failed` result never lowers the best result.
+- **Privacy:** only game progress and settings. No name, email, or device information is stored; simulation form choices are not saved.
+- **Clearing:** Settings → "Clear progress" (with confirmation) removes the key.
 
 ```ts
 // persistence/storage.ts
@@ -868,7 +869,7 @@ export function loadProgress(): LocalProgress {
     if (parsed.success) return parsed.data;
     localStorage.setItem(`${KEY}:corrupt`, raw);
   } catch {
-    /* storage mavjud emas yoki JSON buzilgan */
+    /* storage unavailable or malformed JSON */
   }
   return createDefaultProgress();
 }
@@ -883,111 +884,111 @@ export function saveProgress(p: LocalProgress): boolean {
 }
 ```
 
-Kelajakda yangi missiya qo‘shilsa: `migrate()` yangi `MissionId` uchun default yozuv qo‘shadi (oldingi missiya `completed` bo‘lsa `available`), `version` oshiriladi.
+If a new mission is added later, `migrate()` adds a default entry for the new `MissionId` (if the previous mission is `completed`, the new one becomes `available`) and increments `version`.
 
 ---
 
-## 9. Boshqaruv, accessibility va moslashuvchanlik
+## 9. Controls, accessibility, and responsiveness
 
-### 9.1. Klaviatura
-| Tugma | Harakat |
+### 9.1 Keyboard
+| Key | Action |
 |---|---|
-| `W A S D` / strelkalar | Yurish (sahnada) |
-| `E` / `Enter` / `Space` | Yaqin obyekt bilan interaksiya |
-| `Tab` / `Shift+Tab` | Hotspotlar va UI elementlari bo‘yicha fokus (fokuslangan hotspotda `Enter` → personaj o‘zi borib interaksiya qiladi) |
-| `1`–`5` | Qaror panelida tanlov |
-| `Esc` | Overlayni yopish / pauza |
-| `C` | Sim-oynada «Belgilash rejimi»ni yoqish/o‘chirish |
-| `L` | Obyektlar ro‘yxatini ochish/yopish |
+| `W A S D` / arrow keys | Move (in the scene) |
+| `E` / `Enter` / `Space` | Interact with a nearby object |
+| `Tab` / `Shift+Tab` | Focus hotspots and UI elements (pressing `Enter` on a focused hotspot makes the character walk there and interact) |
+| `1`–`5` | Choose in the decision panel |
+| `Esc` | Close overlay / pause |
+| `C` | Toggle "Marking mode" in a simulation window |
+| `L` | Open/close the object list |
 
-- Klaviatura tugmalari input/radio fokusda bo‘lsa sahnaga uzatilmaydi.
-- Strelkalar faqat canvas fokusda yoki hech narsa fokusda bo‘lmaganda yurishni boshqaradi (radio guruhlar bilan to‘qnashmasligi uchun).
+- Keyboard events are not forwarded to the scene while an input/radio is focused.
+- Arrow keys control movement only when the canvas is focused or nothing is focused (to avoid conflicts with radio groups).
 
-### 9.2. Sichqoncha va sensor
-- Polni bosish — o‘sha nuqtaga yurish; hotspotni bosish — borib interaksiya.
-- Hover — hotspot yorlig‘i (sensorli qurilmada birinchi tegish = tanlash va yorliq, ikkinchisi = interaksiya; yoki «Ishlatish» tugmasi).
-- Sim-oynada havolaga hover/fokus/uzoq bosish — haqiqiy manzil tooltip’i.
+### 9.2 Mouse and touch
+- Click the floor — walk to that point; click a hotspot — walk there and interact.
+- Hover — hotspot label (on touch devices, the first tap selects and shows the label, the second interacts; or use an "Use" button).
+- In a simulation window, hover/focus/long-press a link — show the real address tooltip.
 
-### 9.3. Accessibility (WCAG 2.1 AA maqsadi)
-- `lang="uz"`; semantik HTML; har ekranda bitta `<h1>`; ekran almashganda fokus sarlavhaga o‘tadi.
-- Matn kontrasti ≥ 4.5:1, UI elementlari ≥ 3:1; ko‘rinadigan fokus halqasi (≥ 2 px, kontrastli).
-- Natija hech qachon faqat rang bilan ko‘rsatilmaydi (ikonka + matn).
-- Canvas `aria-hidden`; barcha interaktiv obyektlar DOM tugma sifatida mavjud; **«Ro‘yxat rejimi»da o‘yin canvas’ni ko‘rmasdan to‘liq o‘ynaladi**.
-- Modal: fokus tuzog‘i, yopilganda fokus chaqiruvchi elementga qaytadi.
-- `aria-live="polite"` hududi: belgi topildi, qaror natijasi, maqsad bajarildi.
-- Vaqt chegarasi yo‘q; avtomatik yopiladigan toastlarning mazmuni natija ekranida ham bor.
-- `prefers-reduced-motion` + sozlama: yurish animatsiyasi o‘rniga tez siljish, miltillash va silkinish yo‘q; MFA spam — hisoblagich bilan.
-- Matn o‘lchami 150 % gacha layout buzilmasdan; `rem` birliklari.
-- Qo‘ng‘iroq va har qanday tovush — matnli subtitr bilan; tovush mazmun uchun majburiy emas.
-- Sensorli nishonlar ≥ 44×44 px.
+### 9.3 Accessibility (WCAG 2.1 AA target)
+- `lang="uz"`; semantic HTML; exactly one `<h1>` per screen; focus moves to the heading when the screen changes.
+- Text contrast ≥ 4.5:1, UI elements ≥ 3:1; visible focus ring (≥ 2 px, contrasting).
+- Results are never communicated by color alone (icon + text).
+- Canvas is `aria-hidden`; all interactive objects exist as DOM buttons; **in "List mode" the game is fully playable without seeing the canvas**.
+- Modal: focus trap; focus returns to the triggering element when closed.
+- `aria-live="polite"` region: clue found, decision outcome, objective completed.
+- No time limits; automatically dismissed toasts also have their content in the result screen.
+- `prefers-reduced-motion` + setting: instant movement instead of walk animation, no flashing or shaking; MFA spam is shown as a counter.
+- Text size up to 150% without layout breakage; use `rem` units.
+- Calls and any audio have text subtitles; audio is never required for content.
+- Touch targets ≥ 44×44 px.
 
-### 9.4. Kichik ekranlar
-- Qo‘llab-quvvatlanadigan minimal kenglik: 360 px. Brauzerlar: Chrome, Edge, Firefox, Safari (oxirgi 2 versiya), iOS Safari 16+.
-- **≥ 1024 px**: canvas markazda, HUD yuqorida, overlaylar canvas ustida modal.
-- **600–1023 px**: canvas to‘liq kenglikda, overlaylar to‘liq ekranli modal.
-- **< 600 px (portret)**: canvas yuqorida (16:9), ostida HUD va «Obyektlar ro‘yxati» doim ochiq; sim-oynalar to‘liq ekran; qaror tanlovlari vertikal ro‘yxat.
-- Gorizontal sahifa skroli yo‘q; `100dvh` ishlatiladi; virtual klaviatura chiqmaydi (matn maydoni yo‘q).
-- Canvas o‘lchami `ResizeObserver` orqali yangilanadi va `hotspotLayout` qayta yuboriladi.
+### 9.4 Small screens
+- Minimum supported width: 360 px. Browsers: Chrome, Edge, Firefox, Safari (last 2 versions), iOS Safari 16+.
+- **≥ 1024 px**: canvas centered, HUD on top, overlays as modals above the canvas.
+- **600–1023 px**: canvas full width, overlays as full-screen modals.
+- **< 600 px (portrait)**: canvas at the top (16:9), HUD and "Object list" always open below; simulation windows full screen; decision choices as a vertical list.
+- No horizontal page scrolling; `100dvh` is used; the virtual keyboard is never triggered (there are no text fields).
+- Canvas size is updated via `ResizeObserver`, and `hotspotLayout` is re-emitted.
 
 ---
 
-## 10. Qabul mezonlari
+## 10. Acceptance criteria
 
-### 10.1. M1 «Shoshilinch hisob-faktura»
-- [ ] Brifingdan keyin o‘yinchi stoliga yetib, kompyuter orqali pochtani ochadi; pochtada 3 ta xat.
-- [ ] Fishing xatida 5 ta belgi topish mumkin; har biri bir marta hisoblanadi (+5), izoh ko‘rsatiladi.
-- [ ] Havola ustiga hover/fokusda haqiqiy manzil `kompaniya-tolov.example/login` ko‘rinadi; havola bosilganda hech qanday tashqi sahifa ochilmaydi, tarmoq so‘rovi bo‘lmaydi.
-- [ ] «Havolani bosish» → jiddiy xato → oqibat ekrani (statik rasm, kiritish maydoni yo‘q) → `failed`.
-- [ ] «Javob yozish», «Hamkasbga yuborish», «O‘chirish» → ⚠ va qarorni qayta tanlash imkoni.
-- [ ] «{reportButton}» → ✔ +10; xat pochtadan yo‘qoladi; `m1-d-verify` qarori ochiladi.
-- [ ] Ikkala qaror xavfsiz hal qilingach natija ekrani ko‘rinadi, M2 ochiladi.
-- [ ] Oddiy xatlarda belgi bosilsa «Bu yerda shubhali narsa yo‘q» deyiladi (ball yo‘q, jarima yo‘q).
+### 10.1 M1 "Urgent invoice"
+- [ ] After the briefing, the player reaches the desk and opens the email through the computer; the mailbox has 3 emails.
+- [ ] The phishing email contains 5 findable clues; each counts once (+5) and shows an explanation.
+- [ ] Hovering/focusing the link shows the real address `kompaniya-tolov.example/login`; clicking the link never opens an external page or makes a network request.
+- [ ] "Click the link" → critical error → consequence screen (static image, no input field) → `failed`.
+- [ ] "Reply", "forward to a colleague", "delete" → ⚠ and the decision can be chosen again.
+- [ ] "{reportButton}" → ✔ +10; the email disappears from the inbox; the `m1-d-verify` decision opens.
+- [ ] After both decisions are resolved safely, the result screen appears and M2 unlocks.
+- [ ] Clicking a clue in a normal email says "There is nothing suspicious here" (no points, no penalty).
 
-### 10.2. M2 «Topilgan fleshka»
-- [ ] Fleshka xonada ko‘rinadi va interaksiya qaror ochadi.
-- [ ] «Ish kompyuteriga ulash» → oqibat → `failed`.
-- [ ] «IT ga topshirish» → personaj IT qutisiga boradi (yoki qaror shu yerda tasdiqlanadi), fleshka sahnadan yo‘qoladi, flag o‘rnatiladi.
-- [ ] Messenjerda fayl kartasi; «Fayllar»da kengaytmalar yoqilganda `.pdf.exe` va «Dastur» turi ko‘rinadi, bu ikki belgi beradi.
-- [ ] Fayl hech qachon haqiqiy yuklanmaydi; «Ochish» faqat oqibat ekranini ko‘rsatadi.
-- [ ] Ikkala qaror xavfsiz hal qilingach natija ekrani, M3 ochiladi.
+### 10.2 M2 "Found USB drive"
+- [ ] The USB drive is visible in the room and interacting opens a decision.
+- [ ] "Plug it into the work computer" → consequence → `failed`.
+- [ ] "Hand it to IT" → the character walks to the IT box (or the decision is confirmed there), the drive disappears from the scene, and a flag is set.
+- [ ] The messenger shows a file card; in "Files", enabling extensions reveals `.pdf.exe` and the "Application" type, which provide two clues.
+- [ ] The file is never actually downloaded; "Open" only shows the consequence screen.
+- [ ] After both decisions are resolved safely, the result screen appears and M3 unlocks.
 
-### 10.3. M3 «Tungi bildirishnomalar»
-- [ ] MFA so‘rovlari telefon orqali ko‘rinadi; reduced-motion’da animatsiyasiz hisoblagich.
-- [ ] «Tasdiqlash» → oqibat → `failed`; «Rad etish» → ✔ va qo‘ng‘iroq boshlanadi.
-- [ ] Qo‘ng‘iroq matni subtitr sifatida ko‘rinadi; «Kodni aytish» → `failed`; «Plakatdagi raqamga qo‘ng‘iroq» → ✔.
-- [ ] Hodisa shaklida erkin matn maydoni yo‘q; noto‘g‘ri belgilash qaysi maydon xatoligini ko‘rsatadi; ma’lumot saqlanmaydi.
-- [ ] Parol almashtirishda parol yozilmaydi, faqat variant tanlanadi; ism varianti tanlangan personajga mos.
-- [ ] To‘rt qaror xavfsiz hal qilingach natija ekrani va «Tabriklaymiz» bloki.
+### 10.3 M3 "Night notifications"
+- [ ] MFA requests are shown through the phone; under reduced motion, a counter is used instead of animation.
+- [ ] "Approve" → consequence → `failed`; "Deny" → ✔ and the call starts.
+- [ ] The call text is shown as subtitles; "Tell them the code" → `failed`; "Call the number on the poster" → ✔.
+- [ ] The incident form has no free-text field; an incorrect selection shows which field is wrong; data is not stored.
+- [ ] Password change does not accept typed passwords, only option selection; the name-based option matches the selected character.
+- [ ] After all four decisions are resolved safely, the result screen and the "Congratulations" block appear.
 
-### 10.4. Umumiy MVP tayyorlik mezonlari
-**Funksional**
-- [ ] Uchala missiya boshidan oxirigacha (a) faqat klaviatura, (b) faqat sichqoncha, (c) faqat sensor bilan o‘ynaladi.
-- [ ] «Ro‘yxat rejimi»da uchala missiya canvas’siz bajariladi.
-- [ ] Bek va Guli bilan bir xil tanlovlar ketma-ketligi bir xil ball, yulduz va natija beradi (avtomatik test).
-- [ ] Ball va yulduz 2.3-bo‘lim qoidalariga mos (unit test).
-- [ ] Sahifa yangilangandan keyin personaj, missiya holatlari, eng yaxshi natijalar va sozlamalar saqlanib qoladi.
-- [ ] Buzilgan/eski `localStorage` qiymati ilovani buzmaydi (unit test).
-- [ ] Pauza, qayta boshlash va xaritaga chiqish har bir fazada to‘g‘ri ishlaydi; sahna `destroy()` dan keyin xotira/listener sizib chiqmaydi.
+### 10.4 General MVP readiness criteria
+**Functional**
+- [ ] All three missions can be played from start to finish (a) with keyboard only, (b) with mouse only, and (c) with touch only.
+- [ ] All three missions can be completed in "List mode" without the canvas.
+- [ ] Bek and Guli produce identical scores, stars, and results for the same sequence of choices (automated test).
+- [ ] Scores and stars follow the rules in section 2.3 (unit test).
+- [ ] After a page refresh, the character, mission states, best results, and settings are preserved.
+- [ ] A corrupted/old `localStorage` value does not break the app (unit test).
+- [ ] Pause, restart, and exit to map work correctly in every phase; after scene `destroy()` there are no memory/listener leaks.
 
-**Xavfsizlik**
-- [ ] DevTools Network: ilova yuklangandan keyin faqat o‘z domenidagi statik fayllar; o‘yin davomida yangi tashqi so‘rov yo‘q.
-- [ ] Kod bazasida `dangerouslySetInnerHTML`, `eval`, `new Function`, `window.open`, tashqi `href` yo‘q (lint qoidasi + grep tekshiruvi).
-- [ ] O‘yinda parol/login/shaxsiy ma’lumot uchun matn kiritish maydoni yo‘q.
-- [ ] Barcha domenlar `.example` zonasida; `validateMission` testi o‘tadi.
-- [ ] Har bir sim-oynada «SIMULYATSIYA» yorlig‘i bor.
+**Security**
+- [ ] DevTools Network: after the app loads, only static files from its own domain are requested; no new external requests occur during gameplay.
+- [ ] The codebase contains no `dangerouslySetInnerHTML`, `eval`, `new Function`, `window.open`, or external `href` (lint rule + grep check).
+- [ ] The game contains no text input for passwords, logins, or personal data.
+- [ ] All domains are inside the `.example` zone; the `validateMission` test passes.
+- [ ] Every simulation window has a "SIMULATION" label.
 
-**Accessibility va moslashuvchanlik**
-- [ ] Lighthouse Accessibility ≥ 95; axe — kritik xatolarsiz.
-- [ ] Kontrast talablari bajarilgan; fokus doim ko‘rinadi.
-- [ ] 360 px, 768 px, 1280 px kengliklarda gorizontal skrolsiz va kesilgan matnsiz ishlaydi; 150 % matn o‘lchamida ham.
-- [ ] Screen reader (NVDA yoki VoiceOver) bilan M1 to‘liq bajariladi.
+**Accessibility and responsiveness**
+- [ ] Lighthouse Accessibility ≥ 95; axe — no critical issues.
+- [ ] Contrast requirements are met; focus is always visible.
+- [ ] Layout works at 360 px, 768 px, and 1280 px widths without horizontal scrolling or clipped text; also at 150% text size.
+- [ ] M1 can be fully completed with a screen reader (NVDA or VoiceOver).
 
-**Sifat va unumdorlik**
-- [ ] `tsc --noEmit` va ESLint xatosiz; engine, persistence, content-validatsiya testlari o‘tadi.
-- [ ] Boshlang‘ich JS ≤ 400 KB (gzip); birinchi ekran o‘rtacha noutbukda ≤ 2 s; sahna o‘rtacha noutbukda barqaror 60 FPS, o‘rtacha telefonda ≥ 30 FPS.
-- [ ] Ilova statik hosting (yoki ichki web-server) dan backendsiz ishlaydi; `vite build` natijasi nisbiy yo‘llar bilan istalgan papkadan ochiladi.
+**Quality and performance**
+- [ ] `tsc --noEmit` and ESLint pass without errors; engine, persistence, and content-validation tests pass.
+- [ ] Initial JS ≤ 400 KB (gzip); first screen ≤ 2 s on an average laptop; scene stays at 60 FPS on an average laptop and ≥ 30 FPS on an average phone.
+- [ ] The app works from static hosting (or an internal web server) without a backend; `vite build` output opens from any folder with relative paths.
 
-**Kontent**
-- [ ] Barcha matnlar o‘zbek (lotin) tilida, imlo tekshirilgan, `content/` va `missions/data/` da joylashgan (komponentlarda qattiq yozilgan matn yo‘q).
-- [ ] Har bir tanlovda tushuntirish, har bir missiyada 3–5 saboq bor.
-- [ ] Tashkilot nomi, domeni va IT raqami faqat `app/config.ts` orqali o‘zgaradi.
+**Content**
+- [ ] All text is in Uzbek (Latin), spell-checked, and located in `content/` and `missions/data/` (no hard-coded text in components).
+- [ ] Every choice has an explanation; every mission has 3–5 lessons.
+- [ ] Organization name, domain, and IT number change only through `app/config.ts`.

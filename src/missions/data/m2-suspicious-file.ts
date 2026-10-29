@@ -192,7 +192,12 @@ export const m2SuspiciousFile: Mission = {
     },
   },
   clues: {
-    'm2-c-label': { id: 'm2-c-label', label: 'Jozibador yozuv', explanation: '«Mukofotlar» — qiziqish uyg‘otib, fleshkani ulatish uchun ataylab yozilgan bo‘lishi mumkin.', points: 5 },
+    'm2-c-label': {
+      id: 'm2-c-label',
+      label: 'Jozibador yozuv',
+      explanation: '«Mukofotlar» — qiziqish uyg‘otib, fleshkani ulatish uchun ataylab yozilgan bo‘lishi mumkin.',
+      points: 5,
+    },
     'm2-c-unknown': { id: 'm2-c-unknown', label: 'Notanish yuboruvchi', explanation: 'Yuboruvchi kontaktlaringizda yo‘q va fayl kutilmagan.', points: 5 },
     'm2-c-pressure': { id: 'm2-c-pressure', label: 'Shoshiltirish', explanation: '«Bugun imzolashimiz kerak» — o‘ylashga vaqt bermaslik.', points: 5 },
     'm2-c-extension': { id: 'm2-c-extension', label: 'Ikki kengaytma', explanation: '«.pdf.exe» — bu hujjat emas, ishga tushadigan dastur.', points: 5 },
@@ -242,7 +247,14 @@ export const m2SuspiciousFile: Mission = {
       decisionId: 'm2-d-file',
     },
     extraFiles: [
-      { id: 'm2-file-report', displayName: 'Oylik_hisobot', realName: 'Oylik_hisobot.xlsx', displayTypeLabel: 'Excel jadval', typeLabel: 'Excel jadval', size: '84 KB' },
+      {
+        id: 'm2-file-report',
+        displayName: 'Oylik_hisobot',
+        realName: 'Oylik_hisobot.xlsx',
+        displayTypeLabel: 'Excel jadval',
+        typeLabel: 'Excel jadval',
+        size: '84 KB',
+      },
       { id: 'm2-file-photo', displayName: 'Jamoa_rasmi', realName: 'Jamoa_rasmi.jpg', displayTypeLabel: 'Rasm', typeLabel: 'Rasm', size: '1,1 MB' },
     ],
   },

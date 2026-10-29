@@ -18,12 +18,7 @@ export function SimEmailClient({ mission, state, dispatch, onClose }: SimProps) 
   const selected = emails.find((m) => m.id === selectedId) ?? null;
 
   return (
-    <SimFrame
-      title={ui.sim.email.title}
-      icon="✉️"
-      onClose={onClose}
-      toolbar={<MarkModeToggle markMode={markMode} onToggle={() => setMarkMode((m) => !m)} />}
-    >
+    <SimFrame title={ui.sim.email.title} icon="✉️" onClose={onClose} toolbar={<MarkModeToggle markMode={markMode} onToggle={() => setMarkMode((m) => !m)} />}>
       <div className={styles.mailLayout}>
         <nav aria-label={ui.sim.email.inbox} className={styles.mailList}>
           <h3 className={styles.paneHeading}>{ui.sim.email.inbox}</h3>
@@ -37,26 +32,26 @@ export function SimEmailClient({ mission, state, dispatch, onClose }: SimProps) 
           ) : (
             <ul>
               <AnimatePresence initial={true}>
-              {[...emails].reverse().map((m, i) => (
-                <motion.li
-                  key={m.id}
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0, transition: { delay: i * 0.08 } }}
-                  exit={{ opacity: 0, x: 80, height: 0, transition: { duration: 0.35 } }}
-                >
-                  <button
-                    type="button"
-                    className={[styles.mailItem, m.id === selectedId ? styles.mailItemActive : ''].join(' ')}
-                    aria-current={m.id === selectedId || undefined}
-                    onClick={() => setSelectedId(m.id)}
+                {[...emails].reverse().map((m, i) => (
+                  <motion.li
+                    key={m.id}
+                    layout
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0, transition: { delay: i * 0.08 } }}
+                    exit={{ opacity: 0, x: 80, height: 0, transition: { duration: 0.35 } }}
                   >
-                    <span className={styles.mailFrom}>{m.fromName}</span>
-                    <span className={styles.mailTime}>{m.time}</span>
-                    <span className={styles.mailSubject}>{m.subject}</span>
-                  </button>
-                </motion.li>
-              ))}
+                    <button
+                      type="button"
+                      className={[styles.mailItem, m.id === selectedId ? styles.mailItemActive : ''].join(' ')}
+                      aria-current={m.id === selectedId || undefined}
+                      onClick={() => setSelectedId(m.id)}
+                    >
+                      <span className={styles.mailFrom}>{m.fromName}</span>
+                      <span className={styles.mailTime}>{m.time}</span>
+                      <span className={styles.mailSubject}>{m.subject}</span>
+                    </button>
+                  </motion.li>
+                ))}
               </AnimatePresence>
             </ul>
           )}
@@ -113,11 +108,12 @@ function EmailView({ email, markMode, find, mission, state, dispatch }: EmailVie
       </h3>
       <p className={styles.mailMeta}>
         <span className={styles.muted}>{ui.sim.email.from}: </span>
-        {target(email.clues?.from, (
+        {target(
+          email.clues?.from,
           <>
             <strong>{email.fromName}</strong> &lt;{email.fromAddress}&gt;
-          </>
-        ))}
+          </>,
+        )}
         <span className={styles.mailTime}> · {email.time}</span>
       </p>
       <p>{target(email.clues?.greeting, email.greeting)}</p>
@@ -132,14 +128,32 @@ function EmailView({ email, markMode, find, mission, state, dispatch }: EmailVie
       {email.attachment && (
         <div className={styles.attachment}>
           <span className="visually-hidden">{ui.sim.email.attachment}: </span>
-          {target(email.attachment.clueId, <><span aria-hidden="true">📎</span> {email.attachment.fileName}</>, true)}
+          {target(
+            email.attachment.clueId,
+            <>
+              <span aria-hidden="true">📎</span> {email.attachment.fileName}
+            </>,
+            true,
+          )}
         </div>
       )}
     </article>
   );
 }
 
-function Part({ part, markMode, found, find, onLink }: { part: SimTextPart; markMode: boolean; found: boolean; find(id?: string): void; onLink(choiceId: string): void }) {
+function Part({
+  part,
+  markMode,
+  found,
+  find,
+  onLink,
+}: {
+  part: SimTextPart;
+  markMode: boolean;
+  found: boolean;
+  find(id?: string): void;
+  onLink(choiceId: string): void;
+}) {
   if (part.type === 'text' || markMode) {
     return (
       <ClueTarget clueId={part.clueId} markMode={markMode} found={found} onFind={find}>

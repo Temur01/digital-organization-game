@@ -62,12 +62,7 @@ function shuffle<T>(items: readonly T[], rng: () => number): T[] {
   return out;
 }
 
-export function createQuizSession(
-  pool: readonly QuizQuestion[],
-  count = QUESTIONS_PER_SESSION,
-  rng: () => number = Math.random,
-  now = Date.now(),
-): QuizState {
+export function createQuizSession(pool: readonly QuizQuestion[], count = QUESTIONS_PER_SESSION, rng: () => number = Math.random, now = Date.now()): QuizState {
   const picked = shuffle(pool, rng).slice(0, Math.min(count, pool.length));
   return {
     questions: picked.map((question) => ({ question, options: shuffle(question.options, rng), removed: [] })),

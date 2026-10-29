@@ -82,10 +82,7 @@ export function validateMission(mission: Mission): string[] {
     mail.body.forEach((p) => checkParts(p, `xat «${mail.id}»`));
     checkDecision(mail.decisionId, `xat «${mail.id}»`);
     const decision = mail.decisionId ? mission.decisions[mail.decisionId] : undefined;
-    const choiceIds = [
-      ...(mail.toolbarChoiceIds ?? []),
-      ...mail.body.flat().flatMap((p) => (p.type === 'link' && p.choiceId ? [p.choiceId] : [])),
-    ];
+    const choiceIds = [...(mail.toolbarChoiceIds ?? []), ...mail.body.flat().flatMap((p) => (p.type === 'link' && p.choiceId ? [p.choiceId] : []))];
     for (const id of choiceIds) {
       if (!decision?.choices.some((c) => c.id === id)) err(`xat «${mail.id}»: tanlov «${id}» topilmadi`);
     }
@@ -102,7 +99,10 @@ export function validateMission(mission: Mission): string[] {
     checkClue(mfa.titleClueId, 'telefon');
     checkClue(mfa.locationClueId, 'telefon');
     checkParts(call.lines, 'qo‘ng‘iroq');
-    for (const [decisionId, ids] of [[mfa.decisionId, mfa.choiceIds], [call.decisionId, call.choiceIds]] as const) {
+    for (const [decisionId, ids] of [
+      [mfa.decisionId, mfa.choiceIds],
+      [call.decisionId, call.choiceIds],
+    ] as const) {
       const d = mission.decisions[decisionId];
       if (!d) err(`telefon: qaror «${decisionId}» topilmadi`);
       for (const id of ids) if (!d?.choices.some((c) => c.id === id)) err(`telefon: tanlov «${id}» topilmadi`);
@@ -117,17 +117,14 @@ export function validateMission(mission: Mission): string[] {
     }
     checkDecision(password.decisionId, 'portal');
     for (const f of report.fields) {
-      if (f.kind === 'radio' && f.options.filter((o) => o.correct).length !== 1) err(`portal: «${f.id}» radio maydonida aynan bitta to‘g‘ri javob bo‘lishi kerak`);
+      if (f.kind === 'radio' && f.options.filter((o) => o.correct).length !== 1)
+        err(`portal: «${f.id}» radio maydonida aynan bitta to‘g‘ri javob bo‘lishi kerak`);
     }
   }
 
   // Tugatish mumkinmi: completeWhen dagi har bir flag biror joyda o‘rnatiladi
-  const settable = new Set<string>([
-    ...Object.keys(mission.decisions).map(doneFlag),
-    ...Object.keys(mission.clues).map(clueFlag),
-  ]);
-  const addEffects = (effects?: { type: string; flag?: string }[]) =>
-    effects?.forEach((e) => e.type === 'setFlag' && e.flag && settable.add(e.flag));
+  const settable = new Set<string>([...Object.keys(mission.decisions).map(doneFlag), ...Object.keys(mission.clues).map(clueFlag)]);
+  const addEffects = (effects?: { type: string; flag?: string }[]) => effects?.forEach((e) => e.type === 'setFlag' && e.flag && settable.add(e.flag));
   Object.values(mission.dialogs).forEach((d) => addEffects(d.effectsOnEnd));
   Object.values(mission.decisions).forEach((d) => d.choices.forEach((c) => addEffects(c.effects)));
   const conditionFlags = (c: Condition) => [...(c.all ?? []), ...(c.any ?? [])];

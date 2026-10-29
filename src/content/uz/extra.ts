@@ -24,9 +24,9 @@ export const auth = {
   submitLogin: 'Kirish',
   sending: 'Kuting…',
   guest: 'Mehmon sifatida davom etish',
-  privacy:
-    'Ism, kasb va email hisobingiz uchun saqlanadi. Reytingda faqat ismingiz ko‘rinadi.',
-  notConfigured: 'Server hali ulanmagan. Administrator .env.local fayliga Supabase manzili va kalitini qo‘shishi kerak. Hozircha mehmon rejimida o‘ynashingiz mumkin.',
+  privacy: 'Ism, kasb va email hisobingiz uchun saqlanadi. Reytingda faqat ismingiz ko‘rinadi.',
+  notConfigured:
+    'Server hali ulanmagan. Administrator .env.local fayliga Supabase manzili va kalitini qo‘shishi kerak. Hozircha mehmon rejimida o‘ynashingiz mumkin.',
   errors: {
     name: 'Ism kamida 2 ta harfdan iborat bo‘lsin.',
     position: 'Kasbingizni tanlang.',
@@ -102,7 +102,13 @@ export const quiz = {
   finish: 'Natijani ko‘rish',
   keysHint: '1–4 — variant tanlash · Enter — keyingi savol',
   resultTitle: (pct: number) =>
-    pct >= 90 ? 'Raqamli Qalqon ustasi! 🏆' : pct >= 70 ? 'Ajoyib natija! 🛡️' : pct >= 50 ? 'Yaxshi, lekin xavf hali yaqin 👀' : 'Qo‘llanmani yana bir ko‘rib chiqing 📘',
+    pct >= 90
+      ? 'Raqamli Qalqon ustasi! 🏆'
+      : pct >= 70
+        ? 'Ajoyib natija! 🛡️'
+        : pct >= 50
+          ? 'Yaxshi, lekin xavf hali yaqin 👀'
+          : 'Qo‘llanmani yana bir ko‘rib chiqing 📘',
   scoreLabel: 'ball',
   correctCount: (c: number, t: number) => `${c} / ${t} to‘g‘ri`,
   bestStreak: (n: number) => `Eng uzun seriya: ${n}`,

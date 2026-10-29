@@ -34,7 +34,6 @@ export interface Character {
   look: CharacterLook;
 }
 
-
 // ---------- Xona ----------
 export interface Rect {
   x: number;
@@ -99,19 +98,14 @@ export interface Condition {
   none?: Flag[];
 }
 
-export type Effect =
-  | { type: 'setFlag'; flag: Flag }
-  | { type: 'findClue'; clueId: string };
+export type Effect = { type: 'setFlag'; flag: Flag } | { type: 'findClue'; clueId: string };
 
 // ---------- Interaktiv obyekt ----------
 export type HotspotKind = 'computer' | 'phone' | 'device' | 'npc' | 'poster' | 'note' | 'door' | 'box' | 'coffee' | 'qr';
 export type HotspotVisualState = 'idle' | 'disabled' | 'done' | 'hidden';
 export type SimAppId = 'email' | 'workstation' | 'phone' | 'itPortal';
 
-export type InteractionAction =
-  | { type: 'dialog'; dialogId: string }
-  | { type: 'openSim'; app: SimAppId }
-  | { type: 'decision'; decisionId: string };
+export type InteractionAction = { type: 'dialog'; dialogId: string } | { type: 'openSim'; app: SimAppId } | { type: 'decision'; decisionId: string };
 
 export interface NpcLook {
   name: string;
@@ -331,21 +325,10 @@ export interface Mission {
 }
 
 // ---------- Runtime holat (saqlanmaydi) ----------
-export type MissionPhase =
-  | 'loading'
-  | 'exploring'
-  | 'interacting'
-  | 'deciding'
-  | 'feedback'
-  | 'consequence'
-  | 'paused'
-  | 'completed'
-  | 'failed';
+export type MissionPhase = 'loading' | 'exploring' | 'interacting' | 'deciding' | 'feedback' | 'consequence' | 'paused' | 'completed' | 'failed';
 
 export type OverlayRef =
-  | { type: 'dialog'; dialogId: string }
-  | { type: 'sim'; app: SimAppId }
-  | { type: 'decision'; decisionId: string; returnTo: OverlayRef | null };
+  { type: 'dialog'; dialogId: string } | { type: 'sim'; app: SimAppId } | { type: 'decision'; decisionId: string; returnTo: OverlayRef | null };
 
 export interface DecisionLogEntry {
   decisionId: string;
@@ -414,15 +397,4 @@ export interface LocalProgress {
   updatedAt: string;
 }
 
-export type AppScreen =
-  | 'title'
-  | 'characterSelect'
-  | 'map'
-  | 'briefing'
-  | 'playing'
-  | 'result'
-  | 'settings'
-  | 'auth'
-  | 'profile'
-  | 'quiz'
-  | 'leaderboard';
+export type AppScreen = 'title' | 'characterSelect' | 'map' | 'briefing' | 'playing' | 'result' | 'settings' | 'auth' | 'profile' | 'quiz' | 'leaderboard';
