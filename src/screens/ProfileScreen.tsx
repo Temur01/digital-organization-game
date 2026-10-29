@@ -52,6 +52,14 @@ export function ProfileScreen() {
     { label: t.stats.quiz, value: `${progress.quizBest ?? 0}`, icon: '🧠' },
   ];
 
+  const insights = MISSION_LIST.flatMap((mission) => {
+    const result = progress.missions[mission.id].lastResult;
+    if (!result) return [];
+    const decisions = result.decisions;
+    const safe = decisions.filter((decision) => decision.firstOutcome === 'safe').length;
+    return [{ label: mission.topicLabel, safe, total: decisions.length }];
+  }).sort((a, b) => a.total ? a.safe / a.total - (b.total ? b.safe / b.total : 0) : 1);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const n = name.trim();
@@ -105,6 +113,28 @@ export function ProfileScreen() {
             </motion.li>
           ))}
         </ul>
+
+        <section className={styles.profileInsights} aria-labelledby={`${ids}-insights`}>
+          <h2 id={`${ids}-insights`}>O‘rganish natijalari</h2>
+          {insights.length ? (
+            <>
+              <p className={styles.muted}>Qarorlardagi birinchi tanlovlaringiz asosida</p>
+              <ul>
+                {insights.map(({ label, safe, total }) => (
+                  <li key={label}>
+                    <span>{label}</span>
+                    <strong>{safe}/{total} xavfsiz tanlov</strong>
+                  </li>
+                ))}
+              </ul>
+              {insights.length >= 2 && insights[0]!.total > 0 && insights[0]!.safe < insights[0]!.total && (
+                <p className={styles.insightTip}>Keyingi mashq uchun: {insights[0]!.label}</p>
+              )}
+            </>
+          ) : (
+            <p className={styles.muted}>Missiyani yakunlang — kuchli tomonlaringiz va mashq mavzulari shu yerda ko‘rinadi.</p>
+          )}
+        </section>
 
         {status === 'signedIn' ? (
           <form onSubmit={(e) => void submit(e)} noValidate>
