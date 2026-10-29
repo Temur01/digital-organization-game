@@ -88,15 +88,19 @@ describe('sinov dvigateli', () => {
 });
 
 describe('ro‘yxatdan o‘tish formasi', () => {
-  it('ism, kasb va email majburiy', () => {
+  it('ism, jins, kasb va email majburiy', () => {
     expect(validate('register', { name: '', email: 'x' })).toMatchObject({
       name: expect.any(String),
+      gender: expect.any(String),
       position: expect.any(String),
       email: expect.any(String),
       password: expect.any(String),
     });
-    expect(validate('register', { name: 'Ali', position: 'Dasturchi', email: 'ali@kompaniya.uz', password: 'parol123' })).toEqual({});
-    expect(validate('register', { name: 'Ali', position: '', email: 'ali@kompaniya.uz', password: 'parol123' })).toHaveProperty('position');
+    expect(validate('register', { name: 'Ali', gender: 'male', position: 'Dasturchi', email: 'ali@kompaniya.uz', password: 'parol123' })).toEqual({});
+    expect(validate('register', { name: 'Ali', gender: 'male', position: '', email: 'ali@kompaniya.uz', password: 'parol123' })).toHaveProperty('position');
+    expect(validate('register', { name: 'Ali', gender: null, position: 'Dasturchi', email: 'ali@kompaniya.uz', password: 'parol123' })).toHaveProperty(
+      'gender',
+    );
     // Kirishda faqat email va parol
     expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: 'parol123' })).toEqual({});
     expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: '123' })).toHaveProperty('password');

@@ -28,6 +28,7 @@ export interface Profile {
   id: string;
   full_name: string;
   email: string;
+  gender: 'male' | 'female' | null;
   position: string | null;
 }
 

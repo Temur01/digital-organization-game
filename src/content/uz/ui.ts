@@ -34,7 +34,7 @@ export const ui = {
     aboutText: [
       `${companyConfig.gameTitle} — ofis xodimlari uchun raqamli gigiyena bo‘yicha qisqa sarguzasht o‘yini. Har bir missiya — real hayotdagi hujum ssenariysi.`,
       'Hammasi xavfsiz simulyatsiya: o‘yinda haqiqiy zararli fayl, tashqi havola yoki parol kiritish maydoni yo‘q.',
-      'Mehmon rejimida o‘yin internetga hech narsa yubormaydi — progress faqat shu brauzerda. Hisobga kirsangiz, ismingiz, kasbingiz, emailingiz va ballaringiz serverda saqlanadi; reytingda faqat ism ko‘rinadi.',
+      'Mehmon rejimida o‘yin internetga hech narsa yubormaydi — progress faqat shu brauzerda. Hisobga kirsangiz, ismingiz, jinsingiz, kasbingiz, emailingiz va ballaringiz serverda saqlanadi; reytingda faqat ism ko‘rinadi.',
       'Boshqaruv: W A S D yoki strelkalar — yurish, E yoki Enter — ishlatish, Tab — obyektlar, C — belgilash rejimi, Esc — pauza.',
     ],
   },
@@ -46,6 +46,7 @@ export const ui = {
     selected: 'Tanlandi',
     confirm: 'Shu qahramon bilan boshlash',
     role: 'Lavozim',
+    locked: 'Qahramon profilingizdagi jinsga qarab tanlangan. O‘zgartirish uchun profildagi jinsni o‘zgartiring.',
   },
   map: {
     eyebrow: 'Ofis xaritasi',

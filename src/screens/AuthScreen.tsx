@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 import { useAuthStore } from '../app/auth';
 import { companyConfig } from '../app/config';
 import { useScreenHeading } from '../app/hooks';
@@ -8,23 +8,35 @@ import { CHARACTERS } from '../content/characters';
 import { auth as t } from '../content/uz/extra';
 import { Button } from '../ui/Button';
 import { CharacterArt } from '../ui/CharacterArt';
+import { GenderPicker } from '../ui/GenderPicker';
 import { Select } from '../ui/Select';
 import styles from './aux.module.css';
 
 type Mode = 'register' | 'login' | 'forgot';
-type Field = 'name' | 'position' | 'email' | 'password';
+type Field = 'name' | 'gender' | 'position' | 'email' | 'password';
 type Errors = Partial<Record<Field, string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const MIN_PASSWORD = 6;
 
-export function validate(mode: Mode, v: { name: string; position?: string; email: string; password?: string }): Errors {
+export function validate(mode: Mode, v: { name: string; gender?: 'male' | 'female' | null; position?: string; email: string; password?: string }): Errors {
   const errors: Errors = {};
   if (mode === 'register' && v.name.trim().length < 2) errors.name = t.errors.name;
+  if (mode === 'register' && !v.gender) errors.gender = t.errors.gender;
   if (mode === 'register' && !v.position?.trim()) errors.position = t.errors.position;
   if (!EMAIL_RE.test(v.email.trim())) errors.email = t.errors.email;
   if (mode !== 'forgot' && (v.password ?? '').length < MIN_PASSWORD) errors.password = t.errors.password;
   return errors;
+}
+
+/** Parol kuchi 0–4: uzunlik, harf+raqam aralashmasi, katta-kichik harf, maxsus belgi */
+export function passwordStrength(p: string): number {
+  if (p.length < MIN_PASSWORD) return p.length === 0 ? 0 : 1;
+  let score = 1;
+  if (p.length >= 10) score++;
+  if (/[a-z]/i.test(p) && /\d/.test(p)) score++;
+  if ((/[a-z]/.test(p) && /[A-Z]/.test(p)) || /[^a-z\d]/i.test(p)) score++;
+  return Math.min(score, 4);
 }
 
 export function AuthScreen() {
@@ -42,10 +54,10 @@ export function AuthScreen() {
   const [mode, setMode] = useState<Mode>('register');
   const defaults = companyConfig.defaultPlayer;
   const [name, setName] = useState<string>(defaults.firstName);
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [position, setPosition] = useState<string>(defaults.position);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -66,7 +78,7 @@ export function AuthScreen() {
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    const found = validate(mode, { name, position, email, password });
+    const found = validate(mode, { name, gender, position, email, password });
     setErrors(found);
     setServerError(null);
     if (Object.keys(found).length > 0) return;
@@ -74,14 +86,7 @@ export function AuthScreen() {
     const cleanEmail = email.trim().toLowerCase();
     const res =
       mode === 'register'
-        ? await register(
-            {
-              fullName: name.trim(),
-              position,
-              email: cleanEmail,
-            },
-            password,
-          )
+        ? await register({ fullName: name.trim(), gender: gender!, position, email: cleanEmail }, password)
         : mode === 'forgot'
           ? await requestPasswordReset(cleanEmail)
           : await signIn(cleanEmail, password);
@@ -95,45 +100,66 @@ export function AuthScreen() {
     'aria-invalid': errors[key] ? true : undefined,
     'aria-describedby': errors[key] ? `${ids}-${key}-err` : undefined,
   });
+  const errorText = (key: Field) =>
+    errors[key] && (
+      <p id={`${ids}-${key}-err`} className={styles.error}>
+        {errors[key]}
+      </p>
+    );
+  const label = (key: Field, text: string) => (
+    <label htmlFor={`${ids}-${key}`}>
+      {text} <span className={styles.req}>· {t.required}</span>
+    </label>
+  );
 
   return (
     <main className={styles.page}>
-      <div className={styles.authLayout}>
-        <motion.section
-          className={styles.authHero}
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 160, damping: 20 }}
-        >
-          <span className={styles.pill}>🔐 {t.eyebrow}</span>
-          <h1 ref={heading} tabIndex={-1} className={styles.heroHeading}>
+      <motion.div
+        className={styles.authShell}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 160, damping: 22 }}
+      >
+        <section className={styles.authAside}>
+          <span className={styles.authBrand}>
+            <span aria-hidden="true">🛡️</span> {companyConfig.gameTitle}
+          </span>
+          <h1 ref={heading} tabIndex={-1} className={styles.authHeading}>
             {t.heading}
           </h1>
-          <p className={styles.lead}>{t.lead}</p>
-          <ul className={styles.benefits}>
+          <p className={styles.authLead}>{t.lead}</p>
+          <ul className={styles.authBenefits}>
             {t.benefits.map((b, i) => (
-              <motion.li key={b.text} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.1 }}>
-                <span aria-hidden="true">{b.icon}</span> {b.text}
+              <motion.li key={b.text} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.08 }}>
+                <span className={styles.authBenefitIcon} aria-hidden="true">
+                  {b.icon}
+                </span>
+                {b.text}
               </motion.li>
             ))}
           </ul>
-          <div className={styles.heroArt} aria-hidden="true">
+          <div className={styles.authStage} aria-hidden="true">
+            <span className={styles.authPodium} />
             <CharacterArt character={CHARACTERS.bek} height="100%" float />
-            <CharacterArt character={CHARACTERS.guli} height="94%" float />
+            <CharacterArt character={CHARACTERS.guli} height="93%" float />
+            <motion.span
+              className={[styles.authBadge, styles.authBadgeStars].join(' ')}
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+            >
+              ⭐ ⭐ ⭐
+            </motion.span>
+            <motion.span
+              className={[styles.authBadge, styles.authBadgeRank].join(' ')}
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 3.4, delay: 0.6 }}
+            >
+              🏆 {t.asideBadge}
+            </motion.span>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className={styles.card}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            type: 'spring',
-            stiffness: 160,
-            damping: 20,
-            delay: 0.1,
-          }}
-        >
+        <section className={styles.authMain}>
           {!configured ? (
             <div className={styles.notice}>
               <p>{t.notConfigured}</p>
@@ -153,7 +179,7 @@ export function AuthScreen() {
                 <motion.div
                   key="reset-sent"
                   className={styles.sent}
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.94 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                 >
@@ -161,7 +187,9 @@ export function AuthScreen() {
                     <span>📬</span>
                   </div>
                   <h2>{t.forgot.sentTitle}</h2>
-                  <p role="status">{t.forgot.sentText(resetSentTo)}</p>
+                  <p role="status" className={styles.muted}>
+                    {t.forgot.sentText(resetSentTo)}
+                  </p>
                   {serverError && (
                     <p className={styles.serverError} role="alert">
                       {serverError}
@@ -177,12 +205,14 @@ export function AuthScreen() {
                   </div>
                 </motion.div>
               ) : confirmTo ? (
-                <motion.div key="sent" className={styles.sent} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+                <motion.div key="sent" className={styles.sent} initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                   <div className={styles.envelope} aria-hidden="true">
                     <span>✉️</span>
                   </div>
                   <h2>{t.confirmTitle}</h2>
-                  <p role="status">{t.confirmText(confirmTo)}</p>
+                  <p role="status" className={styles.muted}>
+                    {t.confirmText(confirmTo)}
+                  </p>
                   <div className={styles.row}>
                     <Button
                       variant="ghost"
@@ -197,12 +227,7 @@ export function AuthScreen() {
                 </motion.div>
               ) : (
                 <motion.form key="form" onSubmit={(e) => void submit(e)} noValidate initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {mode === 'forgot' ? (
-                    <div className={styles.formIntro}>
-                      <h2>🔑 {t.forgot.title}</h2>
-                      <p className={styles.muted}>{t.forgot.lead}</p>
-                    </div>
-                  ) : (
+                  {mode !== 'forgot' && (
                     <div className={styles.tabs} role="tablist" aria-label={t.eyebrow}>
                       {(['register', 'login'] as const).map((m) => (
                         <button
@@ -220,56 +245,66 @@ export function AuthScreen() {
                     </div>
                   )}
 
-                  {mode === 'register' && (
-                    <div className={styles.field}>
-                      <label htmlFor={`${ids}-name`}>
-                        {t.fullName} <span className={styles.req}>· {t.required}</span>
-                      </label>
-                      <input
-                        id={`${ids}-name`}
-                        type="text"
-                        autoComplete="name"
-                        maxLength={80}
-                        placeholder={t.fullNamePlaceholder}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        {...field('name')}
-                      />
-                      {errors.name && (
-                        <p id={`${ids}-name-err`} className={styles.error}>
-                          {errors.name}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <motion.div key={mode} className={styles.formIntro} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                    <h2>{mode === 'forgot' ? `🔑 ${t.forgot.title}` : t.formTitle[mode]}</h2>
+                    <p className={styles.muted}>{mode === 'forgot' ? t.forgot.lead : t.formLead[mode]}</p>
+                  </motion.div>
 
                   {mode === 'register' && (
-                    <div className={styles.field}>
-                      <label htmlFor={`${ids}-position`}>
-                        {t.position} <span className={styles.req}>· {t.required}</span>
-                      </label>
-                      <Select
-                        id={`${ids}-position`}
-                        value={position}
-                        options={companyConfig.positions}
-                        placeholder={t.positionPlaceholder}
-                        onChange={setPosition}
-                        invalid={!!errors.position}
-                        describedBy={errors.position ? `${ids}-position-err` : undefined}
+                    <>
+                      <p className={styles.formSection}>
+                        <span aria-hidden="true">1</span> {t.sections.about}
+                      </p>
+                      <div className={styles.fieldRow}>
+                        <div className={styles.field}>
+                          {label('name', t.fullName)}
+                          <IconInput
+                            icon="👤"
+                            id={`${ids}-name`}
+                            type="text"
+                            autoComplete="given-name"
+                            maxLength={80}
+                            placeholder={t.fullNamePlaceholder}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            {...field('name')}
+                          />
+                          {errorText('name')}
+                        </div>
+                        <div className={styles.field}>
+                          {label('position', t.position)}
+                          <Select
+                            id={`${ids}-position`}
+                            value={position}
+                            options={companyConfig.positions}
+                            placeholder={t.positionPlaceholder}
+                            onChange={setPosition}
+                            invalid={!!errors.position}
+                            describedBy={errors.position ? `${ids}-position-err` : undefined}
+                          />
+                          {errorText('position')}
+                        </div>
+                      </div>
+                      <GenderPicker
+                        name={`${ids}-gender`}
+                        legend={t.gender}
+                        hint={t.required}
+                        value={gender}
+                        options={t.genderOptions}
+                        onChange={setGender}
+                        error={errors.gender}
+                        errorId={`${ids}-gender-err`}
                       />
-                      {errors.position && (
-                        <p id={`${ids}-position-err`} className={styles.error}>
-                          {errors.position}
-                        </p>
-                      )}
-                    </div>
+                      <p className={styles.formSection}>
+                        <span aria-hidden="true">2</span> {t.sections.account}
+                      </p>
+                    </>
                   )}
 
                   <div className={styles.field}>
-                    <label htmlFor={`${ids}-email`}>
-                      {t.email} <span className={styles.req}>· {t.required}</span>
-                    </label>
-                    <input
+                    {label('email', t.email)}
+                    <IconInput
+                      icon="✉️"
                       id={`${ids}-email`}
                       type="email"
                       inputMode="email"
@@ -280,51 +315,29 @@ export function AuthScreen() {
                       onChange={(e) => setEmail(e.target.value)}
                       {...field('email')}
                     />
-                    {errors.email && (
-                      <p id={`${ids}-email-err`} className={styles.error}>
-                        {errors.email}
-                      </p>
-                    )}
+                    {errorText('email')}
                   </div>
 
                   {mode !== 'forgot' && (
                     <div className={styles.field}>
-                      <label htmlFor={`${ids}-password`}>
-                        {t.password} <span className={styles.req}>· {t.required}</span>
-                      </label>
-                      <div className={styles.passwordRow}>
-                        <input
-                          id={`${ids}-password`}
-                          type={showPassword ? 'text' : 'password'}
-                          autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                          minLength={MIN_PASSWORD}
-                          maxLength={72}
-                          placeholder={mode === 'register' ? t.passwordHint : ''}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          {...field('password')}
-                        />
-                        <button
-                          type="button"
-                          className={styles.passwordToggle}
-                          aria-pressed={showPassword}
-                          aria-label={showPassword ? t.hidePassword : t.showPassword}
-                          title={showPassword ? t.hidePassword : t.showPassword}
-                          onClick={() => setShowPassword((v) => !v)}
-                        >
-                          <span aria-hidden="true">{showPassword ? '🙈' : '👁️'}</span>
-                        </button>
+                      <div className={styles.labelRow}>
+                        {label('password', t.password)}
+                        {mode === 'login' && (
+                          <button type="button" className={styles.linkButton} onClick={() => switchMode('forgot')}>
+                            {t.forgotLink}
+                          </button>
+                        )}
                       </div>
-                      {errors.password && (
-                        <p id={`${ids}-password-err`} className={styles.error}>
-                          {errors.password}
-                        </p>
-                      )}
-                      {mode === 'login' && (
-                        <button type="button" className={styles.linkButton} onClick={() => switchMode('forgot')}>
-                          {t.forgotLink}
-                        </button>
-                      )}
+                      <PasswordInput
+                        id={`${ids}-password`}
+                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                        placeholder={mode === 'register' ? t.passwordHint : ''}
+                        value={password}
+                        onChange={setPassword}
+                        meter={mode === 'register'}
+                        {...field('password')}
+                      />
+                      {errorText('password')}
                     </div>
                   )}
 
@@ -342,20 +355,87 @@ export function AuthScreen() {
                       ← {t.forgot.back}
                     </Button>
                   ) : (
-                    <p className={styles.privacy}>🔒 {t.privacy}</p>
+                    <p className={styles.switchPrompt}>
+                      {t.switchPrompt[mode]}{' '}
+                      <button type="button" className={styles.linkButton} onClick={() => switchMode(mode === 'register' ? 'login' : 'register')}>
+                        {t.tabs[mode === 'register' ? 'login' : 'register']}
+                      </button>
+                    </p>
                   )}
                 </motion.form>
               )}
             </AnimatePresence>
           )}
-          <div className={styles.cardFooter}>
-            <Button variant="ghost" onClick={closeAux}>
-              ← {t.guest}
-            </Button>
+
+          <div className={styles.orDivider}>
+            <span>{t.or}</span>
           </div>
-        </motion.section>
-      </div>
+          <Button variant="secondary" className={styles.submit} onClick={closeAux}>
+            <span aria-hidden="true">🎮</span> {t.guest}
+          </Button>
+          <p className={styles.privacy}>
+            <span aria-hidden="true">🔒</span> {t.privacy}
+          </p>
+        </section>
+      </motion.div>
     </main>
+  );
+}
+
+/** Chap tomonida belgisi bor matn maydoni */
+function IconInput({ icon, ...input }: InputHTMLAttributes<HTMLInputElement> & { icon: string }) {
+  return (
+    <div className={styles.inputWrap}>
+      <span className={styles.inputIcon} aria-hidden="true">
+        {icon}
+      </span>
+      <input {...input} />
+    </div>
+  );
+}
+
+interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'type'> {
+  value: string;
+  onChange(value: string): void;
+  /** Ro‘yxatdan o‘tishda — parol kuchi ko‘rsatkichi */
+  meter?: boolean;
+}
+
+/** Parol maydoni: ko‘rsatish/yashirish tugmasi va (ixtiyoriy) kuch ko‘rsatkichi */
+function PasswordInput({ value, onChange, meter, ...input }: PasswordInputProps) {
+  const [show, setShow] = useState(false);
+  const strength = passwordStrength(value);
+  return (
+    <>
+      <div className={[styles.inputWrap, styles.passwordRow].join(' ')}>
+        <span className={styles.inputIcon} aria-hidden="true">
+          🔒
+        </span>
+        <input {...input} type={show ? 'text' : 'password'} minLength={MIN_PASSWORD} maxLength={72} value={value} onChange={(e) => onChange(e.target.value)} />
+        <button
+          type="button"
+          className={styles.passwordToggle}
+          aria-pressed={show}
+          aria-label={show ? t.hidePassword : t.showPassword}
+          title={show ? t.hidePassword : t.showPassword}
+          onClick={() => setShow((v) => !v)}
+        >
+          <span aria-hidden="true">{show ? '🙈' : '👁️'}</span>
+        </button>
+      </div>
+      {meter && value.length > 0 && (
+        <div className={styles.strength} data-level={strength}>
+          <span className={styles.strengthBars} aria-hidden="true">
+            {[1, 2, 3, 4].map((n) => (
+              <span key={n} className={n <= strength ? styles.strengthOn : undefined} />
+            ))}
+          </span>
+          <span className={styles.strengthText}>
+            {t.strength.label}: <strong>{t.strength.levels[strength]}</strong>
+          </span>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -368,7 +448,6 @@ function RecoveryPanel({ onRequestNew }: { onRequestNew(): void }) {
   const ids = useId();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -397,12 +476,14 @@ function RecoveryPanel({ onRequestNew }: { onRequestNew(): void }) {
 
   if (recovery === 'invalid') {
     return (
-      <motion.div className={styles.sent} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+      <motion.div className={styles.sent} initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
         <div className={styles.envelope} aria-hidden="true">
           <span>⌛</span>
         </div>
         <h2>{t.reset.invalidTitle}</h2>
-        <p role="alert">{t.reset.invalidText}</p>
+        <p role="alert" className={styles.muted}>
+          {t.reset.invalidText}
+        </p>
         <div className={styles.row}>
           <Button onClick={onRequestNew}>{t.reset.requestNew}</Button>
         </div>
@@ -420,39 +501,11 @@ function RecoveryPanel({ onRequestNew }: { onRequestNew(): void }) {
         <label htmlFor={`${ids}-new`}>
           {t.reset.password} <span className={styles.req}>· {t.passwordHint}</span>
         </label>
-        <div className={styles.passwordRow}>
-          <input
-            id={`${ids}-new`}
-            type={show ? 'text' : 'password'}
-            autoComplete="new-password"
-            minLength={MIN_PASSWORD}
-            maxLength={72}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            data-autofocus
-          />
-          <button
-            type="button"
-            className={styles.passwordToggle}
-            aria-pressed={show}
-            aria-label={show ? t.hidePassword : t.showPassword}
-            title={show ? t.hidePassword : t.showPassword}
-            onClick={() => setShow((v) => !v)}
-          >
-            <span aria-hidden="true">{show ? '🙈' : '👁️'}</span>
-          </button>
-        </div>
+        <PasswordInput id={`${ids}-new`} autoComplete="new-password" value={password} onChange={setPassword} meter data-autofocus />
       </div>
       <div className={styles.field}>
         <label htmlFor={`${ids}-confirm`}>{t.reset.confirm}</label>
-        <input
-          id={`${ids}-confirm`}
-          type={show ? 'text' : 'password'}
-          autoComplete="new-password"
-          maxLength={72}
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        />
+        <PasswordInput id={`${ids}-confirm`} autoComplete="new-password" value={confirm} onChange={setConfirm} />
       </div>
       {error && (
         <p className={styles.serverError} role="alert">

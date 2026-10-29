@@ -1,4 +1,4 @@
--- Profil: yosh, jins va bo‘lim maydonlari olib tashlandi — endi faqat ism, email va kasb
+-- Profil: yosh va bo‘lim maydonlari olib tashlandi
 -- Diqqat: ustunlardagi mavjud ma’lumotlar butunlay o‘chiriladi.
 
 -- Ro‘yxatdan o‘tishda yuborilgan ism va kasb → profil
@@ -20,5 +20,4 @@ end $$;
 
 alter table public.profiles
   drop column if exists age,
-  drop column if exists gender,
   drop column if exists department;

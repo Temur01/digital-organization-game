@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useState, type CSSProperties } from 'react';
-import { useScreenHeading } from '../app/hooks';
+import { useLockedCharacter, usePlayerName, useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { CHARACTER_IDS, CHARACTERS } from '../content/characters';
 import { ui } from '../content/uz/ui';
@@ -14,9 +14,16 @@ export function CharacterSelectScreen() {
   const selectCharacter = useGameStore((s) => s.selectCharacter);
   const goTo = useGameStore((s) => s.goTo);
   const returnTo = useGameStore((s) => s.characterSelectReturnTo);
-  const [selected, setSelected] = useState<CharacterId>(current ?? 'bek');
+  const locked = useLockedCharacter();
+  const [picked, setSelected] = useState<CharacterId>(current ?? 'bek');
+  const selected = locked ?? picked;
   const heading = useScreenHeading<HTMLHeadingElement>();
-  const chosen = CHARACTERS[selected];
+  const player = usePlayerName();
+  // Kirgan foydalanuvchi: jinsiga mos qahramon (yoki jins ko‘rsatilmagan bo‘lsa — ikkalasi) uning ismi va kasbini oladi;
+  // mehmonga va boshqa jinsdagi qahramonga — Bek/Guli
+  const isOwn = (id: CharacterId) => player.fromProfile && (locked === null || locked === id);
+  const nameOf = (id: CharacterId) => (isOwn(id) ? player.first : CHARACTERS[id].name);
+  const roleOf = (id: CharacterId) => (isOwn(id) ? player.position : CHARACTERS[id].role);
 
   return (
     <main className={styles.page}>
@@ -27,7 +34,7 @@ export function CharacterSelectScreen() {
         <h1 ref={heading} tabIndex={-1}>
           {ui.characterSelect.heading}
         </h1>
-        <p className={styles.lead}>{ui.characterSelect.note}</p>
+        <p className={styles.lead}>{locked ? ui.characterSelect.locked : ui.characterSelect.note}</p>
       </header>
 
       <fieldset className={styles.characterGroup}>
@@ -35,18 +42,28 @@ export function CharacterSelectScreen() {
         {CHARACTER_IDS.map((id, i) => {
           const c = CHARACTERS[id];
           const checked = selected === id;
+          const disabled = locked !== null && locked !== id;
           return (
             <motion.label
               key={id}
               className={[styles.characterCard, checked ? styles.characterCardActive : ''].join(' ')}
+              aria-disabled={disabled || undefined}
               style={{ '--accent': c.accent } as CSSProperties}
               initial={{ opacity: 0, y: 50, rotate: i === 0 ? -3 : 3 }}
-              animate={{ opacity: 1, y: 0, rotate: 0, scale: checked ? 1 : 0.97 }}
-              whileHover={{ y: -8 }}
+              animate={{ opacity: disabled ? 0.45 : 1, y: 0, rotate: 0, scale: checked ? 1 : 0.97 }}
+              whileHover={disabled ? undefined : { y: -8 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 260, damping: 20, delay: i * 0.08 }}
             >
-              <input type="radio" name="character" value={id} checked={checked} onChange={() => setSelected(id)} className={styles.radioInput} />
+              <input
+                type="radio"
+                name="character"
+                value={id}
+                checked={checked}
+                disabled={disabled}
+                onChange={() => setSelected(id)}
+                className={styles.radioInput}
+              />
               <span className={styles.characterStage} aria-hidden="true">
                 <span className={styles.characterGlow} />
                 <motion.span
@@ -59,10 +76,10 @@ export function CharacterSelectScreen() {
                 </motion.span>
               </span>
               <span className={styles.characterInfo}>
-                <span className={styles.characterName}>{c.name}</span>
+                <span className={styles.characterName}>{nameOf(id)}</span>
                 <span className={styles.roleChip}>
                   <span className="visually-hidden">{ui.characterSelect.role}: </span>
-                  {c.role}
+                  {roleOf(id)}
                 </span>
                 <span className={styles.characterDesc}>{c.shortDescription}</span>
                 <span className={styles.traits}>
@@ -97,7 +114,7 @@ export function CharacterSelectScreen() {
           ← {ui.common.back}
         </Button>
         <span className={styles.stickyChosen} aria-live="polite">
-          <strong>{chosen.name}</strong> · {chosen.role}
+          <strong>{nameOf(selected)}</strong> · {roleOf(selected)}
         </span>
         <Button className={styles.ctaBig} onClick={() => selectCharacter(selected)}>
           {ui.characterSelect.confirm} <span aria-hidden="true">→</span>

@@ -7,7 +7,7 @@ import { flushPending, pullServerBest } from './sync';
 
 /** Ro‘yxatdan o‘tishda kiritilgan profil ma’lumotlari (trigger ishlamasa ham profil yaratish uchun) */
 const PENDING_PROFILE_KEY = 'raqamli-qalqon:pending-profile';
-const PROFILE_COLUMNS = 'id, full_name, email, position';
+const PROFILE_COLUMNS = 'id, full_name, email, gender, position';
 /** Parolni tiklash havolasidan qaytganini bildiruvchi URL belgisi (?tiklash=1) */
 const RECOVERY_PARAM = 'tiklash';
 
@@ -41,6 +41,7 @@ function consumeRecoveryMarker(): RecoveryState {
 export interface RegisterInput {
   fullName: string;
   email: string;
+  gender: 'male' | 'female';
   position: string;
 }
 
@@ -64,7 +65,7 @@ interface AuthStore {
   updatePassword(password: string): Promise<{ ok: true } | { ok: false; error: string }>;
   /** Tiklash oqimidan chiqish (masalan, «Bekor qilish») */
   clearRecovery(): void;
-  saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'position'>>): Promise<{ ok: boolean; error?: string }>;
+  saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'gender' | 'position'>>): Promise<{ ok: boolean; error?: string }>;
   signOut(): Promise<void>;
 }
 
@@ -115,6 +116,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
         id: user.id,
         email: user.email ?? '',
         full_name: String(pending.fullName ?? meta.full_name ?? (user.email ?? 'Foydalanuvchi').split('@')[0]),
+        gender: pending.gender ?? (meta.gender === 'male' || meta.gender === 'female' ? meta.gender : null),
         position: pending.position?.trim() || (typeof meta.position === 'string' && meta.position.trim()) || null,
       };
       const res = await supabase.from('profiles').upsert(row).select(PROFILE_COLUMNS).single();
@@ -202,6 +204,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
           emailRedirectTo: redirectUrl(),
           data: {
             full_name: input.fullName.trim(),
+            gender: input.gender,
             position: input.position.trim(),
           },
         },

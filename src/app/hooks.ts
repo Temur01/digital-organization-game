@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Settings } from '../types/models';
 import { useGameStore } from './store';
-import { CHARACTERS } from '../content/characters';
+import { CHARACTERS, characterForGender } from '../content/characters';
+import type { CharacterId } from '../types/models';
 import { useAuthStore } from './auth';
 import { companyConfig } from './config';
 import { subscribeVoices, voiceLabel } from './voice';
@@ -35,14 +36,19 @@ export function useScreenHeading<T extends HTMLElement>() {
 }
 
 /** O‘yinchining ko‘rinadigan ismi: kirgan bo‘lsa — profildagi ism, aks holda standart (config) */
-export function usePlayerName(): { first: string; position: string } {
+export function usePlayerName(): { first: string; position: string; fromProfile: boolean } {
   const profile = useAuthStore((s) => (s.status === 'signedIn' ? s.profile : null));
   const { firstName, position } = companyConfig.defaultPlayer;
   if (profile?.full_name) {
     const full = profile.full_name.trim().replace(/\s+/g, ' ');
-    return { first: full.split(' ')[0] ?? full, position: profile.position ?? position };
+    return { first: full.split(' ')[0] ?? full, position: profile.position ?? position, fromProfile: true };
   }
-  return { first: firstName, position };
+  return { first: firstName, position, fromProfile: false };
+}
+
+/** Kirgan foydalanuvchi jinsini kiritgan bo‘lsa — qat’iy belgilangan qahramon, aks holda null */
+export function useLockedCharacter(): CharacterId | null {
+  return useAuthStore((s) => (s.status === 'signedIn' ? characterForGender(s.profile?.gender) : null));
 }
 
 /**
@@ -50,8 +56,9 @@ export function usePlayerName(): { first: string; position: string } {
  * Shu sababli dialog, qaror va natijalarda «Bek/Guli» o‘rniga foydalanuvchi ismi va kasbi chiqadi.
  */
 export function usePlayer() {
+  const locked = useLockedCharacter();
   const selected = useGameStore((s) => s.progress.selectedCharacter);
-  const id = selected ?? 'bek';
+  const id = locked ?? selected ?? 'bek';
   const { first, position } = usePlayerName();
   return useMemo(() => ({ ...CHARACTERS[id], name: first, role: position }), [id, first, position]);
 }

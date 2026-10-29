@@ -54,6 +54,36 @@ describe('ekranlar', () => {
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();
   });
+
+  it('erkak foydalanuvchi — Bek qahramoni uning ismi va kasbi bilan, Guli qulflanadi', () => {
+    useAuthStore.setState({
+      status: 'signedIn',
+      profile: { id: 'u1', full_name: 'Temur', email: 't@k.uz', gender: 'male', position: 'Yurist' },
+    });
+    const { unmount } = render(<CharacterSelectScreen />);
+    const own = screen.getByRole('radio', { name: /Temur/ });
+    expect(own).toBeChecked();
+    expect(own).toHaveAttribute('value', 'bek');
+    expect(screen.getByRole('radio', { name: /Guli/ })).toBeDisabled();
+    expect(screen.getAllByText('Yurist').length).toBeGreaterThan(0);
+    unmount();
+
+    useGameStore.setState({ progress: { ...createDefaultProgress(), selectedCharacter: 'bek' } });
+    render(<MissionMapScreen />);
+    expect(screen.queryByRole('button', { name: /qahramon/i })).not.toBeInTheDocument();
+  });
+
+  it('ayol foydalanuvchi — Guli qahramoni uning ismi bilan', () => {
+    useAuthStore.setState({
+      status: 'signedIn',
+      profile: { id: 'u2', full_name: 'Malika', email: 'm@k.uz', gender: 'female', position: 'Buxgalter' },
+    });
+    render(<CharacterSelectScreen />);
+    const own = screen.getByRole('radio', { name: /Malika/ });
+    expect(own).toBeChecked();
+    expect(own).toHaveAttribute('value', 'guli');
+    expect(screen.getByRole('radio', { name: /Bek/ })).toBeDisabled();
+  });
 });
 
 describe('simulyatsiyalar xavfsizligi', () => {

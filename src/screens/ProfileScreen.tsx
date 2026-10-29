@@ -7,6 +7,7 @@ import { totalStars, useGameStore } from '../app/store';
 import { auth as ta, profile as t } from '../content/uz/extra';
 import { MISSION_LIST } from '../missions/data';
 import { Button } from '../ui/Button';
+import { GenderPicker } from '../ui/GenderPicker';
 import { Select, type SelectOption } from '../ui/Select';
 import styles from './aux.module.css';
 
@@ -29,12 +30,14 @@ export function ProfileScreen() {
   const ids = useId();
 
   const [name, setName] = useState(profile?.full_name ?? '');
+  const [gender, setGender] = useState(profile?.gender ?? null);
   const [position, setPosition] = useState(profile?.position ?? '');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setName(profile?.full_name ?? '');
+    setGender(profile?.gender ?? null);
     setPosition(profile?.position ?? '');
   }, [profile]);
 
@@ -53,10 +56,11 @@ export function ProfileScreen() {
     e.preventDefault();
     const n = name.trim();
     if (n.length < 2) return setError(ta.errors.name);
+    if (!gender) return setError(ta.errors.gender);
     if (!position) return setError(ta.errors.position);
     setError(null);
     setSaving(true);
-    const res = await saveProfile({ full_name: n, position });
+    const res = await saveProfile({ full_name: n, gender, position });
     setSaving(false);
     if (res.ok) pushToast(t.saved, 'success');
     else setError(res.error ?? null);
@@ -109,6 +113,7 @@ export function ProfileScreen() {
               </label>
               <input id={`${ids}-name`} type="text" autoComplete="name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
+            <GenderPicker name={`${ids}-gender`} legend={ta.gender} hint={ta.required} value={gender} options={ta.genderOptions} onChange={setGender} />
             <div className={styles.field}>
               <label htmlFor={`${ids}-position`}>
                 {ta.position} <span className={styles.req}>· {ta.required}</span>

@@ -36,7 +36,7 @@ Supabase is optional: without `.env.local` the game runs entirely in guest mode 
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. Apply migrations — from the terminal: add `SUPABASE_ACCESS_TOKEN=sbp_…` ([Personal Access Token](https://supabase.com/dashboard/account/tokens); no database password required) or `SUPABASE_DB_URL` (the "Session pooler" string) to `.env.local`, then run `bun run db:migrate` and `bun run db:verify`. `db:migrate` applies `supabase/migrations/*.sql` in order. Alternative: run the migrations one by one in the **SQL Editor**. The migrations create:
-   - `profiles` — name, position, and email;
+   - `profiles` — name, gender (male → Bek, female → Guli), position, and email;
    - `mission_results`, `quiz_results` — one row per attempt;
    - RLS policies — users can only read their own rows;
    - `get_leaderboard()` — returns only "Name L." and scores.
