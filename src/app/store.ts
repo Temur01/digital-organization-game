@@ -35,6 +35,8 @@ export interface GameStore {
   storageAvailable: boolean;
   briefingMissionId: MissionId | null;
   lastResult: MissionResult | null;
+  /** Oxirgi natijadan oldingi jami yulduzlar (unvon oshganini ko‘rsatish uchun) */
+  starsBefore: number;
   mission: MissionRuntimeState | null;
   toasts: Toast[];
 
@@ -56,6 +58,10 @@ export interface GameStore {
 
 let toastSeq = 0;
 
+export function totalStars(progress: LocalProgress): number {
+  return Object.values(progress.missions).reduce((sum, m) => sum + m.bestStars, 0);
+}
+
 function persist(progress: LocalProgress): LocalProgress {
   saveProgress(progress);
   return progress;
@@ -74,6 +80,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     storageAvailable: isStorageAvailable(),
     briefingMissionId: null,
     lastResult: null,
+    starsBefore: 0,
     mission: null,
     toasts: [],
 
@@ -140,8 +147,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
       if (next.phase === 'completed' || next.phase === 'failed') {
         // Natija avval saqlanadi, keyin ekran almashadi
         const result = buildResult(next, mission);
+        const starsBefore = totalStars(get().progress);
         const progress = persist(applyResult(get().progress, result, mission.unlocks));
-        set({ mission: null, lastResult: result, progress, screen: 'result', toasts: [] });
+        set({ mission: null, lastResult: result, starsBefore, progress, screen: 'result', toasts: [] });
         return;
       }
       set({ mission: next });

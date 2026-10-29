@@ -1,4 +1,5 @@
 import { companyConfig as c } from '../../app/config';
+import { NPC_ART } from '../../content/characters';
 import type { Mission } from '../../types/models';
 import { officeRoom } from '../rooms';
 
@@ -6,13 +7,20 @@ export const m1Phishing: Mission = {
   id: 'm1-phishing',
   order: 1,
   title: 'Shoshilinch hisob-faktura',
+  subtitle: 'Pochtada tuzoq bor',
+  difficulty: 0,
+  minutes: 4,
+  facts: [
+    'Ko‘plab kiberhujumlar aynan bitta fishing xatdan boshlanadi.',
+    'Hujumchilar ko‘pincha haqiqiy domenga juda o‘xshash manzil ro‘yxatdan o‘tkazadi: bitta harf yoki chiziqcha farq qiladi.',
+  ],
   topicLabel: 'Fishing xati',
   topics: ['phishing'],
   icon: '✉️',
   briefing: [
-    'Dushanba, ertalab. Rahbaringiz: «Pochtani ko‘rib chiq, bugun muhim xatlar bor».',
-    'Pochtada uchta yangi xat bor. Ulardan biri sizni shoshiltirmoqda.',
-    'Xatlarni diqqat bilan o‘qing, xavf belgilarini toping va to‘g‘ri qaror qabul qiling.',
+    'Dushanba, 09:00. Ofisda kofe hidi, rahbaringiz shoshib o‘tib ketdi: «Pochtani ko‘rib chiq, bugun muhim xatlar bor!»',
+    'Pochtada uchta yangi xat. Ulardan biri o‘zini buxgalteriya deb tanishtiradi va «2 soatda hisobingiz bloklanadi» deb qo‘rqitmoqda.',
+    'Vazifangiz: tuzoqni fosh qilish, xavf belgilarini topish va to‘g‘ri harakat qilish.',
   ],
   room: officeRoom,
   objectives: [
@@ -28,7 +36,9 @@ export const m1Phishing: Mission = {
       ariaLabel: 'Kompyuter — pochtani ochish',
       bounds: { x: 440, y: 216, width: 60, height: 56 },
       interactPoint: { x: 470, y: 350 },
+      doneWhen: { all: ['done:m1-d-action'] },
       action: { type: 'openSim', app: 'email' },
+      actionWhenDone: { type: 'openSim', app: 'email' },
     },
     {
       id: 'm1-colleague',
@@ -39,6 +49,8 @@ export const m1Phishing: Mission = {
       interactPoint: { x: 760, y: 480 },
       npc: {
         name: 'Dilnoza',
+        art: NPC_ART.woman.art,
+        faceX: NPC_ART.woman.faceX,
         look: { skin: 0xc99a72, skinShade: 0xa97c56, hair: 0x1f1612, hairStyle: 'bun', top: 0x7b5ea7, bottom: 0x33334d, shoes: 0x222222, accent: 'none' },
       },
       action: { type: 'dialog', dialogId: 'm1-dlg-colleague' },

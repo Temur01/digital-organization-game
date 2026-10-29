@@ -1,13 +1,18 @@
+import { motion } from 'motion/react';
 import { useState } from 'react';
 import { companyConfig } from '../app/config';
 import { useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { continueTarget, hasAnyProgress } from '../app/transitions';
+import { CHARACTERS } from '../content/characters';
 import { ui } from '../content/uz/ui';
 import { Button } from '../ui/Button';
+import { CharacterArt } from '../ui/CharacterArt';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Modal } from '../ui/Modal';
 import styles from './screens.module.css';
+
+const FLOATERS = ['✉️', '🔒', '🛡️', '🔑', '📱', '💾', '🔍', '⚠️', '🧩', '📎', '🛰️', '💡'];
 
 export function TitleScreen() {
   const progress = useGameStore((s) => s.progress);
@@ -21,32 +26,107 @@ export function TitleScreen() {
 
   const onContinue = () => (continueTarget(progress) === 'map' ? goTo('map') : openCharacterSelect());
   const onNewGame = () => (canContinue ? setDialog('newGame') : newGame());
+  const rise = (i: number) => ({
+    initial: { opacity: 0, y: 24 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: 0.15 + i * 0.09, type: 'spring' as const, stiffness: 220, damping: 22 },
+  });
 
   return (
     <main className={styles.title}>
-      <div className={styles.titleCard}>
-        <svg className={styles.logo} viewBox="0 0 64 64" aria-hidden="true">
-          <path d="M32 4 8 14v16c0 14 10 24 24 30 14-6 24-16 24-30V14z" fill="var(--color-primary)" />
-          <path d="M22 32l7 7 14-15" stroke="#fff" strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <h1 ref={heading} tabIndex={-1} className={styles.titleHeading}>
+      <div className={styles.orbs} aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className={styles.floaters} aria-hidden="true">
+        {FLOATERS.map((icon, i) => (
+          <span
+            key={i}
+            className={styles.floater}
+            style={{ left: `${(i * 37 + 5) % 100}%`, animationDelay: `${-i * 2.1}s`, animationDuration: `${18 + (i % 4) * 5}s` }}
+          >
+            {icon}
+          </span>
+        ))}
+      </div>
+
+      <section className={styles.heroText}>
+        <motion.span className={styles.pill} {...rise(0)}>
+          <span className={styles.pillDot} aria-hidden="true" /> {ui.title.eyebrow}
+        </motion.span>
+        <motion.h1 ref={heading} tabIndex={-1} className={[styles.titleHeading, 'gradient-text'].join(' ')} {...rise(1)}>
           {companyConfig.gameTitle}
-        </h1>
-        <p className={styles.tagline}>{ui.title.tagline}</p>
-        <div className={styles.menu}>
-          {canContinue && <Button onClick={onContinue}>{ui.title.continue}</Button>}
-          <Button variant={canContinue ? 'secondary' : 'primary'} onClick={onNewGame}>
-            {ui.title.newGame}
+        </motion.h1>
+        <motion.p className={styles.tagline} {...rise(2)}>
+          {ui.title.tagline}
+        </motion.p>
+
+        <motion.div className={styles.ctaRow} {...rise(3)}>
+          {canContinue && (
+            <Button className={styles.ctaBig} onClick={onContinue}>
+              <span aria-hidden="true">▶</span> {ui.title.continue}
+            </Button>
+          )}
+          <Button className={styles.ctaBig} variant={canContinue ? 'secondary' : 'primary'} onClick={onNewGame}>
+            <span aria-hidden="true">{canContinue ? '↻' : '▶'}</span> {ui.title.newGame}
           </Button>
-          <Button variant="secondary" onClick={openSettings}>
-            {ui.title.settings}
+        </motion.div>
+
+        <motion.ul className={styles.statRow} {...rise(4)}>
+          {ui.title.stats.map((s) => (
+            <li key={s.label} className={styles.statCard}>
+              <span aria-hidden="true">{s.icon}</span>
+              <strong>{s.value}</strong>
+              <span>{s.label}</span>
+            </li>
+          ))}
+        </motion.ul>
+
+        <motion.div className={styles.linkRow} {...rise(5)}>
+          <Button variant="ghost" onClick={openSettings}>
+            <span aria-hidden="true">⚙️</span> {ui.title.settings}
           </Button>
           <Button variant="ghost" onClick={() => setDialog('about')}>
-            {ui.title.about}
+            <span aria-hidden="true">ℹ️</span> {ui.title.about}
           </Button>
-        </div>
-        <p className={styles.simNote}>{ui.common.simulationNote}</p>
-      </div>
+        </motion.div>
+        <motion.p className={styles.simNote} {...rise(6)}>
+          <span aria-hidden="true">🔒</span> {ui.common.simulationNote}
+        </motion.p>
+      </section>
+
+      <section className={styles.heroArt} aria-hidden="true">
+        <div className={styles.glowRing} />
+        <motion.div
+          className={styles.heroBek}
+          initial={{ opacity: 0, x: -60, rotate: -4 }}
+          animate={{ opacity: 1, x: 0, rotate: 0 }}
+          transition={{ delay: 0.25, type: 'spring', stiffness: 120, damping: 16 }}
+        >
+          <CharacterArt character={CHARACTERS.bek} height="100%" float />
+        </motion.div>
+        <motion.div
+          className={styles.heroGuli}
+          initial={{ opacity: 0, x: 60, rotate: 4 }}
+          animate={{ opacity: 1, x: 0, rotate: 0 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 120, damping: 16 }}
+        >
+          <CharacterArt character={CHARACTERS.guli} height="100%" float className={styles.floatDelay} />
+        </motion.div>
+        {ui.title.badges.map((b, i) => (
+          <motion.span
+            key={b}
+            className={[styles.floatBadge, styles[`floatBadge${i}`]].join(' ')}
+            initial={{ opacity: 0, scale: 0.4 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8 + i * 0.18, type: 'spring', stiffness: 300, damping: 14 }}
+          >
+            {b}
+          </motion.span>
+        ))}
+      </section>
+
       {dialog === 'newGame' && (
         <ConfirmDialog
           title={ui.title.newGameConfirmTitle}

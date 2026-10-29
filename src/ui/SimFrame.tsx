@@ -15,8 +15,13 @@ interface SimFrameProps {
 /** Barcha simulyatsiya oynalari uchun ramka: «SIMULYATSIYA» yorlig‘i doim ko‘rinadi. */
 export function SimFrame({ title, icon, onClose, children, toolbar }: SimFrameProps) {
   return (
-    <Modal title={title} hideTitle onEscape={onClose} size="lg" className={styles.simModal}>
+    <Modal title={title} hideTitle onEscape={onClose} size="lg" className={[styles.simModal, 'simLight'].join(' ')}>
       <div className={styles.simHeader}>
+        <span className={styles.simDots} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
         <span className={styles.simTitle} aria-hidden="true">
           <span>{icon}</span> {title}
         </span>

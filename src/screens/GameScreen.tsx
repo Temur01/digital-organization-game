@@ -3,7 +3,7 @@ import { useReducedMotion, usePlayer } from '../app/hooks';
 import { useActiveMission, useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
 import { GameBridge } from '../game/bridge';
-import { createScene } from '../game/createScene';
+import { createScene } from '../game/three/createScene3D';
 import { isHotspotDone, isHotspotEnabled, isHotspotVisible, type MissionAction } from '../missions/engine/missionReducer';
 import { SimEmailClient } from '../sim/SimEmailClient';
 import { SimItPortal } from '../sim/SimItPortal';
@@ -27,6 +27,8 @@ const SIMS: Record<SimAppId, (p: SimProps) => JSX.Element | null> = {
   phone: SimPhone,
   itPortal: SimItPortal,
 };
+
+const EMOTES = { safe: '😎', risky: '🤔', critical: '😱' } as const;
 
 export function GameScreen() {
   const active = useActiveMission();
@@ -100,6 +102,7 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
             bridge.send({ type: 'setHotspotStates', states: latest.current.hotspotStates });
             bridge.send({ type: 'setReducedMotion', value: latest.current.reducedMotion });
             dispatch({ type: 'SCENE_READY' });
+            window.setTimeout(() => bridge.send({ type: 'emote', symbol: '👋' }), 700);
             break;
           case 'error':
             setSceneError(true);
@@ -126,6 +129,21 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
     }
   }, [isLoading, bridge, mission, player.id]);
 
+  // Qaror natijasi: sahnaga qaytganda personaj ustida emoji
+  const pendingEmote = useRef<string | null>(null);
+  const pendingOutcome = state.pendingFeedback
+    ? mission.decisions[state.pendingFeedback.decisionId]?.choices.find((c) => c.id === state.pendingFeedback?.choiceId)?.outcome
+    : undefined;
+  useEffect(() => {
+    if (pendingOutcome) pendingEmote.current = EMOTES[pendingOutcome];
+  }, [pendingOutcome]);
+  useEffect(() => {
+    if (exploring && pendingEmote.current) {
+      bridge.send({ type: 'emote', symbol: pendingEmote.current });
+      pendingEmote.current = null;
+    }
+  }, [exploring, bridge]);
+
   useEffect(() => bridge.send({ type: 'setHotspotStates', states: hotspotStates }), [bridge, hotspotStates]);
   useEffect(() => bridge.send({ type: 'setPaused', paused: !exploring }), [bridge, exploring]);
   useEffect(() => bridge.send({ type: 'setReducedMotion', value: reducedMotion }), [bridge, reducedMotion]);
@@ -148,6 +166,11 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
   const send = useCallback((a: MissionAction) => dispatch(a), [dispatch]);
   const closeOverlay = useCallback(() => dispatch({ type: 'CLOSE_OVERLAY' }), [dispatch]);
   const nearHotspot = nearId ? mission.hotspots.find((h) => h.id === nearId) : undefined;
+  const npcArt = useMemo(() => {
+    const out: Record<string, { art: string; faceX: number }> = {};
+    for (const h of mission.hotspots) if (h.npc?.art) out[h.npc.name] = { art: h.npc.art, faceX: h.npc.faceX ?? 0.5 };
+    return out;
+  }, [mission]);
 
   const overlay = state.activeOverlay;
   const base: OverlayRef | null = overlay?.type === 'decision' ? overlay.returnTo : overlay;
@@ -177,7 +200,7 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
       <HotspotList hotspots={mission.hotspots} states={hotspotStates} onActivate={activate} forceVisible={settings.listMode || sceneError} />
 
       {base?.type === 'dialog' && mission.dialogs[base.dialogId] && (
-        <DialogPanel key={base.dialogId} dialog={mission.dialogs[base.dialogId]!} playerName={player.name} onClose={closeOverlay} />
+        <DialogPanel key={base.dialogId} dialog={mission.dialogs[base.dialogId]!} player={player} npcs={npcArt} onClose={closeOverlay} />
       )}
       {base?.type === 'sim' && (() => {
         const Sim = SIMS[base.app];

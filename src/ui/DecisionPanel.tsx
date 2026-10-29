@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { ui } from '../content/uz/ui';
 import type { Decision } from '../types/models';
@@ -35,17 +36,32 @@ export function DecisionPanel({ decision, playerName, onChoose, onEscape }: Deci
 
   return (
     <Modal title={decision.prompt} onEscape={onEscape} size="md">
-      {decision.context && <p className={styles.context}>{fillName(decision.context, playerName)}</p>}
+      <p className={styles.decisionTag} aria-hidden="true">
+        {ui.decision.tag}
+      </p>
+      {decision.context && (
+        <motion.p className={styles.context} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
+          {fillName(decision.context, playerName)}
+        </motion.p>
+      )}
       <ol ref={listRef} className={styles.choiceList}>
         {choices.map((c, i) => (
-          <li key={c.id}>
+          <motion.li
+            key={c.id}
+            initial={{ opacity: 0, x: -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.08 + i * 0.07, type: 'spring', stiffness: 420, damping: 28 }}
+          >
             <button type="button" className={styles.choiceButton} onClick={() => onChoose(c.id)} data-autofocus={i === 0 ? '' : undefined}>
               <span className={styles.choiceKey} aria-hidden="true">
                 {i + 1}
               </span>
               {fillName(c.label, playerName)}
+              <span className={styles.choiceArrow} aria-hidden="true">
+                →
+              </span>
             </button>
-          </li>
+          </motion.li>
         ))}
       </ol>
       <p className={styles.muted}>{ui.decision.hint}</p>

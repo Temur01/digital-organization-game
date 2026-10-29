@@ -6,13 +6,20 @@ export const m3MfaIncident: Mission = {
   id: 'm3-mfa-incident',
   order: 3,
   title: 'Tungi bildirishnomalar',
+  subtitle: 'Kod — sizning kalitingiz',
+  difficulty: 2,
+  minutes: 6,
+  facts: [
+    'Ketma-ket MFA so‘rovlari yuborib, foydalanuvchini charchatib «Tasdiqlash»ni bostirish usuli «MFA fatigue» hujumi deyiladi.',
+    'Uzun parol iborasi qisqa «murakkab» paroldan ham kuchliroq, ham eslab qolish osonroq.',
+  ],
   topicLabel: 'Parol, MFA va hodisani xabar qilish',
   topics: ['mfa', 'password', 'incident'],
   icon: '📱',
   briefing: [
-    'Kech qolib ishlayapsiz. Telefoningizga ketma-ket «Kirishni tasdiqlaysizmi?» so‘rovlari kela boshladi — lekin siz hech qayerga kirmayapsiz.',
-    'Bir ozdan keyin «IT yordam»dan qo‘ng‘iroq bo‘ladi.',
-    'Vaziyatni xavfsiz hal qiling, hodisani xabar qiling va parolingizni almashtiring.',
+    'Soat 21:47. Ofis bo‘m-bo‘sh, faqat sizning stolingizda chiroq yonib turibdi.',
+    'Birdan telefon titray boshladi: «Kirishni tasdiqlaysizmi?» Yana. Yana. Siz esa hech qayerga kirmayapsiz…',
+    'Bir daqiqadan so‘ng «IT yordam»dan qo‘ng‘iroq. Vazifangiz: hisobingizni himoya qilish, hodisani xabar qilish va parolni yangilash.',
   ],
   room: nightOfficeRoom,
   objectives: [
@@ -321,5 +328,5 @@ export const m3MfaIncident: Mission = {
     'Hodisani darhol xabar qiling — hatto ishonchingiz komil bo‘lmasa ham.',
     'Har bir hisob uchun alohida uzun parol iborasi va parol menejeri.',
   ],
-  unlocks: [],
+  unlocks: ['m4-coffee-break'],
 };

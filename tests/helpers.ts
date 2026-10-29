@@ -64,6 +64,23 @@ export const SAFE_SCRIPTS: Record<MissionId, MissionAction[]> = {
     choose('m3-d-password', 'passphrase'),
     ACK,
   ],
+  'm4-coffee-break': [
+    READY,
+    act('m4-computer'),
+    CLOSE,
+    choose('m4-d-lock', 'lock'),
+    ACK,
+    act('m4-qr'),
+    CLOSE,
+    choose('m4-d-qr', 'report'),
+    ACK,
+    act('m4-coffee'),
+    CLOSE,
+    act('m4-colleague'),
+    CLOSE,
+    choose('m4-d-wifi', 'guest'),
+    ACK,
+  ],
 };
 
 export function run(missionId: MissionId, actions: MissionAction[], from?: MissionRuntimeState): MissionRuntimeState {

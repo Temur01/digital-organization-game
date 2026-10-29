@@ -1,38 +1,64 @@
+import bekArt from '../assets/characters/bek.png';
+import bekWalk from '../assets/characters/bek-walk.png';
+import colleagueMan from '../assets/characters/colleague-man.png';
+import colleagueWoman from '../assets/characters/colleague-woman.png';
+import guliArt from '../assets/characters/guli.png';
+import guliWalk from '../assets/characters/guli-walk.png';
 import type { Character, CharacterId } from '../types/models';
 
 export const CHARACTERS: Record<CharacterId, Character> = {
   bek: {
     id: 'bek',
     name: 'Bek',
-    shortDescription: 'Yangi xodim. Diqqatli va savolga tez javob izlaydi.',
+    role: 'Savdo bo‘limi menejeri',
+    shortDescription: 'Ishga birinchi kun. Hamma bilan tez til topishadi, lekin har bir xatni bosishdan oldin o‘ylab ko‘rishni o‘rganmoqda.',
+    traits: ['Tezkor', 'Muloqotchan', 'Optimist'],
+    quote: '«Shubhalansang — tekshir!»',
+    art: bekArt,
+    accent: '#3dd6c6',
+    faceX: 0.62,
+    walkSheet: bekWalk,
     look: {
-      skin: 0xd9a77e,
-      skinShade: 0xb9875f,
-      hair: 0x3b2a20,
+      skin: 0xe8b48c,
+      skinShade: 0xc8946c,
+      hair: 0x1c1717,
       hairStyle: 'short',
-      top: 0x7fb3e0,
-      bottom: 0x2c3e66,
-      shoes: 0x5a3b28,
+      top: 0xf3ece2,
+      bottom: 0x24304f,
+      shoes: 0x1b1b1b,
       accent: 'lanyard',
     },
   },
   guli: {
     id: 'guli',
     name: 'Guli',
-    shortDescription: 'Yangi xodim. Tartibli va har narsani tekshirib ko‘radi.',
+    role: 'Moliya bo‘limi tahlilchisi',
+    shortDescription: 'Raqamlar va tartibni yaxshi ko‘radi. Har bir tafsilotni ko‘zdan kechirmaguncha hech narsaga ishonmaydi.',
+    traits: ['Diqqatli', 'Tartibli', 'Qat’iyatli'],
+    quote: '«Tafsilotda yashiringan xavfni topaman.»',
+    art: guliArt,
+    accent: '#a78bfa',
+    faceX: 0.34,
+    walkSheet: guliWalk,
     look: {
-      skin: 0xe1b48c,
-      skinShade: 0xc29470,
-      hair: 0x2e2019,
-      hairStyle: 'braid',
-      top: 0x2a9d8f,
-      topInner: 0xffffff,
-      bottom: 0x4a4e5a,
-      shoes: 0x2b2b2b,
+      skin: 0xefc4a0,
+      skinShade: 0xcfa07c,
+      hair: 0x2a1d17,
+      hairStyle: 'bun',
+      top: 0x1f6b6b,
+      topInner: 0xf1e6d6,
+      bottom: 0x24304f,
+      shoes: 0x1f2a44,
       accent: 'pocket',
     },
   },
 };
+
+/** NPC illyustratsiyalari (src/assets/collegue.png dan kesilgan) */
+export const NPC_ART = {
+  man: { art: colleagueMan, faceX: 0.62 },
+  woman: { art: colleagueWoman, faceX: 0.42 },
+} as const;
 
 export const CHARACTER_IDS: CharacterId[] = ['bek', 'guli'];
 

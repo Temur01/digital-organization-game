@@ -1,3 +1,4 @@
+import { motion, useAnimationControls } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { ui } from '../content/uz/ui';
 import { isDecisionDone } from '../missions/engine/missionReducer';
@@ -13,12 +14,21 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
   const find = useClueFinder(state, dispatch);
   const [requests, setRequests] = useState(3);
   const pushDone = phone ? isDecisionDone(state, phone.mfa.decisionId) : true;
+  const shake = useAnimationControls();
+
+  useEffect(() => {
+    void shake.start({ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 20 } });
+  }, [shake]);
 
   useEffect(() => {
     if (pushDone) return;
-    const t = window.setInterval(() => setRequests((n) => Math.min(n + 1, 99)), 4000);
+    const t = window.setInterval(() => {
+      setRequests((n) => Math.min(n + 1, 99));
+      // Yangi so‘rov — telefon titraydi (harakat kamaytirilganda MotionConfig buni o‘chiradi)
+      void shake.start({ x: [0, -6, 6, -5, 5, -3, 3, 0], rotate: [0, -1.5, 1.5, -1, 1, 0], transition: { duration: 0.45 } });
+    }, 4000);
     return () => window.clearInterval(t);
-  }, [pushDone]);
+  }, [pushDone, shake]);
 
   if (!phone) return null;
   const { mfa, call } = phone;
@@ -36,9 +46,23 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
     >
       <div className={styles.phone}>
         {!pushDone && (
-          <section className={styles.phoneCard} aria-labelledby="mfa-title">
+          <motion.section
+            className={styles.phoneCard}
+            aria-labelledby="mfa-title"
+            animate={shake}
+            initial={{ y: -40, opacity: 0 }}
+          >
             <p className={styles.phoneApp}>
-              🔐 {mfa.app} <span className={styles.badgeCount}>{ui.sim.phone.requests(requests)}</span>
+              🔐 {mfa.app}{' '}
+              <motion.span
+                key={requests}
+                className={styles.badgeCount}
+                initial={{ scale: 1.6 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 12 }}
+              >
+                {ui.sim.phone.requests(requests)}
+              </motion.span>
             </p>
             <h3 id="mfa-title" className={styles.phoneTitle}>
               <ClueTarget clueId={mfa.titleClueId} markMode={markMode} found={isFound(state, mfa.titleClueId)} onFind={find}>
@@ -62,12 +86,23 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
                 </Button>
               ))}
             </div>
-          </section>
+          </motion.section>
         )}
 
         {pushDone && !callDone && (
-          <section className={styles.phoneCard} aria-labelledby="call-title">
-            <p className={styles.phoneApp}>📞 {ui.sim.phone.incomingCall}</p>
+          <motion.section
+            className={styles.phoneCard}
+            aria-labelledby="call-title"
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+          >
+            <div className={styles.callAvatar} aria-hidden="true">
+              <span className={styles.ring} />
+              <span className={[styles.ring, styles.ringDelay].join(' ')} />
+              <span className={styles.callIcon}>📞</span>
+            </div>
+            <p className={styles.phoneApp}>{ui.sim.phone.incomingCall}</p>
             <h3 id="call-title" className={styles.phoneTitle}>
               {call.caller} <span className={styles.muted}>{call.callerNumber}</span>
             </h3>
@@ -88,10 +123,14 @@ export function SimPhone({ mission, state, dispatch, onClose }: SimProps) {
                 </Button>
               ))}
             </div>
-          </section>
+          </motion.section>
         )}
 
-        {callDone && <p className={styles.notice}>{phone.doneText}</p>}
+        {callDone && (
+          <motion.p className={styles.notice} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            ✅ {phone.doneText}
+          </motion.p>
+        )}
       </div>
       {markMode && !callDone && <p className={styles.markHint}>{ui.sim.markModeHint}</p>}
     </SimFrame>

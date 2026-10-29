@@ -3,6 +3,7 @@ import { useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
 import type { MissionAction } from '../missions/engine/missionReducer';
 import type { Mission, MissionRuntimeState } from '../types/models';
+import { burstAt } from '../ui/anim';
 import { Button } from '../ui/Button';
 import styles from './sim.module.css';
 
@@ -69,7 +70,14 @@ export function ClueTarget({ clueId, markMode, found, onFind, children, block }:
   const foundText = found ? <span className="visually-hidden"> ({ui.result.clueFoundLabel})</span> : null;
   if (markMode) {
     return (
-      <button type="button" className={cls} onClick={() => onFind(clueId)}>
+      <button
+        type="button"
+        className={cls}
+        onClick={(e) => {
+          if (clueId && !found) burstAt(e.currentTarget);
+          onFind(clueId);
+        }}
+      >
         {children}
         {foundText}
       </button>

@@ -8,7 +8,9 @@ export type SceneCommand =
   | { type: 'setPaused'; paused: boolean }
   | { type: 'walkToHotspot'; hotspotId: string }
   | { type: 'setHotspotStates'; states: Record<string, HotspotVisualState> }
-  | { type: 'setReducedMotion'; value: boolean };
+  | { type: 'setReducedMotion'; value: boolean }
+  /** Personaj ustida emoji pufakchasi (masalan, qaror natijasidan keyin) */
+  | { type: 'emote'; symbol: string };
 
 export type SceneEvent =
   | { type: 'ready' }

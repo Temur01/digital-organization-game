@@ -1,3 +1,4 @@
+import { NPC_ART } from '../../content/characters';
 import type { Mission } from '../../types/models';
 import { lobbyRoom } from '../rooms';
 
@@ -5,13 +6,20 @@ export const m2SuspiciousFile: Mission = {
   id: 'm2-suspicious-file',
   order: 2,
   title: 'Topilgan fleshka',
+  subtitle: 'Qiziqish — xakerning eng yaxshi do‘sti',
+  difficulty: 1,
+  minutes: 5,
+  facts: [
+    'Ba’zi zararli fleshkalar ulanishi bilan o‘zini klaviatura deb tanitadi va buyruqlarni o‘zi teradi.',
+    'Windows sukut bo‘yicha fayl kengaytmalarini yashiradi — shuning uchun «hujjat.pdf.exe» oddiy PDF bo‘lib ko‘rinadi.',
+  ],
   topicLabel: 'Shubhali fayl va qurilma',
   topics: ['malware'],
   icon: '💾',
   briefing: [
-    'Ishga kelayotib, qabulxona yonida polda «Mukofotlar_2026» yozuvli fleshka yotganini ko‘rasiz.',
-    'Stolingizga yetganingizda messenjerda notanish hamkordan fayl kelgan.',
-    'Qurilma va fayl bilan xavfsiz ishlang.',
+    'Ertalab qabulxona yonida polda yaltiroq fleshka yotibdi. Ustida «Mukofotlar_2026» deb yozilgan… Qiziq, a?',
+    'Stolingizga yetishingiz bilan messenjerda notanish «hamkor»dan shoshilinch shartnoma keldi.',
+    'Vazifangiz: qiziqishni yengib, qurilma va fayl bilan xavfsiz ishlash.',
   ],
   room: lobbyRoom,
   objectives: [
@@ -39,6 +47,8 @@ export const m2SuspiciousFile: Mission = {
       interactPoint: { x: 200, y: 350 },
       npc: {
         name: 'Javlon',
+        art: NPC_ART.man.art,
+        faceX: NPC_ART.man.faceX,
         look: { skin: 0xc8946b, skinShade: 0xa8764f, hair: 0x1b1b1b, hairStyle: 'short', top: 0x6b7280, bottom: 0x2d2d38, shoes: 0x1e1e1e, accent: 'none' },
       },
       action: { type: 'dialog', dialogId: 'm2-dlg-reception' },
@@ -63,7 +73,9 @@ export const m2SuspiciousFile: Mission = {
       ariaLabel: 'Kompyuter — messenjer va yuklanmalarni ochish',
       bounds: { x: 810, y: 286, width: 56, height: 52 },
       interactPoint: { x: 840, y: 440 },
+      doneWhen: { all: ['done:m2-d-file'] },
       action: { type: 'openSim', app: 'workstation' },
+      actionWhenDone: { type: 'openSim', app: 'workstation' },
     },
   ],
   dialogs: {

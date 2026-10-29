@@ -1,3 +1,4 @@
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect } from 'react';
 import { BriefingScreen } from '../screens/BriefingScreen';
 import { CharacterSelectScreen } from '../screens/CharacterSelectScreen';
@@ -35,9 +36,19 @@ export function App() {
 
   const Screen = SCREENS[screen];
   return (
-    <>
-      <Screen key={screen} />
+    <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'} transition={{ type: 'spring', stiffness: 380, damping: 30 }}>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={screen}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+        >
+          <Screen />
+        </motion.div>
+      </AnimatePresence>
       <Toasts />
-    </>
+    </MotionConfig>
   );
 }

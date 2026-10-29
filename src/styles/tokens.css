@@ -1,50 +1,99 @@
+/* Dizayn tokenlari — to‘q «glassmorphism» mavzu. Simulyatsiya oynalari .simLight ichida och palitraga o‘tadi. */
 :root {
-  --color-bg: #eef2f5;
-  --color-surface: #ffffff;
-  --color-surface-alt: #e3ebf1;
-  --color-text: #1d2433;
-  --color-muted: #4b5565;
-  --color-border: #c3ccd6;
-  --color-primary: #1f6f8b;
-  --color-primary-strong: #164f63;
-  --color-on-primary: #ffffff;
-  --color-accent: #f2b134;
-  --color-safe: #1e7d4f;
-  --color-safe-bg: #e3f4ea;
-  --color-risky: #8a5a00;
-  --color-risky-bg: #fff3d6;
-  --color-critical: #b3261e;
-  --color-critical-bg: #fde7e5;
-  --color-focus: #f2b134;
-  --color-backdrop: rgb(16 24 40 / 0.55);
-  --color-stage: #2c3442;
+  color-scheme: dark;
 
-  --radius: 10px;
-  --radius-sm: 6px;
-  --shadow: 0 6px 24px rgb(16 24 40 / 0.16);
+  --color-bg: #070b1a;
+  --color-bg-2: #0d1430;
+  --color-surface: rgb(255 255 255 / 0.06);
+  --color-surface-strong: rgb(18 25 52 / 0.92);
+  --color-surface-alt: rgb(255 255 255 / 0.09);
+  --color-text: #eef2ff;
+  --color-muted: #a3acc9;
+  --color-border: rgb(255 255 255 / 0.13);
+  --color-border-strong: rgb(255 255 255 / 0.26);
+  --color-primary: #3dd6c6;
+  --color-primary-2: #38bdf8;
+  --color-primary-strong: #7ff0e4;
+  --color-on-primary: #03131a;
+  --color-violet: #a78bfa;
+  --color-accent: #ffc857;
+  --color-safe: #34d399;
+  --color-safe-bg: rgb(52 211 153 / 0.14);
+  --color-risky: #fbbf24;
+  --color-risky-bg: rgb(251 191 36 / 0.14);
+  --color-critical: #fb7185;
+  --color-critical-bg: rgb(251 113 133 / 0.14);
+  --color-focus: #fde047;
+  --color-backdrop: rgb(3 6 18 / 0.68);
+  --color-stage: #050816;
+
+  --gradient-primary: linear-gradient(135deg, #3dd6c6 0%, #38bdf8 55%, #a78bfa 100%);
+  --gradient-text: linear-gradient(90deg, #7ff0e4, #93c5fd, #c4b5fd, #7ff0e4);
+  --gradient-danger: linear-gradient(135deg, #fda4af, #fb7185);
+
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow: 0 20px 50px rgb(0 0 0 / 0.35);
+  --shadow-glow: 0 0 0 1px rgb(61 214 198 / 0.35), 0 10px 40px rgb(61 214 198 / 0.25);
+  --blur: blur(18px) saturate(140%);
+
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
   --space-5: 1.5rem;
   --space-6: 2rem;
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', Arial, sans-serif;
-  --transition: 150ms ease;
+  --font: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: 'Unbounded Variable', 'Manrope Variable', system-ui, sans-serif;
+  --transition: 180ms ease;
+}
+
+/* Simulyatsiya ilovalari — haqiqiy dasturlardek och rangda */
+.simLight {
+  color-scheme: light;
+  --color-surface: #ffffff;
+  --color-surface-strong: #ffffff;
+  --color-surface-alt: #eef2f7;
+  --color-text: #141a2e;
+  --color-muted: #4b5565;
+  --color-border: #d3dae4;
+  --color-border-strong: #aab4c3;
+  --color-primary: #0f766e;
+  --color-primary-2: #0369a1;
+  --color-primary-strong: #0b4f4a;
+  --color-on-primary: #ffffff;
+  --color-safe: #047857;
+  --color-safe-bg: #dcfce7;
+  --color-risky: #92400e;
+  --color-risky-bg: #fef3c7;
+  --color-critical: #b91c1c;
+  --color-critical-bg: #fee2e2;
+  --color-focus: #f59e0b;
+  --gradient-primary: linear-gradient(135deg, #0f766e, #0369a1);
+  color: var(--color-text);
 }
 
 :root[data-contrast='high'] {
-  --color-bg: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f0f0f0;
+  --color-bg: #000000;
+  --color-bg-2: #000000;
+  --color-surface: #000000;
+  --color-surface-strong: #000000;
+  --color-surface-alt: #141414;
+  --color-text: #ffffff;
+  --color-muted: #e5e5e5;
+  --color-border: #ffffff;
+  --color-border-strong: #ffffff;
+  --color-primary: #5eead4;
+  --color-focus: #fde047;
+  --gradient-primary: linear-gradient(#5eead4, #5eead4);
+  --gradient-text: linear-gradient(#ffffff, #ffffff);
+  --blur: none;
+}
+:root[data-contrast='high'] .simLight {
   --color-text: #000000;
-  --color-muted: #1f1f1f;
+  --color-muted: #1a1a1a;
   --color-border: #000000;
-  --color-primary: #003a52;
-  --color-primary-strong: #00222f;
-  --color-safe: #00552e;
-  --color-risky: #5c3b00;
-  --color-critical: #8a0000;
-  --color-focus: #c25e00;
+  --color-primary: #004d47;
 }
 
 :root[data-reduced-motion='true'] {

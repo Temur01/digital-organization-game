@@ -24,8 +24,7 @@ describe('store va ekran o‘tishlari', () => {
     const bek = playAs('bek', 'm1-phishing');
     reset();
     const guli = playAs('guli', 'm1-phishing');
-    const strip = ({ finishedAt: _f, ...rest }: typeof bek) => rest;
-    expect(strip(bek)).toEqual(strip(guli));
+    expect({ ...bek, finishedAt: '' }).toEqual({ ...guli, finishedAt: '' });
   });
 
   it('missiya tugagach natija saqlanadi, ekran natijaga o‘tadi va keyingi missiya ochiladi', () => {

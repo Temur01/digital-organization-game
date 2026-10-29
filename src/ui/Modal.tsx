@@ -1,3 +1,4 @@
+import { motion, type TargetAndTransition } from 'motion/react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import styles from './ui.module.css';
 
@@ -66,9 +67,11 @@ export function Modal({ title, hideTitle, onEscape, children, size = 'md', tone 
   }, []);
 
   return (
-    <div className={styles.backdrop}>
-      <div
+    <motion.div className={styles.backdrop} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }}>
+      <motion.div
         ref={ref}
+        initial={ENTER[tone].initial}
+        animate={ENTER[tone].animate}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -79,10 +82,35 @@ export function Modal({ title, hideTitle, onEscape, children, size = 'md', tone 
           {title}
         </h2>
         {children}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
+
+const ENTER: Record<NonNullable<ModalProps['tone']>, { initial: TargetAndTransition; animate: TargetAndTransition }> = {
+  default: {
+    initial: { opacity: 0, y: 28, scale: 0.96 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+  },
+  safe: {
+    initial: { opacity: 0, scale: 0.6, rotate: -3 },
+    animate: { opacity: 1, scale: 1, rotate: 0, transition: { type: 'spring', stiffness: 420, damping: 14 } },
+  },
+  risky: {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: { opacity: 1, scale: 1, x: [0, -12, 12, -8, 8, -4, 0], transition: { duration: 0.5 } },
+  },
+  critical: {
+    initial: { opacity: 0, scale: 1.08 },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      x: [0, -14, 14, -10, 10, -5, 0],
+      boxShadow: ['0 0 0 0 rgba(179,38,30,0)', '0 0 0 14px rgba(179,38,30,0.45)', '0 6px 24px rgba(16,24,40,0.16)'],
+      transition: { duration: 0.6 },
+    },
+  },
+};
 
 export function isModalOpen(): boolean {
   return stack.length > 0;

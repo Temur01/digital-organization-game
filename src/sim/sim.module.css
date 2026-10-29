@@ -39,6 +39,7 @@
 }
 .clueActive {
   cursor: crosshair;
+  animation: markDash 1.2s ease-in-out infinite;
   outline: 2px dashed var(--color-accent);
   outline-offset: 2px;
   background: rgb(242 177 52 / 0.12);
@@ -49,6 +50,17 @@
 .clueFound {
   background: rgb(209 73 91 / 0.15);
   box-shadow: inset 0 -2px 0 var(--color-critical);
+  animation: clueStamp 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes clueStamp {
+  0% {
+    background: rgb(242 177 52 / 0.7);
+    transform: scale(1.08);
+  }
+  100% {
+    background: rgb(209 73 91 / 0.15);
+    transform: scale(1);
+  }
 }
 .clueFound::after {
   content: ' 🔍';
@@ -377,4 +389,97 @@
   .mailLayout {
     grid-template-columns: 1fr;
   }
+}
+
+@keyframes markDash {
+  50% {
+    outline-color: rgb(242 177 52 / 0.35);
+  }
+}
+
+/* Kiruvchi qo‘ng‘iroq — to‘lqinlar */
+.callAvatar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-3);
+  display: grid;
+  place-items: center;
+}
+.callIcon {
+  position: relative;
+  z-index: 1;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  background: var(--color-safe);
+  animation: callWiggle 1.2s ease-in-out infinite;
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--color-safe);
+  animation: ringOut 1.6s ease-out infinite;
+}
+.ringDelay {
+  animation-delay: 0.8s;
+}
+@keyframes ringOut {
+  from {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes callWiggle {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0);
+  }
+  10%,
+  30%,
+  50% {
+    transform: rotate(-14deg);
+  }
+  20%,
+  40% {
+    transform: rotate(14deg);
+  }
+}
+.badgeCount {
+  display: inline-block;
+}
+.mailItem {
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.mailItem:hover {
+  transform: translateX(3px);
+}
+.fileIcon {
+  animation: fileBob 2.4s ease-in-out infinite;
+}
+@keyframes fileBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-3px) rotate(-3deg);
+  }
+}
+.passwordCard {
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+.passwordCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: 0 6px 14px rgb(16 24 40 / 0.1);
 }

@@ -29,7 +29,7 @@ describe('ekranlar', () => {
     const guli = screen.getByRole('radio', { name: /Guli/ });
     await user.click(guli);
     expect(guli).toBeChecked();
-    await user.click(screen.getByRole('button', { name: 'Tasdiqlash' }));
+    await user.click(screen.getByRole('button', { name: /Shu qahramon bilan boshlash/ }));
     expect(useGameStore.getState().screen).toBe('map');
     expect(useGameStore.getState().progress.selectedCharacter).toBe('guli');
     select.unmount();

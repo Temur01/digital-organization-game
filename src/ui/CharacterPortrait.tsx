@@ -1,11 +1,12 @@
 import { hex, IKAT_COLORS } from '../content/characters';
+import styles from './ui.module.css';
 import type { CharacterLook } from '../types/models';
 
 /** Personaj portreti (SVG) — sahnadagi spraytning soddalashtirilgan versiyasi. */
-export function CharacterPortrait({ look, size = 160 }: { look: CharacterLook; size?: number }) {
+export function CharacterPortrait({ look, size = 160, animated = true }: { look: CharacterLook; size?: number; animated?: boolean }) {
   const ikat = IKAT_COLORS.map(hex);
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" focusable="false" className={animated ? styles.portraitIdle : undefined}>
       <circle cx="50" cy="50" r="48" fill="var(--color-surface-alt)" />
       {look.hairStyle === 'braid' && <rect x="62" y="38" width="9" height="40" rx="4.5" fill={hex(look.hair)} />}
       <path d="M20 100 Q20 66 50 64 Q80 66 80 100 Z" fill={hex(look.top)} />
@@ -33,8 +34,12 @@ export function CharacterPortrait({ look, size = 160 }: { look: CharacterLook; s
       {look.hairStyle === 'short' && <path d="M31 38 Q44 26 69 36 L69 28 Q50 14 32 28 Z" fill={hex(look.hair)} />}
       {look.hairStyle !== 'short' && <path d="M31 40 Q50 26 69 40 L68 28 Q50 16 32 28 Z" fill={hex(look.hair)} />}
       {look.hairStyle === 'braid' && <circle cx="66.5" cy="78" r="4" fill={ikat[0]} />}
-      <circle cx="43" cy="45" r="2.2" fill="#2b2b2b" />
-      <circle cx="57" cy="45" r="2.2" fill="#2b2b2b" />
+      <g className={animated ? styles.portraitEyes : undefined}>
+        <circle cx="43" cy="45" r="2.2" fill="#2b2b2b" />
+        <circle cx="57" cy="45" r="2.2" fill="#2b2b2b" />
+      </g>
+      <ellipse cx="38" cy="51" rx="3" ry="1.6" fill="#e07a5f" opacity="0.35" />
+      <ellipse cx="62" cy="51" rx="3" ry="1.6" fill="#e07a5f" opacity="0.35" />
       <path d="M45 53 Q50 56 55 53" stroke="#9a5b4a" strokeWidth="1.8" fill="none" strokeLinecap="round" />
     </svg>
   );

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { useState, type ReactNode } from 'react';
 import { ui } from '../content/uz/ui';
 import { isDecisionDone } from '../missions/engine/missionReducer';
@@ -26,13 +27,24 @@ export function SimEmailClient({ mission, state, dispatch, onClose }: SimProps) 
       <div className={styles.mailLayout}>
         <nav aria-label={ui.sim.email.inbox} className={styles.mailList}>
           <h3 className={styles.paneHeading}>{ui.sim.email.inbox}</h3>
-          {reported.length > 0 && <p className={styles.notice}>{ui.sim.email.reported}</p>}
+          {reported.length > 0 && (
+            <motion.p className={styles.notice} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+              🛡️ {ui.sim.email.reported}
+            </motion.p>
+          )}
           {emails.length === 0 ? (
             <p className={styles.muted}>{ui.sim.email.empty}</p>
           ) : (
             <ul>
-              {[...emails].reverse().map((m) => (
-                <li key={m.id}>
+              <AnimatePresence initial={true}>
+              {[...emails].reverse().map((m, i) => (
+                <motion.li
+                  key={m.id}
+                  layout
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0, transition: { delay: i * 0.08 } }}
+                  exit={{ opacity: 0, x: 80, height: 0, transition: { duration: 0.35 } }}
+                >
                   <button
                     type="button"
                     className={[styles.mailItem, m.id === selectedId ? styles.mailItemActive : ''].join(' ')}
@@ -43,14 +55,17 @@ export function SimEmailClient({ mission, state, dispatch, onClose }: SimProps) 
                     <span className={styles.mailTime}>{m.time}</span>
                     <span className={styles.mailSubject}>{m.subject}</span>
                   </button>
-                </li>
+                </motion.li>
               ))}
+              </AnimatePresence>
             </ul>
           )}
         </nav>
         <section className={styles.mailView} aria-label={selected?.subject ?? ui.sim.email.selectEmail}>
           {selected ? (
-            <EmailView email={selected} markMode={markMode} find={find} {...{ mission, state, dispatch }} />
+            <motion.div key={selected.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+              <EmailView email={selected} markMode={markMode} find={find} {...{ mission, state, dispatch }} />
+            </motion.div>
           ) : (
             <p className={styles.muted}>{ui.sim.email.selectEmail}</p>
           )}

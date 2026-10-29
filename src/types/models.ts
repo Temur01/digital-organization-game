@@ -18,9 +18,22 @@ export interface CharacterLook {
 export interface Character {
   id: CharacterId;
   name: string;
+  role: string;
   shortDescription: string;
+  traits: string[];
+  quote: string;
+  /** Katta illyustratsiya (UI) */
+  art: string;
+  /** UI aksent rangi (CSS) */
+  accent: string;
+  /** Rasm kengligiga nisbatan yuz markazi (0–1) — avatar kesish uchun */
+  faceX: number;
+  /** Yurish sikli: gorizontal sprite varag‘i (8 kadr, o‘ngga qarab) */
+  walkSheet: string;
+  /** Vektor zaxira ko‘rinish (rasm yuklanmasa) */
   look: CharacterLook;
 }
+
 
 // ---------- Xona ----------
 export interface Rect {
@@ -34,7 +47,23 @@ export interface Point {
   y: number;
 }
 
-export type DecorKind = 'desk' | 'table' | 'plant' | 'cabinet' | 'window' | 'rug' | 'wallArt' | 'counter' | 'chair';
+export type DecorKind =
+  | 'desk'
+  | 'table'
+  | 'plant'
+  | 'cabinet'
+  | 'window'
+  | 'rug'
+  | 'wallArt'
+  | 'counter'
+  | 'chair'
+  | 'clock'
+  | 'shelf'
+  | 'cooler'
+  | 'lamp'
+  | 'kitchen'
+  | 'fridge'
+  | 'bistro';
 
 export interface DecorItem {
   kind: DecorKind;
@@ -75,7 +104,7 @@ export type Effect =
   | { type: 'findClue'; clueId: string };
 
 // ---------- Interaktiv obyekt ----------
-export type HotspotKind = 'computer' | 'phone' | 'device' | 'npc' | 'poster' | 'note' | 'door' | 'box';
+export type HotspotKind = 'computer' | 'phone' | 'device' | 'npc' | 'poster' | 'note' | 'door' | 'box' | 'coffee' | 'qr';
 export type HotspotVisualState = 'idle' | 'disabled' | 'done' | 'hidden';
 export type SimAppId = 'email' | 'workstation' | 'phone' | 'itPortal';
 
@@ -87,6 +116,10 @@ export type InteractionAction =
 export interface NpcLook {
   name: string;
   look: CharacterLook;
+  /** Illyustratsiya (bo‘lsa, vektor ko‘rinish o‘rniga ishlatiladi) */
+  art?: string;
+  /** Avatar uchun yuz markazi (0–1) */
+  faceX?: number;
 }
 
 export interface InteractiveObject {
@@ -257,8 +290,8 @@ export interface SimContent {
 }
 
 // ---------- Missiya ----------
-export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident';
-export type MissionTopic = 'phishing' | 'malware' | 'mfa' | 'password' | 'incident';
+export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident' | 'm4-coffee-break';
+export type MissionTopic = 'phishing' | 'malware' | 'mfa' | 'password' | 'incident' | 'physical';
 
 export interface Objective {
   id: string;
@@ -271,7 +304,14 @@ export interface Mission {
   id: MissionId;
   order: number;
   title: string;
+  /** Qisqa jozibador shior */
+  subtitle: string;
   topicLabel: string;
+  /** 0 — oson, 1 — o‘rta, 2 — qiyin */
+  difficulty: 0 | 1 | 2;
+  minutes: number;
+  /** «Bilasizmi?» faktlari (brifing va yuklanish ekrani) */
+  facts: string[];
   topics: MissionTopic[];
   icon: string;
   briefing: string[];
