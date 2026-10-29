@@ -7,14 +7,40 @@ import { flushPending, pullServerBest } from './sync';
 
 /** Ro‘yxatdan o‘tishda kiritilgan profil ma’lumotlari (trigger ishlamasa ham profil yaratish uchun) */
 const PENDING_PROFILE_KEY = 'raqamli-qalqon:pending-profile';
-const PROFILE_COLUMNS = 'id, full_name, email, age, gender, department, position';
+const PROFILE_COLUMNS = 'id, full_name, email, position';
+/** Parolni tiklash havolasidan qaytganini bildiruvchi URL belgisi (?tiklash=1) */
+const RECOVERY_PARAM = 'tiklash';
+
+/**
+ * Parolni tiklash holati:
+ * - pending — havoladan qaytdik, Supabase kodni sessiyaga almashtirmoqda;
+ * - ready — yangi parol o‘rnatish mumkin;
+ * - invalid — havola eskirgan, allaqachon ishlatilgan yoki boshqa brauzerda ochilgan.
+ */
+export type RecoveryState = 'none' | 'pending' | 'ready' | 'invalid';
+
+/**
+ * Router ishga tushishidan oldin (modul yuklanganda) URL’dagi belgini o‘qiymiz va tozalaymiz.
+ * `code` parametriga tegmaymiz — uni Supabase o‘zi almashtiradi va olib tashlaydi.
+ * Xato bo‘lsa (masalan, havola eskirgan) Supabase uni `#error=…` ko‘rinishida qo‘shadi — bu hash-router’ni
+ * buzmasligi uchun kirish sahifasiga almashtiramiz.
+ */
+function consumeRecoveryMarker(): RecoveryState {
+  if (typeof window === 'undefined') return 'none';
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has(RECOVERY_PARAM)) return 'none';
+  const failed = /(^|[#?&/])error(_code|_description)?=/.test(`${url.search}${url.hash}`);
+  const hasCode = url.searchParams.has('code');
+  url.searchParams.delete(RECOVERY_PARAM);
+  for (const k of ['error', 'error_code', 'error_description']) url.searchParams.delete(k);
+  url.hash = '#/kirish';
+  window.history.replaceState(window.history.state, '', url.toString());
+  return !failed && hasCode ? 'pending' : 'invalid';
+}
 
 export interface RegisterInput {
   fullName: string;
   email: string;
-  age: number | null;
-  gender: 'male' | 'female' | null;
-  department: string;
   position: string;
 }
 
@@ -27,11 +53,18 @@ interface AuthStore {
   userId: string | null;
   profile: Profile | null;
   syncing: boolean;
+  recovery: RecoveryState;
   init(): () => void;
   /** Email + parol bilan ro‘yxatdan o‘tish. `needsConfirm` — Supabase’da email tasdiqlash yoqilgan bo‘lsa */
   register(input: RegisterInput, password: string): Promise<{ ok: true; needsConfirm: boolean } | { ok: false; error: string }>;
   signIn(email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }>;
-  saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'age' | 'gender' | 'department' | 'position'>>): Promise<{ ok: boolean; error?: string }>;
+  /** Emailga parolni tiklash havolasini yuboradi (Supabase Auth email xizmati orqali) */
+  requestPasswordReset(email: string): Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Tiklash havolasidan kelgan sessiyada yangi parol o‘rnatadi */
+  updatePassword(password: string): Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Tiklash oqimidan chiqish (masalan, «Bekor qilish») */
+  clearRecovery(): void;
+  saveProfile(patch: Partial<Pick<Profile, 'full_name' | 'position'>>): Promise<{ ok: boolean; error?: string }>;
   signOut(): Promise<void>;
 }
 
@@ -44,6 +77,8 @@ export function authErrorText(error: AuthError | Error | { message?: string; sta
   if (e.code === 'invalid_credentials' || msg.includes('invalid login credentials')) return 'Email yoki parol noto‘g‘ri.';
   if (e.code === 'user_already_exists' || e.code === 'email_exists' || msg.includes('already registered'))
     return 'Bu email bilan hisob allaqachon bor. «Kirish» bo‘limini tanlang.';
+  if (e.code === 'same_password' || msg.includes('different from the old password'))
+    return 'Yangi parol eskisidan farq qilishi kerak.';
   if (e.code === 'weak_password' || msg.includes('password should'))
     return 'Parol juda oddiy. Kamida 6 ta belgi: harf va raqamlarni aralashtiring.';
   if (e.code === 'email_not_confirmed' || msg.includes('email not confirmed'))
@@ -57,6 +92,11 @@ export function authErrorText(error: AuthError | Error | { message?: string; sta
 /** Email tasdiqlash yoqilgan bo‘lsa — havoladan keyin foydalanuvchi kirishdan oldingi sahifaga qaytadi */
 function redirectUrl(): string {
   return `${window.location.origin}${window.location.pathname}${hashForScreen(useGameStore.getState().auxReturnTo)}`;
+}
+
+/** Parolni tiklash havolasi shu manzilga qaytaradi; Supabase unga `&code=…` qo‘shadi */
+function recoveryRedirectUrl(): string {
+  return `${window.location.origin}${window.location.pathname}?${RECOVERY_PARAM}=1#/kirish`;
 }
 
 export const useAuthStore = create<AuthStore>()((set, get) => {
@@ -77,9 +117,6 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
         id: user.id,
         email: user.email ?? '',
         full_name: String(pending.fullName ?? meta.full_name ?? (user.email ?? 'Foydalanuvchi').split('@')[0]),
-        age: pending.age ?? null,
-        gender: pending.gender ?? null,
-        department: pending.department?.trim() || (typeof meta.department === 'string' && meta.department.trim()) || null,
         position: pending.position?.trim() || (typeof meta.position === 'string' && meta.position.trim()) || null,
       };
       const res = await supabase.from('profiles').upsert(row).select(PROFILE_COLUMNS).single();
@@ -106,9 +143,11 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
 
   const applySession = async (session: Session | null) => {
     if (!session) {
-      set({ status: 'guest', email: null, userId: null, profile: null });
+      // Kod almashtirilmadi — havola yaroqsiz
+      set((s) => ({ status: 'guest', email: null, userId: null, profile: null, recovery: s.recovery === 'pending' ? 'invalid' : s.recovery }));
       return;
     }
+    if (get().recovery === 'pending') set({ recovery: 'ready' });
     set({ status: 'signedIn', email: session.user.email ?? null, userId: session.user.id });
     await loadProfile(session);
     await syncAll();
@@ -121,6 +160,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     userId: null,
     profile: null,
     syncing: false,
+    recovery: consumeRecoveryMarker(),
 
     init: () => {
       if (!supabase) return () => {};
@@ -139,7 +179,11 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
       });
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
         // Supabase tavsiyasi: callback ichida await qilmaslik — keyingi tikka o‘tkazamiz
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        if (event === 'PASSWORD_RECOVERY') {
+          set({ recovery: 'ready' });
+          useGameStore.getState().openAux('auth');
+        }
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
           setTimeout(() => void applySession(session), 0);
         }
       });
@@ -160,9 +204,6 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
           emailRedirectTo: redirectUrl(),
           data: {
             full_name: input.fullName.trim(),
-            age: input.age ?? '',
-            gender: input.gender ?? '',
-            department: input.department.trim(),
             position: input.position.trim(),
           },
         },
@@ -177,6 +218,23 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       return error ? { ok: false, error: authErrorText(error) } : { ok: true };
     },
+
+    requestPasswordReset: async (email) => {
+      if (!supabase) return { ok: false, error: 'Server ulanmagan (Supabase sozlanmagan).' };
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: recoveryRedirectUrl() });
+      // Bunday email ro‘yxatda bo‘lmasa ham Supabase xato qaytarmaydi — kimning hisobi borligi oshkor bo‘lmaydi
+      return error ? { ok: false, error: authErrorText(error) } : { ok: true };
+    },
+
+    updatePassword: async (password) => {
+      if (!supabase || get().status !== 'signedIn') return { ok: false, error: 'Havola eskirgan. Yangi havola so‘rang.' };
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) return { ok: false, error: authErrorText(error) };
+      set({ recovery: 'none' });
+      return { ok: true };
+    },
+
+    clearRecovery: () => set({ recovery: 'none' }),
 
     saveProfile: async (patch) => {
       const { userId, profile } = get();

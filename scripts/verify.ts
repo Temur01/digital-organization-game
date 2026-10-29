@@ -48,7 +48,7 @@ for (const table of ['profiles', 'mission_results', 'quiz_results']) {
   const body = await res.text();
   if (res.ok) {
     const rows = JSON.parse(body) as Record<string, unknown>[];
-    const leaks = rows.some((r) => 'email' in r || 'age' in r || 'gender' in r);
+    const leaks = rows.some((r) => 'email' in r || 'position' in r);
     if (leaks) bad('Reyting shaxsiy ma’lumot qaytaryapti!');
     else ok(`Reyting funksiyasi ishlayapti (${rows.length} ta yozuv)`);
   } else bad(`Reyting funksiyasi: HTTP ${res.status} — migratsiya qo‘llanmagan bo‘lishi mumkin`);

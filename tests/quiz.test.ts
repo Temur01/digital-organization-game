@@ -97,25 +97,21 @@ describe('sinov dvigateli', () => {
 });
 
 describe('ro‘yxatdan o‘tish formasi', () => {
-  it('ism va email majburiy, yosh ixtiyoriy, lekin to‘g‘ri bo‘lishi kerak', () => {
-    expect(validate('register', { name: '', email: 'x', age: '' })).toMatchObject({
+  it('ism, kasb va email majburiy', () => {
+    expect(validate('register', { name: '', email: 'x' })).toMatchObject({
       name: expect.any(String),
-      department: expect.any(String),
       position: expect.any(String),
       email: expect.any(String),
       password: expect.any(String),
     });
-    expect(
-      validate('register', { name: 'Ali Valiyev', department: 'AKT', position: 'dasturchi', email: 'ali@kompaniya.uz', password: 'parol123', age: '' }),
-    ).toEqual({});
-    expect(validate('register', { name: 'Ali Valiyev', department: '  ', position: 'dasturchi', email: 'ali@kompaniya.uz', age: '' })).toHaveProperty(
-      'department',
-    );
-    expect(validate('register', { name: 'Ali', email: 'ali@kompaniya.uz', age: '7' })).toHaveProperty('age');
-    expect(validate('register', { name: 'Ali', email: 'ali@kompaniya.uz', age: '25.5' })).toHaveProperty('age');
+    expect(validate('register', { name: 'Ali', position: 'Dasturchi', email: 'ali@kompaniya.uz', password: 'parol123' })).toEqual({});
+    expect(validate('register', { name: 'Ali', position: '', email: 'ali@kompaniya.uz', password: 'parol123' })).toHaveProperty('position');
     // Kirishda faqat email va parol
-    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: 'parol123', age: '' })).toEqual({});
-    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: '123', age: '' })).toHaveProperty('password');
+    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: 'parol123' })).toEqual({});
+    expect(validate('login', { name: '', email: 'ali@kompaniya.uz', password: '123' })).toHaveProperty('password');
+    // Parolni tiklash — faqat email
+    expect(validate('forgot', { name: '', email: 'ali@kompaniya.uz' })).toEqual({});
+    expect(validate('forgot', { name: '', email: 'ali@' })).toHaveProperty('email');
   });
 });
 

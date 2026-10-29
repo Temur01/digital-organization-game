@@ -9,7 +9,7 @@ import type { Character, CharacterId } from '../types/models';
 export const CHARACTERS: Record<CharacterId, Character> = {
   bek: {
     id: 'bek',
-    name: 'Temur',
+    name: 'Bek',
     role: 'AKT bo‘limi dasturchi',
     shortDescription: 'Ishga birinchi kun. Hamma bilan tez til topishadi, lekin har bir xatni bosishdan oldin o‘ylab ko‘rishni o‘rganmoqda.',
     traits: ['Tezkor', 'Muloqotchan', 'Optimist'],
@@ -67,11 +67,6 @@ export const NPC_ART = {
 } as const;
 
 export const CHARACTER_IDS: CharacterId[] = ['bek', 'guli'];
-
-/** Profilda jins ko‘rsatilgan bo‘lsa — qahramon shunga qarab belgilanadi va o‘zgartirilmaydi */
-export function characterForGender(gender: 'male' | 'female' | null | undefined): CharacterId | null {
-  return gender === 'male' ? 'bek' : gender === 'female' ? 'guli' : null;
-}
 
 /** Atlas (ikat) naqshi ranglari — milliy aksent */
 export const IKAT_COLORS = [0xd1495b, 0xf2b134, 0x2a9d8f, 0x3d5a80];

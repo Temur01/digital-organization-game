@@ -37,7 +37,7 @@ describe('ekranlar', () => {
     select.unmount();
 
     render(<MissionMapScreen />);
-    expect(screen.getByText('O‘yinchi: Temur')).toBeInTheDocument();
+    expect(screen.getByText('O‘yinchi: Bek')).toBeInTheDocument();
     const locked = screen.getByRole('button', { name: /Topilgan fleshka/ });
     expect(locked).toHaveAttribute('aria-disabled', 'true');
     await user.click(locked);
@@ -49,25 +49,10 @@ describe('ekranlar', () => {
   it('personajlar strelka tugmalari bilan almashadi', async () => {
     const user = userEvent.setup();
     render(<CharacterSelectScreen />);
-    const bek = screen.getByRole('radio', { name: /Temur/ });
+    const bek = screen.getByRole('radio', { name: /Bek/ });
     bek.focus();
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();
-  });
-
-  it('kirgan foydalanuvchi jinsini kiritgan bo‘lsa — qahramon qulflanadi', () => {
-    useAuthStore.setState({
-      status: 'signedIn',
-      profile: { id: 'u1', full_name: 'Malika Rahimova', email: 'm@k.uz', age: null, gender: 'female', department: 'AKT', position: 'dasturchi' },
-    });
-    const { unmount } = render(<CharacterSelectScreen />);
-    expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();
-    expect(screen.getByRole('radio', { name: /Temur/ })).toBeDisabled();
-    unmount();
-
-    useGameStore.setState({ progress: { ...createDefaultProgress(), selectedCharacter: 'guli' } });
-    render(<MissionMapScreen />);
-    expect(screen.queryByRole('button', { name: /qahramon/i })).not.toBeInTheDocument();
   });
 });
 

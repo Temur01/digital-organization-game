@@ -1013,3 +1013,126 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ===== Select: mavzuga mos ochiladigan ro‘yxat ===== */
+.select {
+  position: relative;
+}
+.selectTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 50px;
+  padding: 0 var(--space-3) 0 var(--space-4);
+  border-radius: 14px;
+  border: 1px solid var(--color-border-strong);
+  background: rgb(0 0 0 / 0.25);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.selectTrigger:hover {
+  border-color: rgb(61 214 198 / 0.6);
+  background: rgb(0 0 0 / 0.32);
+}
+.selectTrigger:focus-visible,
+.selectOpen .selectTrigger {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgb(61 214 198 / 0.2);
+}
+.selectTrigger[aria-invalid='true'] {
+  border-color: var(--color-critical);
+}
+.selectValue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+.selectPlaceholder {
+  flex: 1;
+  color: rgb(163 172 201 / 0.6);
+}
+.selectChevron {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 10px;
+  color: var(--color-primary-strong);
+  background: rgb(61 214 198 / 0.12);
+}
+.selectList {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: min(320px, 50vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 18px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-strong);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow), 0 0 0 1px rgb(61 214 198 / 0.15);
+  transform-origin: top center;
+  scrollbar-width: thin;
+}
+.selectOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: background 120ms ease;
+}
+.selectOptionActive {
+  background: rgb(255 255 255 / 0.08);
+}
+.selectOptionSelected {
+  background: rgb(61 214 198 / 0.14);
+  color: var(--color-primary-strong);
+}
+.selectOptionSelected.selectOptionActive {
+  background: rgb(61 214 198 / 0.22);
+}
+.selectIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.07);
+  font-size: 1rem;
+}
+.selectLabel {
+  flex: 1;
+  min-width: 0;
+}
+.selectCheck {
+  font-weight: 800;
+  color: var(--color-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .selectTrigger,
+  .selectOption {
+    transition: none;
+  }
+}

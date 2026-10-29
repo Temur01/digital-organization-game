@@ -3,6 +3,17 @@
 > Tashkilot xodimlariga raqamli gigiyenani o‘rgatuvchi brauzerdagi 2D sarguzasht o‘yini.
 > Hujjat turi: product + texnik spetsifikatsiya (MVP). Ishlab chiqish rejasi va vaqt bahosi bu hujjatga kirmaydi.
 
+> **Hozirgi holat (2026):** bu hujjat dastlabki mahsulot rejasidir; amaldagi kod undan bir necha joyda farq qiladi.
+> Kod — haqiqat manbai. Joriy arxitektura, buyruqlar va qoidalar uchun [`../CLAUDE.md`](../CLAUDE.md) va [`../README.md`](../README.md) ga qarang.
+>
+> Asosiy farqlar:
+> - sahna **Three.js** (PixiJS emas), mantiqiy o‘lcham 960×540;
+> - **4 ta missiya** (`m1`–`m4`), oxirgisi «Kofe tanaffusi»;
+> - **Supabase** ixtiyoriy backend: email + parol bilan kirish, profil, natijalarni sinxronlash va reyting (magic link emas);
+> - **24 savollik bilim sinovi** va reyting jadvali qo‘shilgan;
+> - missiya o‘rtasidagi holat `sessionStorage`da saqlanadi (tab yopilganda tozalanadi);
+> - simulyatsiya ilovalari: pochta, ish stoli/fayllar, telefon, IT portal.
+
 ---
 
 ## 1. Konsepsiya, maqsad, auditoriya va MVP doirasi
@@ -361,6 +372,10 @@ Barcha sim-oynalar: modal (`role="dialog"`, `aria-modal`), fokus tuzog‘i, Esc 
 ---
 
 ## 5. Texnologiya va arxitektura
+
+> **Diqqat:** quyidagi 5-bo‘lim dastlabki reja sifatida yozilgan. Amaldagi kodda PixiJS o‘rniga
+> Three.js ishlatiladi (`src/game/three/`, `src/game/bridge.ts`), savol-javob va reyting qatlamlari ham qo‘shilgan.
+> Arxitektura qoidalari (sof engine, store — yagona holat manbai, sahna faqat render/input) o‘zgarishsiz amal qiladi.
 
 ### 5.1. Stek
 | Qism | Tanlov | Sabab |

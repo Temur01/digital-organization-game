@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useId, useState, type FormEvent } from 'react';
-import { useAuthStore, type RegisterInput } from '../app/auth';
+import { useAuthStore } from '../app/auth';
 import { companyConfig } from '../app/config';
 import { useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
@@ -8,29 +8,22 @@ import { CHARACTERS } from '../content/characters';
 import { auth as t } from '../content/uz/extra';
 import { Button } from '../ui/Button';
 import { CharacterArt } from '../ui/CharacterArt';
+import { Select } from '../ui/Select';
 import styles from './aux.module.css';
 
-type Mode = 'register' | 'login';
-type Field = 'name' | 'department' | 'position' | 'email' | 'password' | 'age';
+type Mode = 'register' | 'login' | 'forgot';
+type Field = 'name' | 'position' | 'email' | 'password';
 type Errors = Partial<Record<Field, string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const MIN_PASSWORD = 6;
 
-export function validate(
-  mode: Mode,
-  v: { name: string; department?: string; position?: string; email: string; password?: string; age: string },
-): Errors {
+export function validate(mode: Mode, v: { name: string; position?: string; email: string; password?: string }): Errors {
   const errors: Errors = {};
   if (mode === 'register' && v.name.trim().length < 2) errors.name = t.errors.name;
-  if (mode === 'register' && !v.department?.trim()) errors.department = t.errors.department;
   if (mode === 'register' && !v.position?.trim()) errors.position = t.errors.position;
   if (!EMAIL_RE.test(v.email.trim())) errors.email = t.errors.email;
-  if ((v.password ?? '').length < MIN_PASSWORD) errors.password = t.errors.password;
-  if (mode === 'register' && v.age.trim() !== '') {
-    const n = Number(v.age);
-    if (!Number.isInteger(n) || n < 10 || n > 100) errors.age = t.errors.age;
-  }
+  if (mode !== 'forgot' && (v.password ?? '').length < MIN_PASSWORD) errors.password = t.errors.password;
   return errors;
 }
 
@@ -39,33 +32,41 @@ export function AuthScreen() {
   const status = useAuthStore((s) => s.status);
   const register = useAuthStore((s) => s.register);
   const signIn = useAuthStore((s) => s.signIn);
+  const requestPasswordReset = useAuthStore((s) => s.requestPasswordReset);
+  const recovery = useAuthStore((s) => s.recovery);
+  const clearRecovery = useAuthStore((s) => s.clearRecovery);
   const closeAux = useGameStore((s) => s.closeAux);
   const heading = useScreenHeading<HTMLHeadingElement>();
   const ids = useId();
 
   const [mode, setMode] = useState<Mode>('register');
   const defaults = companyConfig.defaultPlayer;
-  const [name, setName] = useState(`${defaults.firstName} ${defaults.lastName}`);
-  const [department, setDepartment] = useState<string>(defaults.department);
+  const [name, setName] = useState<string>(defaults.firstName);
   const [position, setPosition] = useState<string>(defaults.position);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [age, setAge] = useState(String(defaults.age));
-  const [gender, setGender] = useState<RegisterInput['gender']>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [confirmTo, setConfirmTo] = useState<string | null>(null);
+  const [resetSentTo, setResetSentTo] = useState<string | null>(null);
 
-  // Kirilgach — avvalgi ekranga qaytamiz
+  // Kirilgach — avvalgi ekranga qaytamiz (parolni tiklash havolasidan kelgan bo‘lsa — avval yangi parol)
   useEffect(() => {
-    if (status === 'signedIn') closeAux();
-  }, [status, closeAux]);
+    if (status === 'signedIn' && recovery === 'none') closeAux();
+  }, [status, recovery, closeAux]);
+
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setErrors({});
+    setServerError(null);
+    setResetSentTo(null);
+  };
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
-    const found = validate(mode, { name, department, position, email, password, age });
+    const found = validate(mode, { name, position, email, password });
     setErrors(found);
     setServerError(null);
     if (Object.keys(found).length > 0) return;
@@ -76,17 +77,17 @@ export function AuthScreen() {
         ? await register(
             {
               fullName: name.trim(),
-              department: department.trim(),
-              position: position.trim(),
+              position,
               email: cleanEmail,
-              age: age.trim() === '' ? null : Number(age),
-              gender,
             },
             password,
           )
-        : await signIn(cleanEmail, password);
+        : mode === 'forgot'
+          ? await requestPasswordReset(cleanEmail)
+          : await signIn(cleanEmail, password);
     setSending(false);
     if (!res.ok) setServerError(res.error);
+    else if (mode === 'forgot') setResetSentTo(cleanEmail);
     else if ('needsConfirm' in res && res.needsConfirm) setConfirmTo(cleanEmail);
   };
 
@@ -126,7 +127,12 @@ export function AuthScreen() {
           className={styles.card}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 160, damping: 20, delay: 0.1 }}
+          transition={{
+            type: 'spring',
+            stiffness: 160,
+            damping: 20,
+            delay: 0.1,
+          }}
         >
           {!configured ? (
             <div className={styles.notice}>
@@ -135,7 +141,42 @@ export function AuthScreen() {
             </div>
           ) : (
             <AnimatePresence mode="wait">
-              {confirmTo ? (
+              {recovery !== 'none' ? (
+                <RecoveryPanel
+                  key="recovery"
+                  onRequestNew={() => {
+                    clearRecovery();
+                    switchMode('forgot');
+                  }}
+                />
+              ) : resetSentTo ? (
+                <motion.div
+                  key="reset-sent"
+                  className={styles.sent}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className={styles.envelope} aria-hidden="true">
+                    <span>📬</span>
+                  </div>
+                  <h2>{t.forgot.sentTitle}</h2>
+                  <p role="status">{t.forgot.sentText(resetSentTo)}</p>
+                  {serverError && (
+                    <p className={styles.serverError} role="alert">
+                      {serverError}
+                    </p>
+                  )}
+                  <div className={styles.row}>
+                    <Button variant="secondary" disabled={sending} onClick={() => void submit()}>
+                      {sending ? t.sending : t.forgot.resend}
+                    </Button>
+                    <Button variant="ghost" onClick={() => switchMode('login')}>
+                      {t.forgot.back}
+                    </Button>
+                  </div>
+                </motion.div>
+              ) : confirmTo ? (
                 <motion.div key="sent" className={styles.sent} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                   <div className={styles.envelope} aria-hidden="true">
                     <span>✉️</span>
@@ -156,25 +197,28 @@ export function AuthScreen() {
                 </motion.div>
               ) : (
                 <motion.form key="form" onSubmit={(e) => void submit(e)} noValidate initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <div className={styles.tabs} role="tablist" aria-label={t.eyebrow}>
-                    {(['register', 'login'] as const).map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        role="tab"
-                        aria-selected={mode === m}
-                        className={[styles.tab, mode === m ? styles.tabActive : ''].join(' ')}
-                        onClick={() => {
-                          setMode(m);
-                          setErrors({});
-                          setServerError(null);
-                        }}
-                      >
-                        {t.tabs[m]}
-                        {mode === m && <motion.span layoutId="auth-tab" className={styles.tabIndicator} />}
-                      </button>
-                    ))}
-                  </div>
+                  {mode === 'forgot' ? (
+                    <div className={styles.formIntro}>
+                      <h2>🔑 {t.forgot.title}</h2>
+                      <p className={styles.muted}>{t.forgot.lead}</p>
+                    </div>
+                  ) : (
+                    <div className={styles.tabs} role="tablist" aria-label={t.eyebrow}>
+                      {(['register', 'login'] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          role="tab"
+                          aria-selected={mode === m}
+                          className={[styles.tab, mode === m ? styles.tabActive : ''].join(' ')}
+                          onClick={() => switchMode(m)}
+                        >
+                          {t.tabs[m]}
+                          {mode === m && <motion.span layoutId="auth-tab" className={styles.tabIndicator} />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {mode === 'register' && (
                     <div className={styles.field}>
@@ -200,47 +244,24 @@ export function AuthScreen() {
                   )}
 
                   {mode === 'register' && (
-                    <div className={styles.twoCols}>
-                      <div className={styles.field}>
-                        <label htmlFor={`${ids}-department`}>
-                          {t.department} <span className={styles.req}>· {t.required}</span>
-                        </label>
-                        <input
-                          id={`${ids}-department`}
-                          type="text"
-                          autoComplete="organization"
-                          maxLength={80}
-                          placeholder={t.departmentPlaceholder}
-                          value={department}
-                          onChange={(e) => setDepartment(e.target.value)}
-                          {...field('department')}
-                        />
-                        {errors.department && (
-                          <p id={`${ids}-department-err`} className={styles.error}>
-                            {errors.department}
-                          </p>
-                        )}
-                      </div>
-                      <div className={styles.field}>
-                        <label htmlFor={`${ids}-position`}>
-                          {t.position} <span className={styles.req}>· {t.required}</span>
-                        </label>
-                        <input
-                          id={`${ids}-position`}
-                          type="text"
-                          autoComplete="organization-title"
-                          maxLength={80}
-                          placeholder={t.positionPlaceholder}
-                          value={position}
-                          onChange={(e) => setPosition(e.target.value)}
-                          {...field('position')}
-                        />
-                        {errors.position && (
-                          <p id={`${ids}-position-err`} className={styles.error}>
-                            {errors.position}
-                          </p>
-                        )}
-                      </div>
+                    <div className={styles.field}>
+                      <label htmlFor={`${ids}-position`}>
+                        {t.position} <span className={styles.req}>· {t.required}</span>
+                      </label>
+                      <Select
+                        id={`${ids}-position`}
+                        value={position}
+                        options={companyConfig.positions}
+                        placeholder={t.positionPlaceholder}
+                        onChange={setPosition}
+                        invalid={!!errors.position}
+                        describedBy={errors.position ? `${ids}-position-err` : undefined}
+                      />
+                      {errors.position && (
+                        <p id={`${ids}-position-err`} className={styles.error}>
+                          {errors.position}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -266,80 +287,44 @@ export function AuthScreen() {
                     )}
                   </div>
 
-                  <div className={styles.field}>
-                    <label htmlFor={`${ids}-password`}>
-                      {t.password} <span className={styles.req}>· {t.required}</span>
-                    </label>
-                    <div className={styles.passwordRow}>
-                      <input
-                        id={`${ids}-password`}
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                        minLength={MIN_PASSWORD}
-                        maxLength={72}
-                        placeholder={mode === 'register' ? t.passwordHint : ''}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        {...field('password')}
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        aria-pressed={showPassword}
-                        aria-label={showPassword ? t.hidePassword : t.showPassword}
-                        title={showPassword ? t.hidePassword : t.showPassword}
-                        onClick={() => setShowPassword((v) => !v)}
-                      >
-                        <span aria-hidden="true">{showPassword ? '🙈' : '👁️'}</span>
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <p id={`${ids}-password-err`} className={styles.error}>
-                        {errors.password}
-                      </p>
-                    )}
-                  </div>
-
-                  {mode === 'register' && (
-                    <div className={styles.twoCols}>
-                      <div className={styles.field}>
-                        <label htmlFor={`${ids}-age`}>
-                          {t.age} <span className={styles.opt}>· {t.ageHint}</span>
-                        </label>
+                  {mode !== 'forgot' && (
+                    <div className={styles.field}>
+                      <label htmlFor={`${ids}-password`}>
+                        {t.password} <span className={styles.req}>· {t.required}</span>
+                      </label>
+                      <div className={styles.passwordRow}>
                         <input
-                          id={`${ids}-age`}
-                          type="number"
-                          inputMode="numeric"
-                          min={10}
-                          max={100}
-                          value={age}
-                          onChange={(e) => setAge(e.target.value)}
-                          {...field('age')}
+                          id={`${ids}-password`}
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                          minLength={MIN_PASSWORD}
+                          maxLength={72}
+                          placeholder={mode === 'register' ? t.passwordHint : ''}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          {...field('password')}
                         />
-                        {errors.age && (
-                          <p id={`${ids}-age-err`} className={styles.error}>
-                            {errors.age}
-                          </p>
-                        )}
+                        <button
+                          type="button"
+                          className={styles.passwordToggle}
+                          aria-pressed={showPassword}
+                          aria-label={showPassword ? t.hidePassword : t.showPassword}
+                          title={showPassword ? t.hidePassword : t.showPassword}
+                          onClick={() => setShowPassword((v) => !v)}
+                        >
+                          <span aria-hidden="true">{showPassword ? '🙈' : '👁️'}</span>
+                        </button>
                       </div>
-                      <fieldset className={styles.field}>
-                        <legend>
-                          {t.gender} <span className={styles.opt}>· {t.ageHint}</span>
-                        </legend>
-                        <div className={styles.segmented}>
-                          {(['none', 'male', 'female'] as const).map((g) => (
-                            <label key={g} className={styles.segment}>
-                              <input
-                                type="radio"
-                                name={`${ids}-gender`}
-                                checked={(gender ?? 'none') === g}
-                                onChange={() => setGender(g === 'none' ? null : g)}
-                              />
-                              <span>{t.genderOptions[g]}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </fieldset>
+                      {errors.password && (
+                        <p id={`${ids}-password-err`} className={styles.error}>
+                          {errors.password}
+                        </p>
+                      )}
+                      {mode === 'login' && (
+                        <button type="button" className={styles.linkButton} onClick={() => switchMode('forgot')}>
+                          {t.forgotLink}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -349,9 +334,16 @@ export function AuthScreen() {
                     </p>
                   )}
                   <Button type="submit" className={styles.submit} disabled={sending}>
-                    {sending ? t.sending : mode === 'register' ? t.submitRegister : t.submitLogin} <span aria-hidden="true">→</span>
+                    {sending ? t.sending : mode === 'register' ? t.submitRegister : mode === 'forgot' ? t.forgot.submit : t.submitLogin}{' '}
+                    <span aria-hidden="true">→</span>
                   </Button>
-                  <p className={styles.privacy}>🔒 {t.privacy}</p>
+                  {mode === 'forgot' ? (
+                    <Button variant="ghost" className={styles.submit} onClick={() => switchMode('login')}>
+                      ← {t.forgot.back}
+                    </Button>
+                  ) : (
+                    <p className={styles.privacy}>🔒 {t.privacy}</p>
+                  )}
                 </motion.form>
               )}
             </AnimatePresence>
@@ -364,5 +356,115 @@ export function AuthScreen() {
         </motion.section>
       </div>
     </main>
+  );
+}
+
+/** Parolni tiklash havolasidan qaytganda: havola tekshiruvi, yangi parol formasi yoki «havola yaroqsiz» */
+function RecoveryPanel({ onRequestNew }: { onRequestNew(): void }) {
+  const recovery = useAuthStore((s) => s.recovery);
+  const updatePassword = useAuthStore((s) => s.updatePassword);
+  const clearRecovery = useAuthStore((s) => s.clearRecovery);
+  const pushToast = useGameStore((s) => s.pushToast);
+  const ids = useId();
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [show, setShow] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (password.length < MIN_PASSWORD) return setError(t.errors.password);
+    if (password !== confirm) return setError(t.errors.mismatch);
+    setError(null);
+    setSaving(true);
+    const res = await updatePassword(password);
+    setSaving(false);
+    if (res.ok) pushToast(t.reset.done, 'success');
+    else setError(res.error);
+  };
+
+  if (recovery === 'pending') {
+    return (
+      <motion.div className={styles.sent} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div className={styles.envelope} aria-hidden="true" animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.6, ease: 'linear' }}>
+          <span>🔄</span>
+        </motion.div>
+        <p role="status">{t.reset.checking}</p>
+      </motion.div>
+    );
+  }
+
+  if (recovery === 'invalid') {
+    return (
+      <motion.div className={styles.sent} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+        <div className={styles.envelope} aria-hidden="true">
+          <span>⌛</span>
+        </div>
+        <h2>{t.reset.invalidTitle}</h2>
+        <p role="alert">{t.reset.invalidText}</p>
+        <div className={styles.row}>
+          <Button onClick={onRequestNew}>{t.reset.requestNew}</Button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.form onSubmit={(e) => void submit(e)} noValidate initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <div className={styles.formIntro}>
+        <h2>🔐 {t.reset.title}</h2>
+        <p className={styles.muted}>{t.reset.lead}</p>
+      </div>
+      <div className={styles.field}>
+        <label htmlFor={`${ids}-new`}>
+          {t.reset.password} <span className={styles.req}>· {t.passwordHint}</span>
+        </label>
+        <div className={styles.passwordRow}>
+          <input
+            id={`${ids}-new`}
+            type={show ? 'text' : 'password'}
+            autoComplete="new-password"
+            minLength={MIN_PASSWORD}
+            maxLength={72}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            data-autofocus
+          />
+          <button
+            type="button"
+            className={styles.passwordToggle}
+            aria-pressed={show}
+            aria-label={show ? t.hidePassword : t.showPassword}
+            title={show ? t.hidePassword : t.showPassword}
+            onClick={() => setShow((v) => !v)}
+          >
+            <span aria-hidden="true">{show ? '🙈' : '👁️'}</span>
+          </button>
+        </div>
+      </div>
+      <div className={styles.field}>
+        <label htmlFor={`${ids}-confirm`}>{t.reset.confirm}</label>
+        <input
+          id={`${ids}-confirm`}
+          type={show ? 'text' : 'password'}
+          autoComplete="new-password"
+          maxLength={72}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
+      </div>
+      {error && (
+        <p className={styles.serverError} role="alert">
+          {error}
+        </p>
+      )}
+      <Button type="submit" className={styles.submit} disabled={saving}>
+        {saving ? t.sending : t.reset.submit} <span aria-hidden="true">→</span>
+      </Button>
+      <Button variant="ghost" className={styles.submit} onClick={clearRecovery}>
+        {t.reset.cancel}
+      </Button>
+    </motion.form>
   );
 }

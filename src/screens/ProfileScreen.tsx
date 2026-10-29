@@ -1,11 +1,13 @@
 import { motion } from 'motion/react';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useAuthStore } from '../app/auth';
+import { companyConfig } from '../app/config';
 import { useScreenHeading } from '../app/hooks';
 import { totalStars, useGameStore } from '../app/store';
 import { auth as ta, profile as t } from '../content/uz/extra';
 import { MISSION_LIST } from '../missions/data';
 import { Button } from '../ui/Button';
+import { Select, type SelectOption } from '../ui/Select';
 import styles from './aux.module.css';
 
 function initials(name: string): string {
@@ -27,20 +29,19 @@ export function ProfileScreen() {
   const ids = useId();
 
   const [name, setName] = useState(profile?.full_name ?? '');
-  const [department, setDepartment] = useState(profile?.department ?? '');
   const [position, setPosition] = useState(profile?.position ?? '');
-  const [age, setAge] = useState(profile?.age != null ? String(profile.age) : '');
-  const [gender, setGender] = useState(profile?.gender ?? null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setName(profile?.full_name ?? '');
-    setDepartment(profile?.department ?? '');
     setPosition(profile?.position ?? '');
-    setAge(profile?.age != null ? String(profile.age) : '');
-    setGender(profile?.gender ?? null);
   }, [profile]);
+
+  // Avval erkin matn sifatida kiritilgan kasb ro‘yxatda bo‘lmasa ham tanlovda ko‘rinib tursin
+  const known: readonly SelectOption[] = companyConfig.positions;
+  const positionOptions =
+    profile?.position && !known.some((o) => o.value === profile.position) ? [{ value: profile.position }, ...known] : known;
 
   const completed = MISSION_LIST.filter((m) => progress.missions[m.id].status === 'completed').length;
   const stats = [
@@ -52,16 +53,11 @@ export function ProfileScreen() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const n = name.trim();
-    const a = age.trim() === '' ? null : Number(age);
-    const d = department.trim();
-    const p = position.trim();
     if (n.length < 2) return setError(ta.errors.name);
-    if (!d) return setError(ta.errors.department);
-    if (!p) return setError(ta.errors.position);
-    if (a !== null && (!Number.isInteger(a) || a < 10 || a > 100)) return setError(ta.errors.age);
+    if (!position) return setError(ta.errors.position);
     setError(null);
     setSaving(true);
-    const res = await saveProfile({ full_name: n, department: d, position: p, age: a, gender });
+    const res = await saveProfile({ full_name: n, position });
     setSaving(false);
     if (res.ok) pushToast(t.saved, 'success');
     else setError(res.error ?? null);
@@ -90,11 +86,7 @@ export function ProfileScreen() {
             <h1 ref={heading} tabIndex={-1} className={styles.cardHeading}>
               {status === 'signedIn' ? profile?.full_name ?? t.heading : t.guestHeading}
             </h1>
-            {status === 'signedIn' && profile?.department && profile.position && (
-              <p className={styles.muted}>
-                {profile.department} · {profile.position}
-              </p>
-            )}
+            {status === 'signedIn' && profile?.position && <p className={styles.muted}>{profile.position}</p>}
             <p className={styles.muted}>{status === 'signedIn' ? email : t.guestText}</p>
             {status === 'signedIn' && <p className={styles.syncChip}>{syncing ? t.syncing : `☁️ ${t.synced}`}</p>}
           </div>
@@ -118,40 +110,11 @@ export function ProfileScreen() {
               </label>
               <input id={`${ids}-name`} type="text" autoComplete="name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
-            <div className={styles.twoCols}>
-              <div className={styles.field}>
-                <label htmlFor={`${ids}-department`}>
-                  {ta.department} <span className={styles.req}>· {ta.required}</span>
-                </label>
-                <input id={`${ids}-department`} type="text" autoComplete="organization" maxLength={80} placeholder={ta.departmentPlaceholder} value={department} onChange={(e) => setDepartment(e.target.value)} />
-              </div>
-              <div className={styles.field}>
-                <label htmlFor={`${ids}-position`}>
-                  {ta.position} <span className={styles.req}>· {ta.required}</span>
-                </label>
-                <input id={`${ids}-position`} type="text" autoComplete="organization-title" maxLength={80} placeholder={ta.positionPlaceholder} value={position} onChange={(e) => setPosition(e.target.value)} />
-              </div>
-            </div>
-            <div className={styles.twoCols}>
-              <div className={styles.field}>
-                <label htmlFor={`${ids}-age`}>
-                  {ta.age} <span className={styles.opt}>· {ta.ageHint}</span>
-                </label>
-                <input id={`${ids}-age`} type="number" inputMode="numeric" min={10} max={100} value={age} onChange={(e) => setAge(e.target.value)} />
-              </div>
-              <fieldset className={styles.field}>
-                <legend>
-                  {ta.gender} <span className={styles.opt}>· {ta.ageHint}</span>
-                </legend>
-                <div className={styles.segmented}>
-                  {(['none', 'male', 'female'] as const).map((g) => (
-                    <label key={g} className={styles.segment}>
-                      <input type="radio" name={`${ids}-gender`} checked={(gender ?? 'none') === g} onChange={() => setGender(g === 'none' ? null : g)} />
-                      <span>{ta.genderOptions[g]}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
+            <div className={styles.field}>
+              <label htmlFor={`${ids}-position`}>
+                {ta.position} <span className={styles.req}>· {ta.required}</span>
+              </label>
+              <Select id={`${ids}-position`} value={position} options={positionOptions} placeholder={ta.positionPlaceholder} onChange={setPosition} />
             </div>
             {error && (
               <p className={styles.serverError} role="alert">
