@@ -124,7 +124,19 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
 
     init: () => {
       if (!supabase) return () => {};
-      void supabase.auth.getSession().then(({ data }) => applySession(data.session));
+      const client = supabase;
+      void client.auth.getSession().then(async ({ data }) => {
+        // getSession() faqat brauzerdagi nusxani o‘qiydi. Foydalanuvchi serverda o‘chirilgan bo‘lsa,
+        // eski token bilan «kirgan» bo‘lib qolmasligi uchun serverdan tekshiramiz va eskisini tozalaymiz.
+        if (data.session) {
+          const { error } = await client.auth.getUser();
+          if (error && error.status !== undefined && error.status >= 400 && error.status < 500) {
+            await client.auth.signOut({ scope: 'local' });
+            return applySession(null);
+          }
+        }
+        return applySession(data.session);
+      });
       const { data } = supabase.auth.onAuthStateChange((event, session) => {
         // Supabase tavsiyasi: callback ichida await qilmaslik — keyingi tikka o‘tkazamiz
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
