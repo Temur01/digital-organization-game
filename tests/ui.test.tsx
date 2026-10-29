@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuthStore } from '../src/app/auth';
 import { useGameStore } from '../src/app/store';
 import { MISSIONS } from '../src/missions/data';
 import { createDefaultProgress } from '../src/persistence/storage';
@@ -15,6 +16,7 @@ import { READY, act, run } from './helpers';
 beforeEach(() => {
   localStorage.clear();
   useGameStore.setState({ progress: createDefaultProgress(), screen: 'title', mission: null, lastResult: null, toasts: [] });
+  useAuthStore.setState({ status: 'guest', profile: null });
 });
 
 describe('ekranlar', () => {
@@ -51,6 +53,21 @@ describe('ekranlar', () => {
     bek.focus();
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();
+  });
+
+  it('kirgan foydalanuvchi jinsini kiritgan bo‘lsa — qahramon qulflanadi', () => {
+    useAuthStore.setState({
+      status: 'signedIn',
+      profile: { id: 'u1', full_name: 'Malika Rahimova', email: 'm@k.uz', age: null, gender: 'female', department: 'AKT', position: 'dasturchi' },
+    });
+    const { unmount } = render(<CharacterSelectScreen />);
+    expect(screen.getByRole('radio', { name: /Guli/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Temur/ })).toBeDisabled();
+    unmount();
+
+    useGameStore.setState({ progress: { ...createDefaultProgress(), selectedCharacter: 'guli' } });
+    render(<MissionMapScreen />);
+    expect(screen.queryByRole('button', { name: /qahramon/i })).not.toBeInTheDocument();
   });
 });
 

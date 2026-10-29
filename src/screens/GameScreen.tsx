@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion, usePlayer } from '../app/hooks';
 import { useActiveMission, useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
+import { playFootstep, startMusic, stopMusic } from '../app/ambience';
 import { GameBridge } from '../game/bridge';
 import { createScene } from '../game/three/createScene3D';
 import { isHotspotDone, isHotspotEnabled, isHotspotVisible, type MissionAction } from '../missions/engine/missionReducer';
@@ -72,8 +73,9 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
   const isLoading = state.phase === 'loading';
 
   // Hodisa ishlovchilari eng so‘nggi qiymatlarni ref orqali o‘qiydi
-  const latest = useRef({ hotspotStates, exploring, reducedMotion });
-  latest.current = { hotspotStates, exploring, reducedMotion };
+  const music = settings.music ?? true;
+  const latest = useRef({ hotspotStates, exploring, reducedMotion, music });
+  latest.current = { hotspotStates, exploring, reducedMotion, music };
 
   const activate = useCallback(
     (id: string) => {
@@ -117,10 +119,20 @@ function GameView({ mission, state }: { mission: Mission; state: MissionRuntimeS
           case 'hotspotLayout':
             setRects(e.rects);
             break;
+          case 'footstep':
+            if (latest.current.music) playFootstep();
+            break;
         }
       }),
     [bridge, dispatch, activate],
   );
+
+  // Fon musiqasi: o‘yin ekranida chalinadi, chiqqanda yoki sozlamada o‘chirilganda to‘xtaydi
+  useEffect(() => {
+    if (!music) return;
+    startMusic();
+    return () => stopMusic();
+  }, [music]);
 
   // Xona yuklash (start va qayta boshlash)
   useEffect(() => {

@@ -17,6 +17,8 @@ export type SceneEvent =
   | { type: 'error' }
   | { type: 'nearHotspotChanged'; hotspotId: string | null }
   | { type: 'hotspotActivated'; hotspotId: string }
+  /** Personaj yurganda har bir qadam (tovush uchun) */
+  | { type: 'footstep' }
   /** DOM overlay uchun CSS piksellardagi to‘rtburchaklar (sahna konteyneriga nisbatan) */
   | { type: 'hotspotLayout'; rects: Record<string, Rect> };
 

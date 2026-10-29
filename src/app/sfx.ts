@@ -10,9 +10,22 @@ const TONES: Record<SfxName, [number, number][]> = {
 
 let ctx: AudioContext | null = null;
 
+/** Umumiy AudioContext. Brauzer uni foydalanuvchi harakatisiz «uxlatib» qo‘yadi — birinchi bosishda uyg‘otamiz. */
+export function audioContext(): AudioContext {
+  if (!ctx) {
+    ctx = new AudioContext();
+    const resume = () => {
+      if (ctx?.state === 'suspended') void ctx.resume();
+    };
+    window.addEventListener('pointerdown', resume);
+    window.addEventListener('keydown', resume);
+  }
+  return ctx;
+}
+
 export function playSfx(name: SfxName): void {
   try {
-    ctx ??= new AudioContext();
+    const ctx = audioContext();
     let t = ctx.currentTime;
     for (const [freq, dur] of TONES[name]) {
       const osc = ctx.createOscillator();

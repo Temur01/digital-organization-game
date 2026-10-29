@@ -37,6 +37,7 @@ export const settingsSchema = z.object({
   listMode: z.boolean(),
   sound: z.boolean(),
   voice: z.boolean().optional(),
+  music: z.boolean().optional(),
 });
 
 /** missions — qisman: noma’lum yoki yetishmayotgan yozuvlar normalize() da tiklanadi. */

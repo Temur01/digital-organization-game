@@ -13,6 +13,7 @@ import { clampToWalkable, faceFrom, footRect, fromX, fromZ, intersects, toX, toZ
 import * as tex from './textures';
 
 const SPEED = 180; // mantiqiy px/s
+const STEP_INTERVAL = 0.32; // qadam tovushlari orasidagi vaqt, s
 const INTERACT_RADIUS = 56;
 const INTRO_SECONDS = 1.6;
 const MARKER_W = 0.5;
@@ -128,6 +129,7 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
   let time = 0;
   let introLeft = 0;
   let puffTimer = 0;
+  let stepTimer = 0;
   let lastLayoutAt = 0;
   let layoutDirty = true;
   let loadToken = 0;
@@ -471,6 +473,13 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
 
     if (player) {
       player.root.position.set(toX(pos.x), 0, toZ(pos.y, room));
+      if (moving) {
+        stepTimer -= dt;
+        if (stepTimer <= 0) {
+          bridge.emit({ type: 'footstep' });
+          stepTimer = STEP_INTERVAL;
+        }
+      } else stepTimer = 0;
       if (moving && !reducedMotion) {
         puffTimer -= dt;
         if (puffTimer <= 0) {

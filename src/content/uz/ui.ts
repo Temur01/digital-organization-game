@@ -46,6 +46,7 @@ export const ui = {
     selected: 'Tanlandi',
     confirm: 'Shu qahramon bilan boshlash',
     role: 'Lavozim',
+    locked: 'Qahramon profilingizdagi jinsga qarab belgilangan. O‘zgartirish uchun profildagi jinsni o‘zgartiring.',
   },
   map: {
     eyebrow: 'Ofis xaritasi',
@@ -184,6 +185,7 @@ export const ui = {
     highContrast: 'Yuqori kontrast',
     listMode: 'Ro‘yxat rejimi (obyektlar ro‘yxati doim ko‘rinadi)',
     sound: 'Tovush effektlari',
+    music: 'Fon musiqasi va qadam tovushlari',
     voice: 'Dialoglarni ovozli o‘qish',
     voiceUnavailable: 'Bu qurilmada ovoz topilmadi. Tizim sozlamalaridan o‘zbek yoki turk tili ovozini o‘rnating.',
     voiceUsing: (name: string) => `Ovoz: ${name}`,

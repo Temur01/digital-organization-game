@@ -68,6 +68,11 @@ export const NPC_ART = {
 
 export const CHARACTER_IDS: CharacterId[] = ['bek', 'guli'];
 
+/** Profilda jins ko‘rsatilgan bo‘lsa — qahramon shunga qarab belgilanadi va o‘zgartirilmaydi */
+export function characterForGender(gender: 'male' | 'female' | null | undefined): CharacterId | null {
+  return gender === 'male' ? 'bek' : gender === 'female' ? 'guli' : null;
+}
+
 /** Atlas (ikat) naqshi ranglari — milliy aksent */
 export const IKAT_COLORS = [0xd1495b, 0xf2b134, 0x2a9d8f, 0x3d5a80];
 

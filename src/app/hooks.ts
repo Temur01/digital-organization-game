@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Settings } from '../types/models';
 import { useGameStore } from './store';
-import { CHARACTERS } from '../content/characters';
+import { CHARACTERS, characterForGender } from '../content/characters';
+import type { CharacterId } from '../types/models';
 import { useAuthStore } from './auth';
 import { companyConfig } from './config';
 import { subscribeVoices, voiceLabel } from './voice';
@@ -51,12 +52,19 @@ export function usePlayerName(): { first: string; full: string; age: number | nu
   return { first: firstName, full: `${firstName} ${lastName}`, age, department, position };
 }
 
+/** Kirgan foydalanuvchi jinsini kiritgan bo‘lsa — qat’iy belgilangan qahramon, aks holda null */
+export function useLockedCharacter(): CharacterId | null {
+  return useAuthStore((s) => (s.status === 'signedIn' ? characterForGender(s.profile?.gender) : null));
+}
+
 /**
  * Tanlangan qahramon (rasmi, rangi) + o‘yinchining o‘z ismi.
  * Shu sababli dialog, qaror va natijalarda «Bek/Guli» o‘rniga foydalanuvchi ismi, bo‘limi va kasbi chiqadi.
  */
 export function usePlayer() {
-  const id = useGameStore((s) => s.progress.selectedCharacter) ?? 'bek';
+  const locked = useLockedCharacter();
+  const selected = useGameStore((s) => s.progress.selectedCharacter);
+  const id = locked ?? selected ?? 'bek';
   const { first, department, position } = usePlayerName();
   return useMemo(() => ({ ...CHARACTERS[id], name: first, role: `${department} · ${position}` }), [id, first, department, position]);
 }

@@ -7,6 +7,9 @@
  */
 export type VoiceKind = 'male' | 'female' | 'neutral';
 
+/** Hozircha o‘chirilgan: qurilmalarda o‘zbekcha ovoz yo‘q, turkcha talaffuz esa mos emas */
+export const VOICE_ENABLED = false;
+
 const LANG_PRIORITY = ['uz', 'tr', 'az', 'kk'];
 const PITCH: Record<VoiceKind, number> = { male: 0.78, female: 1.18, neutral: 1 };
 
@@ -32,11 +35,12 @@ export function subscribeVoices(listener: () => void): () => void {
 
 /** Ovozli o‘qish mumkinmi (brauzer qo‘llaydi va mos lokal ovoz bor) */
 export function voiceAvailable(): boolean {
-  return synth !== null && pickVoice() !== null;
+  return VOICE_ENABLED && synth !== null && pickVoice() !== null;
 }
 
 /** Tanlanadigan ovoz nomi (sozlamalarda ko‘rsatish uchun) */
 export function voiceLabel(): string | null {
+  if (!VOICE_ENABLED) return null;
   const v = pickVoice();
   return v ? `${v.name} (${v.lang})` : null;
 }
@@ -60,7 +64,7 @@ export function speakableText(text: string): string {
 }
 
 export function speak(text: string, kind: VoiceKind = 'neutral'): void {
-  if (!synth) return;
+  if (!VOICE_ENABLED || !synth) return;
   const voice = pickVoice();
   const clean = speakableText(text);
   if (!voice || !clean) return;

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useVoiceLabel } from '../app/hooks';
+import { AMBIENCE_ENABLED } from '../app/ambience';
+import { VOICE_ENABLED } from '../app/voice';
 import { useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
 import type { Settings } from '../types/models';
@@ -55,11 +57,21 @@ export function SettingsPanel({ allowReset = true }: { allowReset?: boolean }) {
           <span>{label}</span>
         </label>
       ))}
-      <label className={styles.checkRow}>
-        <input type="checkbox" disabled={!voice} checked={!!voice && (settings.voice ?? true)} onChange={(e) => update({ voice: e.target.checked })} />
-        <span>{ui.settings.voice}</span>
-      </label>
-      <p className={styles.muted}>{voice ? ui.settings.voiceUsing(voice) : ui.settings.voiceUnavailable}</p>
+      {AMBIENCE_ENABLED && (
+        <label className={styles.checkRow}>
+          <input type="checkbox" checked={settings.music ?? true} onChange={(e) => update({ music: e.target.checked })} />
+          <span>{ui.settings.music}</span>
+        </label>
+      )}
+      {VOICE_ENABLED && (
+        <>
+          <label className={styles.checkRow}>
+            <input type="checkbox" disabled={!voice} checked={!!voice && (settings.voice ?? true)} onChange={(e) => update({ voice: e.target.checked })} />
+            <span>{ui.settings.voice}</span>
+          </label>
+          <p className={styles.muted}>{voice ? ui.settings.voiceUsing(voice) : ui.settings.voiceUnavailable}</p>
+        </>
+      )}
       {!storageAvailable && <p className={styles.warning}>{ui.map.storageWarning}</p>}
       {allowReset && (
         <Button variant="danger" onClick={() => setConfirmReset(true)}>

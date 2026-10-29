@@ -400,6 +400,8 @@ export interface Settings {
   sound: boolean;
   /** Dialoglarni ovozli o‘qish (eski progressda bo‘lmasligi mumkin — standart: yoqilgan) */
   voice?: boolean;
+  /** O‘yindagi fon musiqasi va qadam tovushlari (standart: yoqilgan) */
+  music?: boolean;
 }
 
 export interface LocalProgress {

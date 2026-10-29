@@ -526,9 +526,14 @@
 }
 
 /* ================= Xarita ================= */
+/* Xarita sahifasi kengroq: katta ekranlarda bo‘sh joydan to‘liq foydalanadi */
+.pageWide {
+  max-width: 1640px;
+  padding-inline: var(--space-5);
+}
 .mapLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: var(--space-5);
   align-items: start;
 }
@@ -1223,19 +1228,22 @@
 
 /* ================= O‘yin ================= */
 .game {
-  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
+/* Sahna HUD’dan qolgan butun joyni egallaydi (16:9 nisbatda) */
 .stageWrap {
   flex: 1;
+  min-height: 0;
   display: grid;
   place-items: center;
-  padding: var(--space-3);
+  padding: var(--space-2);
+  container-type: size;
 }
 .stage {
   position: relative;
-  width: min(100%, calc((100dvh - 150px) * 16 / 9));
+  width: min(100cqw, 100cqh * 16 / 9);
   aspect-ratio: 16 / 9;
   border-radius: 22px;
   overflow: hidden;
@@ -1412,6 +1420,10 @@
   .statCard {
     padding: var(--space-2) var(--space-3);
   }
+  .game {
+    height: auto;
+    min-height: 100dvh;
+  }
   .stage {
     width: 100%;
     border-radius: 14px;
@@ -1419,6 +1431,7 @@
   .stageWrap {
     flex: none;
     padding: var(--space-2);
+    container-type: normal;
   }
   .missionTile {
     width: 64px;

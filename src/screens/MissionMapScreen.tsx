@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { usePlayer, useScreenHeading } from '../app/hooks';
+import { useLockedCharacter, usePlayer, useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { previousMissionTitle } from '../app/transitions';
 import { rankFor, ui } from '../content/uz/ui';
@@ -16,6 +16,7 @@ export function MissionMapScreen() {
   const storageAvailable = useGameStore((s) => s.storageAvailable);
   const openBriefing = useGameStore((s) => s.openBriefing);
   const openCharacterSelect = useGameStore((s) => s.openCharacterSelect);
+  const lockedCharacter = useLockedCharacter();
   const openSettings = useGameStore((s) => s.openSettings);
   const goTo = useGameStore((s) => s.goTo);
   const openAux = useGameStore((s) => s.openAux);
@@ -26,7 +27,7 @@ export function MissionMapScreen() {
   const { current: rank, next: nextRank } = rankFor(totalStars);
 
   return (
-    <main className={styles.page}>
+    <main className={[styles.page, styles.pageWide].join(' ')}>
       <div className={styles.mapLayout}>
         <section className={styles.mapMain} aria-labelledby="map-heading">
           <header className={styles.pageHeader}>
@@ -150,9 +151,11 @@ export function MissionMapScreen() {
             <Button variant="secondary" onClick={() => openAux('leaderboard')}>
               <span aria-hidden="true">🏆</span> {account.leaderboard}
             </Button>
-            <Button variant="secondary" onClick={openCharacterSelect}>
-              {ui.map.changeCharacter}
-            </Button>
+            {!lockedCharacter && (
+              <Button variant="secondary" onClick={openCharacterSelect}>
+                {ui.map.changeCharacter}
+              </Button>
+            )}
             <Button variant="secondary" onClick={openSettings}>
               {ui.title.settings}
             </Button>
