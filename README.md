@@ -3,7 +3,7 @@
 A browser game that teaches digital hygiene to employees (MVP). Built with React, TypeScript, and Three.js; package manager — Bun.
 Every attack is simulated: gameplay contains no real malicious files, external links, credential inputs, or network requests (the optional account form is the only exception).
 
-The current version includes 4 missions, a 24-question knowledge quiz, a leaderboard, and optional accounts/profiles.
+The current version includes 8 missions, a 24-question knowledge quiz, a leaderboard, and optional accounts/profiles.
 
 - Architecture and development rules: [`CLAUDE.md`](CLAUDE.md).
 - Original product specification: [`docs/MVP-SPEC.md`](docs/MVP-SPEC.md). Some decisions there (PixiJS, 3 missions, magic link) are outdated; the code and README are authoritative.

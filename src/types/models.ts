@@ -352,7 +352,7 @@ export interface SimContent {
 }
 
 // ---------- Missiya ----------
-export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident' | 'm4-coffee-break' | 'm5-social-media';
+export type MissionId = 'm1-phishing' | 'm2-suspicious-file' | 'm3-mfa-incident' | 'm4-coffee-break' | 'm5-social-media' | 'm6-ceo-fraud' | 'm7-ransomware' | 'm8-remote-cafe';
 export type MissionTopic = 'phishing' | 'malware' | 'mfa' | 'password' | 'incident' | 'physical' | 'privacy';
 
 export interface Objective {

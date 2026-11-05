@@ -7,7 +7,7 @@ Context and working rules for Claude Code (and other coding agents) in this repo
 **Raqamli Qalqon** is a browser-based cybersecurity hygiene training game for employees of an organization. All attacks are simulations: there are no real malicious files, external links, credential forms in gameplay, or network requests during a mission.
 
 - Language of the product and all UI/mission content: **Uzbek Latin**.
-- Current content: **4 missions** (`m1`–`m4`), a 24-question quiz, leaderboard, optional accounts/profile.
+- Current content: **8 missions** (`m1`–`m8`), a 24-question quiz, leaderboard, optional accounts/profile.
 - Stack: Vite 8, React 18, TypeScript (strict), Zustand, Three.js, Zod, Vitest + React Testing Library, ESLint.
 - Package manager/runtime for scripts: **Bun** (`packageManager: bun@1.4.3`).
 - Backend is optional. Without `.env.local` the game runs fully in guest mode and sends nothing over the network.
@@ -40,6 +40,15 @@ bun run db:verify         # connection, auth, tables, RLS, leaderboard
 ```
 
 Before finishing a change, run `bun run typecheck`, `bun run lint`, and `bun run test`. Run `bun run build` when touching the build, CSP, routes, assets, or environment handling.
+
+Optional content audit (developer-only, needs `TYPESAFE_API_KEY` in `.env`):
+
+```bash
+bun run content:audit                 # compare every choice's outcome with TypeSafe Jev's judgment
+bun run content:audit m7-ransomware   # one mission
+```
+
+The audit sends fictional mission text to the TypeSafe API and only prints choices for human review; it never edits content. `@typesafe-ai/sdk` may be imported only under `scripts/` (ESLint enforces this), because gameplay must make no network requests and the API key must never reach the browser. It runs on Node, since the SDK fails on Bun 1.1.
 
 Never commit `.env.local`, access tokens, database URLs, or the Supabase `service_role` secret. Only the publishable/anon key may reach the frontend.
 
@@ -86,7 +95,7 @@ Key rules:
 | `src/sim/` | Safe simulation apps: email, workstation/files, phone, IT portal |
 | `src/game/` | Typed React/Three bridge and scene code (`three/` builders, rig, textures, fx) |
 | `src/missions/engine/` | Pure reducer, conditions, scoring, content validator |
-| `src/missions/data/` | Four mission definitions and registry |
+| `src/missions/data/` | Eight mission definitions and registry |
 | `src/missions/rooms/` | Room geometry/themes in logical 960x540 coordinates |
 | `src/content/` | Characters, Uzbek UI text, quiz questions |
 | `src/persistence/` | localStorage schema (Zod), migration, load/save/apply-result |
@@ -118,6 +127,8 @@ These are product requirements, not preferences:
 - Characters are cosmetic only: Bek and Guli must produce identical mechanics, scores, and stars.
 - Accessibility is part of the definition of done: semantic HTML, visible focus, `aria-live` feedback, 44x44 px targets, reduced-motion support, list mode playable without the canvas.
 - Use existing primitives (`Button`, `Modal`, `SimFrame`, panels) before creating new ones. Styling is CSS Modules plus tokens from `src/styles/tokens.css`.
+- Movement is velocity-based and pathfinds around solid decor (`src/game/three/locomotion.ts`). Every hotspot must be reachable from `room.spawn`; `tests/locomotion.test.ts` checks this for each mission.
+- Rendering adapts to the device (`src/game/three/quality.ts`): the scene runs at about 10 FPS behind open panels, and sustained slow frames turn off bloom and then lower resolution. The shadow map redraws only when the room changes, so set `renderer.shadowMap.needsUpdate` if you add a change that affects shadows.
 - Keep the logical scene coordinate system at 960x540. Hotspot bounds/interact points must stay inside the room walkable area.
 - Existing code comments are sparse and in Uzbek; match the surrounding style. Do not add narration comments unnecessarily.
 
@@ -166,7 +177,7 @@ These are product requirements, not preferences:
 
 ## Known gotchas
 
-- `docs/MVP-SPEC.md` is a historical design document. It mentions PixiJS, three missions, and magic-link auth; current code uses Three.js, four missions, and email/password auth.
+- `docs/MVP-SPEC.md` is a historical design document. It mentions PixiJS, three missions, and magic-link auth; current code uses Three.js, eight missions, and email/password auth.
 - Both `bun.lock` and `package-lock.json`/`bun.lockb` may exist. Use Bun and do not hand-edit lockfiles.
 - `npm` is not the project package manager.
 - On Node 22.14, Vitest 5 can fail to start workers with an `undici` `createZstdDecompress.bind` error. Use Node 24 (`nvm use 24`) or a newer runtime if `bun run test` fails this way.

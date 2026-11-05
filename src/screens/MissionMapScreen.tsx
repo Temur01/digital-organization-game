@@ -119,7 +119,7 @@ export function MissionMapScreen() {
             <span className={styles.characterGlow} />
             <CharacterArt character={player} height="100%" float />
           </div>
-          <p className={styles.sideName}>{ui.map.playingAs(player.name)}</p>
+          <p className={styles.sideName}>{player.name}</p>
           <p className={styles.sideRole}>{player.role}</p>
           <div className={styles.rankCard}>
             <span className={styles.rankIcon} aria-hidden="true">

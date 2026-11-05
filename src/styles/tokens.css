@@ -36,6 +36,7 @@
   --shadow: 0 20px 50px rgb(0 0 0 / 0.35);
   --shadow-glow: 0 0 0 1px rgb(61 214 198 / 0.35), 0 10px 40px rgb(61 214 198 / 0.25);
   --blur: blur(18px) saturate(140%);
+  --blur-backdrop: blur(6px);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -88,6 +89,7 @@
   --gradient-primary: linear-gradient(#5eead4, #5eead4);
   --gradient-text: linear-gradient(#ffffff, #ffffff);
   --blur: none;
+  --blur-backdrop: none;
 }
 :root[data-contrast='high'] .simLight {
   --color-text: #000000;
@@ -98,4 +100,10 @@
 
 :root[data-reduced-motion='true'] {
   --transition: 0ms;
+}
+
+/* Kuchsiz qurilma: fon xiralashtirish eng qimmat effekt */
+:root[data-performance='low'] {
+  --blur: none;
+  --blur-backdrop: none;
 }

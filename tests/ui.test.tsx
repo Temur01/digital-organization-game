@@ -38,7 +38,8 @@ describe('ekranlar', () => {
 
     render(<MissionMapScreen />);
     // Mehmon Guli’ni tanladi — xaritada «Guli» (avval xato bilan «Bek» chiqardi)
-    expect(screen.getByText('O‘yinchi: Guli')).toBeInTheDocument();
+    expect(screen.getByText('Guli')).toBeInTheDocument();
+    expect(screen.queryByText(/O‘yinchi/)).not.toBeInTheDocument();
     const locked = screen.getByRole('button', { name: /Topilgan fleshka/ });
     expect(locked).toHaveAttribute('aria-disabled', 'true');
     await user.click(locked);
@@ -69,7 +70,8 @@ describe('ekranlar', () => {
     unmount();
 
     render(<MissionMapScreen />);
-    expect(screen.getByText('O‘yinchi: Temur')).toBeInTheDocument();
+    expect(screen.getByText('Temur')).toBeInTheDocument();
+    expect(screen.queryByText(/O‘yinchi/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /qahramon/i })).not.toBeInTheDocument();
   });
 
