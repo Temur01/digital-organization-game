@@ -59,7 +59,6 @@ export const ui = {
     replay: 'Qayta o‘ynash',
     lockedHint: (prev: string) => `Ochilishi uchun «${prev}» missiyasini bajaring.`,
     missionNumber: (n: number) => `${n}-missiya`,
-    playingAs: (name: string) => `O‘yinchi: ${name}`,
     rank: 'Unvon',
     nextRank: (stars: number, name: string) => `«${name}» unvoniga yana ${stars} ★`,
     maxRank: 'Eng yuqori unvon! Siz haqiqiy qalqonsiz.',
@@ -68,10 +67,10 @@ export const ui = {
   /** Yulduzlar soniga qarab unvon */
   ranks: [
     { min: 0, name: 'Yangi xodim', icon: '🌱' },
-    { min: 3, name: 'Ehtiyotkor xodim', icon: '👀' },
-    { min: 6, name: 'Xavf ovchisi', icon: '🕵️' },
-    { min: 9, name: 'Kiber-qo‘riqchi', icon: '🛡️' },
-    { min: 12, name: 'Raqamli Qalqon', icon: '🏆' },
+    { min: 5, name: 'Ehtiyotkor xodim', icon: '👀' },
+    { min: 10, name: 'Xavf ovchisi', icon: '🕵️' },
+    { min: 15, name: 'Kiber-qo‘riqchi', icon: '🛡️' },
+    { min: 20, name: 'Raqamli Qalqon', icon: '🏆' },
   ],
   difficulty: ['Oson', 'O‘rta', 'Qiyin'] as const,
   briefing: {
@@ -94,6 +93,8 @@ export const ui = {
     backToMap: 'Xaritaga qaytish',
   },
   game: {
+    loadFailed: 'O‘yin fayllari yuklanmadi. Internetni tekshirib, sahifani yangilang.',
+    reload: 'Sahifani yangilash',
     loading: 'Ofis yuklanmoqda…',
     pause: 'Pauza',
     fullscreenOn: 'To‘liq ekran',

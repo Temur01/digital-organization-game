@@ -37,6 +37,8 @@ function cspPlugin(CSP: string): Plugin {
 
 export default defineConfig(({ mode }) => ({
   base: './',
+  // CSP `data:` shriftlarni bloklaydi — mayda fayllar ham alohida yuklansin
+  build: { assetsInlineLimit: 0 },
   plugins: [react(), cspPlugin(buildCsp(loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL))],
   test: {
     environment: 'jsdom',

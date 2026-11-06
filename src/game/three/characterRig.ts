@@ -1,11 +1,48 @@
 import * as THREE from 'three';
 import type { Character, Direction } from '../../types/models';
 import { cleanSingle, extractFrames, loadImage, type Frame } from './spriteSheet';
+import { strideRate, WALK_SPEED } from './locomotion';
 import * as tex from './textures';
 
 const HEIGHT_M = 1.72;
-/** Yurish kadrlari soniyasiga (tezlik 180 px/s ga moslangan) */
-const WALK_FPS = 11;
+/** Sekin qadamlarda ham oyoqlar harakatlanib tursin (px/s) */
+const MIN_STRIDE_SPEED = 70;
+const MOVING_SPEED = 6;
+const BOB_M = 0.035;
+const LEAN_RAD = 0.075;
+const STRIDE_FRAMES = 8;
+
+export interface RigMotion {
+  /** Haqiqiy tezlik, px/s */
+  speed: number;
+  /** Gorizontal tezlik, px/s (chapga — manfiy) */
+  lateral: number;
+}
+
+interface RigArt {
+  idle: HTMLCanvasElement;
+  frames: Frame[];
+}
+
+/** Piksel tahlili qimmat: har qahramon uchun bir marta bajariladi (qayta boshlash tez bo‘ladi) */
+const artCache = new Map<string, Promise<RigArt>>();
+
+function loadArt(character: Character): Promise<RigArt> {
+  const cached = artCache.get(character.id);
+  if (cached) return cached;
+  const pending = Promise.all([
+    loadImage(character.art),
+    loadImage(character.walkSheet).catch((err: unknown) => {
+      console.warn('[scene] yurish kadrlari yuklanmadi', err);
+      return null;
+    }),
+  ]).then(([idleImg, sheetImg]) => ({ idle: cleanSingle(idleImg), frames: sheetImg ? extractFrames(sheetImg) : [] }));
+  artCache.set(character.id, pending);
+  pending.catch(() => artCache.delete(character.id));
+  return pending;
+}
+
+const damp = (current: number, target: number, rate: number, dt: number) => current + (target - current) * (1 - Math.exp(-rate * dt));
 
 function canvasTexture(c: HTMLCanvasElement): THREE.CanvasTexture {
   const t = new THREE.CanvasTexture(c);
@@ -40,6 +77,10 @@ export class CharacterRig {
   private emoteLeft = 0;
   private emoteAge = 0;
   private flip = 1;
+  private facing = 1;
+  private lean = 0;
+  private settle = 0;
+  private wasWalking = false;
 
   private constructor(idleCanvas: HTMLCanvasElement, frames: Frame[], tint: number) {
     // Turish holati
@@ -84,15 +125,13 @@ export class CharacterRig {
   }
 
   static async create(character: Character, tint: number): Promise<CharacterRig> {
-    const [idleImg, sheetImg] = await Promise.all([
-      loadImage(character.art),
-      loadImage(character.walkSheet).catch((err: unknown) => {
-        console.warn('[scene] yurish kadrlari yuklanmadi', err);
-        return null;
-      }),
-    ]);
-    const frames = sheetImg ? extractFrames(sheetImg) : [];
-    return new CharacterRig(cleanSingle(idleImg), frames, tint);
+    const art = await loadArt(character);
+    return new CharacterRig(art.idle, art.frames, tint);
+  }
+
+  /** Teksturalarni oldindan GPU ga yuklaydi — birinchi qadamda «qotish» bo‘lmaydi */
+  uploadTextures(renderer: THREE.WebGLRenderer): void {
+    this.walkTextures.forEach((t) => renderer.initTexture(t));
   }
 
   setDirection(dir: Direction): void {
@@ -121,22 +160,32 @@ export class CharacterRig {
    * Har kadr. Qaytaradi: shu kadrda oyoq polga tegdimi (qadam tovushi animatsiya bilan sinxron chalinishi uchun).
    * `contactFrames` — yurish varag‘idagi oyoq tegish kadrlari.
    */
-  animate(dt: number, moving: boolean, reducedMotion: boolean, camera: THREE.Camera, contactFrames: readonly number[] = []): boolean {
+  animate(dt: number, motion: RigMotion, reducedMotion: boolean, camera: THREE.Camera, contactFrames: readonly number[] = []): boolean {
     let stepped = false;
     this.time += dt;
+    const moving = motion.speed > MOVING_SPEED;
+    const pace = Math.min(1, motion.speed / WALK_SPEED);
     // Billboard: faqat vertikal o‘q atrofida kameraga buriladi
     const dx = camera.position.x - this.root.position.x;
     const dz = camera.position.z - this.root.position.z;
     this.figure.rotation.y = Math.atan2(dx, dz);
 
+    // Harakat yo‘nalishiga engashish; to‘xtaganda yumshoq qaytadi
+    const leanTarget = reducedMotion ? 0 : (-motion.lateral / WALK_SPEED) * LEAN_RAD;
+    this.lean = damp(this.lean, leanTarget, 9, dt);
+    this.figure.rotation.z = this.lean;
+
     // To‘xtaganda 0.12 s kutib turish holatiga o‘tadi (qadamlar orasida «lip» qilmasin)
     this.walkBlend = moving ? 0.12 : Math.max(0, this.walkBlend - dt);
     const walking = this.walk !== null && this.walkBlend > 0;
+    if (this.wasWalking && !walking && !reducedMotion) this.settle = 1;
+    this.wasWalking = walking;
     this.idle.visible = !walking;
     if (this.walk) this.walk.visible = walking;
 
+    let bob = 0;
     if (walking && this.walk) {
-      this.walkPhase += dt * (reducedMotion ? WALK_FPS * 0.6 : WALK_FPS);
+      this.walkPhase += dt * strideRate(Math.max(motion.speed, MIN_STRIDE_SPEED));
       const index = Math.floor(this.walkPhase) % this.walkTextures.length;
       if (index !== this.frameIndex) {
         this.frameIndex = index;
@@ -144,16 +193,29 @@ export class CharacterRig {
         stepped = moving && contactFrames.includes(index);
         (this.walk.material as THREE.MeshBasicMaterial).map = this.walkTextures[index]!;
       }
-      this.walk.scale.x = this.flip;
-      this.shadow.scale.set(1.1, 0.55, 1);
-      this.idle.scale.y = 1;
+      // Burilish: chapdan o‘ngga bir lahzada emas, qisqa «aylanish» bilan
+      this.facing = reducedMotion ? this.flip : damp(this.facing, this.flip, 16, dt);
+      this.walk.scale.x = Math.abs(this.facing) < 0.14 ? 0.14 * this.flip : this.facing;
+      // Oyoq tegish kadrlarida (0 va 4) gavda eng pastda, oralig‘ida eng yuqorida
+      if (!reducedMotion) bob = Math.abs(Math.sin((this.walkPhase / STRIDE_FRAMES) * Math.PI * 2)) * BOB_M * pace;
+      this.walk.scale.y = reducedMotion ? 1 : 1 + (bob / BOB_M) * 0.012;
+      this.idle.scale.set(1, 1, 1);
+      this.idle.rotation.z = 0;
     } else {
       this.walkPhase = 0;
       this.frameIndex = -1;
-      this.idle.scale.y = reducedMotion ? 1 : 1 + Math.sin(this.time * 2.2) * 0.008;
+      this.facing = this.flip;
+      // To‘xtash: og‘irlik oyoqqa tushadi — qisqa, so‘nuvchi cho‘kish
+      this.settle = Math.max(0, this.settle - dt * 3.6);
+      const squash = Math.sin(this.settle * Math.PI) * 0.028;
+      this.idle.scale.y = reducedMotion ? 1 : 1 + Math.sin(this.time * 2.2) * 0.008 - squash;
+      this.idle.scale.x = 1 + squash * 0.7;
       this.idle.rotation.z = reducedMotion ? 0 : Math.sin(this.time * 0.9) * 0.008;
-      this.shadow.scale.set(1, 0.55, 1);
     }
+    // Soya: gavda ko‘tarilganda kichrayadi va xiralashadi
+    const lift = bob / BOB_M;
+    this.shadow.scale.set(1 + pace * 0.12 - lift * 0.05, 0.55 - lift * 0.03, 1);
+    (this.shadow.material as THREE.MeshBasicMaterial).opacity = 0.5 - lift * 0.08;
 
     let hop = 0;
     if (this.hopLeft > 0 && !reducedMotion) {
@@ -161,7 +223,7 @@ export class CharacterRig {
       const t = 1 - Math.max(0, this.hopLeft) / 0.42;
       hop = Math.sin(t * Math.PI) * 0.12;
     }
-    this.figure.position.y = hop;
+    this.figure.position.y = hop + bob;
 
     if (this.emoteLeft > 0) {
       this.emoteLeft -= dt;

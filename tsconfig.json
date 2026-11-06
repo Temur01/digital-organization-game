@@ -16,5 +16,5 @@
     "noEmit": true,
     "types": ["vite/client", "node", "@testing-library/jest-dom"]
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": ["src", "tests", "vite.config.ts", "scripts/content-audit.ts", "scripts/content-audit-rules.ts"]
 }

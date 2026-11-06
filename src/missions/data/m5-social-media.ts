@@ -395,5 +395,5 @@ export const m5SocialMedia: Mission = {
     'Ichki jarayonlarni so‘ragan notanish «rekruter»larga javob bermang — xabar qiling.',
     'Profilingizni yoping: telefon va tug‘ilgan sana faqat yaqinlar uchun.',
   ],
-  unlocks: [],
+  unlocks: ['m6-ceo-fraud'],
 };

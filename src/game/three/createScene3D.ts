@@ -4,6 +4,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { isLowPowerDevice } from '../../app/device';
 import { CHARACTERS } from '../../content/characters';
 import type { HotspotVisualState, InteractiveObject, Point, Rect, RoomDefinition } from '../../types/models';
 import type { GameBridge, SceneCommand } from '../bridge';
@@ -13,10 +14,11 @@ import { audioManager } from '../audio';
 import { FOOTSTEP_CADENCE } from '../audio/audioConfig';
 import type { LoopHandle, LoopId } from '../audio/audioTypes';
 import { buildAtmosphere, Bursts } from './fx';
+import { ACCELERATION, approach, brakingSpeed, DECELERATION, findPath, WALK_SPEED } from './locomotion';
+import { FrameGovernor, qualityLadder, shouldRenderFrame } from './quality';
 import { clampToWalkable, faceFrom, footRect, fromX, fromZ, intersects, toX, toZ } from './space';
 import * as tex from './textures';
 
-const SPEED = 180; // mantiqiy px/s
 const INTERACT_RADIUS = 56;
 const INTRO_SECONDS = 1.6;
 const MARKER_W = 0.5;
@@ -85,12 +87,17 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     return () => {};
   }
 
-  const lowPower = window.innerWidth < 700 || (navigator.hardwareConcurrency ?? 8) <= 4;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2));
+  const lowPower = isLowPowerDevice();
+  const basePixelRatio = Math.min(window.devicePixelRatio || 1, lowPower ? 1.5 : 2);
+  // Kuchsiz qurilmada bloom boshidanoq o‘chiq; sekinlik davom etsa aniqlik ham pasayadi
+  const governor = new FrameGovernor(qualityLadder(basePixelRatio), lowPower ? 1 : 0);
+  renderer.setPixelRatio(basePixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
+  // Xona deyarli qimirlamaydi (qahramon soyasi — alohida dog‘): soya xaritasi faqat o‘zgarishda qayta chiziladi
+  renderer.shadowMap.autoUpdate = false;
   renderer.domElement.setAttribute('aria-hidden', 'true');
   renderer.domElement.style.display = 'block';
   container.appendChild(renderer.domElement);
@@ -105,10 +112,11 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
   camera.position.copy(CAMERA_POS);
   camera.lookAt(CAMERA_TARGET);
 
-  const target = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, samples: lowPower ? 0 : 4 });
+  const target = new THREE.WebGLRenderTarget(2, 2, { type: THREE.HalfFloatType, samples: lowPower ? 0 : basePixelRatio > 1.5 ? 2 : 4 });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.3, 0.5, 0.93);
+  bloom.enabled = governor.current.bloom;
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -129,13 +137,16 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
   const keys = new Set<string>();
   let paused = true;
   let reducedMotion = false;
-  let walkTarget: Point | null = null;
+  /** Qolgan yo‘l nuqtalari; birinchisi — hozirgi nishon */
+  let path: Point[] = [];
+  const velocity = { x: 0, y: 0 };
+  let sinceRender = Infinity;
+  let forceRender = true;
   let targetHotspot: string | null = null;
   let stuckTime = 0;
   let nearId: string | null = null;
   let time = 0;
   let introLeft = 0;
-  let puffTimer = 0;
   let stepTimer = 0;
   /** Xonadagi 3D tovush manbalari (xona almashganda to‘xtatiladi) */
   let emitters: LoopHandle[] = [];
@@ -162,6 +173,7 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     layoutDirty = true;
+    forceRender = true; // setSize kanvasni tozalaydi — kutish rejimida ham darhol qayta chizilsin
   };
   const observer = new ResizeObserver(resize);
   observer.observe(container);
@@ -258,6 +270,7 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     clearRoom();
     room = cmd.room;
     const r = cmd.room;
+    renderer.shadowMap.needsUpdate = true;
     roomGroup = new THREE.Group();
     scene.add(roomGroup);
 
@@ -324,8 +337,7 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
       if (d.kind === 'clock') emitAt('clockTick', new THREE.Vector3(x, 2.6, 0.1), { refDistance: 0.6, maxDistance: 9 });
     }
 
-    walkTarget = null;
-    targetHotspot = null;
+    stopWalking();
     nearId = null;
     pos = { ...r.spawn };
 
@@ -338,6 +350,7 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
         }
         player = rig;
         rig.root.position.set(toX(pos.x), 0, toZ(pos.y, r));
+        rig.uploadTextures(renderer);
         scene.add(rig.root);
         introLeft = reducedMotion ? 0 : INTRO_SECONDS;
         camera.position.copy(reducedMotion ? CAMERA_POS : CAMERA_START);
@@ -362,6 +375,7 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
       }
       if (state === 'hidden' && h.state !== 'hidden') bursts.sparkle(center, 10);
       if ((h.state === 'hidden') !== (state === 'hidden')) layoutDirty = true;
+      if (h.state !== state) renderer.shadowMap.needsUpdate = true;
       if (state === 'done' && h.state !== 'done' && h.def.kind === 'coffee') {
         // Kofe tayyorlanishi: qahramon kutadi, so‘ng ☕
         window.setTimeout(() => player?.showEmote('☕', 2.4), reducedMotion ? 0 : 1600);
@@ -394,13 +408,24 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     bridge.emit({ type: 'hotspotActivated', hotspotId: id });
   };
 
-  const arrive = () => {
-    if (!walkTarget) return;
-    pos = { ...walkTarget };
-    const id = targetHotspot;
-    walkTarget = null;
+  const stopWalking = () => {
+    path = [];
     targetHotspot = null;
+    velocity.x = 0;
+    velocity.y = 0;
+  };
+
+  const arrive = () => {
+    const id = targetHotspot;
+    stopWalking();
     if (id) activate(id);
+  };
+
+  const walkTo = (goal: Point, hotspotId: string | null) => {
+    if (!room) return;
+    path = findPath(pos, goal, blockers, room.walkable);
+    targetHotspot = hotspotId;
+    stuckTime = 0;
   };
 
   bridge.attach((cmd) => {
@@ -412,17 +437,17 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
         paused = cmd.paused;
         if (paused) {
           keys.clear();
-          walkTarget = null;
-          targetHotspot = null;
+          stopWalking();
         }
         break;
       case 'walkToHotspot': {
         const h = hotspots.get(cmd.hotspotId);
         if (paused || !h || h.state === 'hidden' || !player) break;
-        walkTarget = { ...h.def.interactPoint };
-        targetHotspot = cmd.hotspotId;
-        stuckTime = 0;
-        if (reducedMotion) arrive();
+        if (reducedMotion) {
+          pos = { ...h.def.interactPoint };
+          targetHotspot = cmd.hotspotId;
+          arrive();
+        } else walkTo(h.def.interactPoint, cmd.hotspotId);
         break;
       }
       case 'setHotspotStates':
@@ -444,8 +469,10 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     const start = { ...pos };
     const nx = clampToWalkable({ x: pos.x + dx, y: pos.y }, room);
     if (!blocked(nx)) pos.x = nx.x;
+    else velocity.x = 0;
     const ny = clampToWalkable({ x: pos.x, y: pos.y + dy }, room);
     if (!blocked(ny)) pos.y = ny.y;
+    else velocity.y = 0;
     return Math.hypot(pos.x - start.x, pos.y - start.y) > 0.01;
   };
 
@@ -454,12 +481,27 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
   timer.connect(document); // yashirin tabdan qaytganda katta «sakrash» bo‘lmasin
   renderer.setAnimationLoop((timestamp) => {
     timer.update(timestamp);
-    const dt = Math.min(timer.getDelta(), 0.05);
+    const rawDt = timer.getDelta();
+    sinceRender += rawDt;
+    if (!room) return;
+
+    // Oyna ochiq: sahna xiralashgan fon xolos — sekundiga ~10 kadr yetarli
+    const idle = paused && introLeft <= 0 && !bursts.active;
+    if (!forceRender && !shouldRenderFrame({ idle, sinceLastRender: sinceRender })) return;
+    const dt = Math.min(idle ? sinceRender : rawDt, idle ? 0.12 : 0.05);
+    sinceRender = 0;
+    forceRender = false;
     time += dt;
-    if (!room) {
-      composer.render(dt);
-      return;
+
+    if (!idle && introLeft <= 0 && governor.sample(rawDt)) {
+      const quality = governor.current;
+      bloom.enabled = quality.bloom;
+      renderer.setPixelRatio(quality.pixelRatio);
+      composer.setPixelRatio(quality.pixelRatio);
+      composer.setSize(size.w, size.h);
     }
+
+    let speed = 0;
     let moving = false;
 
     if (player && !paused) {
@@ -472,28 +514,54 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
           vy += v.y;
         }
       }
+      let wantX = 0;
+      let wantY = 0;
       if (vx !== 0 || vy !== 0) {
-        walkTarget = null;
+        path = [];
         targetHotspot = null;
         const len = Math.hypot(vx, vy);
-        moving = tryMove((vx / len) * SPEED * dt, (vy / len) * SPEED * dt);
-        player.setDirection(faceFrom(vx, vy));
-      } else if (walkTarget) {
-        const dx = walkTarget.x - pos.x;
-        const dy = walkTarget.y - pos.y;
+        wantX = (vx / len) * WALK_SPEED;
+        wantY = (vy / len) * WALK_SPEED;
+      } else if (path.length > 0) {
+        const goal = path[0]!;
+        const last = path.length === 1;
+        const dx = goal.x - pos.x;
+        const dy = goal.y - pos.y;
         const dist = Math.hypot(dx, dy);
-        if (dist < 3) {
-          arrive();
-        } else {
-          const step = Math.min(dist, SPEED * dt);
-          moving = tryMove((dx / dist) * step, (dy / dist) * step);
-          player.setDirection(faceFrom(dx, dy));
-          stuckTime = moving ? 0 : stuckTime + dt;
-          if (stuckTime > 0.35) {
-            if (targetHotspot) arrive();
-            else walkTarget = null;
+        const reach = Math.max(last ? 3 : 10, Math.hypot(velocity.x, velocity.y) * dt);
+        if (dist <= reach) {
+          path.shift();
+          if (last) {
+            pos = { ...goal };
+            arrive();
           }
+        } else {
+          const cruise = last ? Math.max(40, Math.min(WALK_SPEED, brakingSpeed(dist, DECELERATION))) : WALK_SPEED;
+          wantX = (dx / dist) * cruise;
+          wantY = (dy / dist) * cruise;
         }
+      }
+
+      if (reducedMotion) {
+        velocity.x = wantX;
+        velocity.y = wantY;
+      } else {
+        const speedingUp = Math.hypot(wantX, wantY) > Math.hypot(velocity.x, velocity.y);
+        const rate = speedingUp ? ACCELERATION : DECELERATION;
+        velocity.x = approach(velocity.x, wantX, rate, dt);
+        velocity.y = approach(velocity.y, wantY, rate, dt);
+      }
+
+      if (velocity.x !== 0 || velocity.y !== 0) {
+        const start = { ...pos };
+        tryMove(velocity.x * dt, velocity.y * dt);
+        speed = Math.hypot(pos.x - start.x, pos.y - start.y) / Math.max(dt, 1e-3);
+        moving = speed > 6;
+        if (Math.abs(velocity.x) > 8) player.setDirection(faceFrom(velocity.x, 0));
+      }
+      if (path.length > 0) {
+        stuckTime = moving ? 0 : stuckTime + dt;
+        if (stuckTime > 0.35) arrive();
       }
 
       let best: string | null = null;
@@ -523,17 +591,14 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
         lastListener = { x: lx, z: lz };
         audioManager.setListener({ x: lx, y: 1.6, z: lz });
       }
-      if (moving && !reducedMotion) {
-        puffTimer -= dt;
-        if (puffTimer <= 0) {
-          bursts.puff(player.root.position.x, player.root.position.z);
-          puffTimer = 0.2;
-        }
-      }
       // Qadam tovushi: yurish animatsiyasidagi oyoq tegish kadrlarida; animatsiya bo‘lmasa — vaqt bo‘yicha
-      const contact = player.animate(dt, moving, reducedMotion, camera, FOOTSTEP_CADENCE.contactFrames);
+      const contact = player.animate(dt, { speed, lateral: moving ? velocity.x : 0 }, reducedMotion, camera, FOOTSTEP_CADENCE.contactFrames);
       if (player.hasWalkCycle) {
-        if (contact) bridge.emit({ type: 'footstep' });
+        if (contact) {
+          bridge.emit({ type: 'footstep' });
+          // Chang — oyoq polga tekkan zahoti
+          if (!reducedMotion) bursts.puff(player.root.position.x, player.root.position.z);
+        }
       } else if (moving) {
         stepTimer -= dt;
         if (stepTimer <= 0) {
@@ -618,10 +683,9 @@ export function createScene(container: HTMLElement, bridge: GameBridge): () => v
     raycaster.setFromCamera(ndc, camera);
     const hit = raycaster.intersectObject(floorMesh, false)[0];
     if (!hit) return;
-    walkTarget = clampToWalkable({ x: fromX(hit.point.x), y: fromZ(hit.point.z, room) }, room);
-    targetHotspot = null;
-    stuckTime = 0;
-    bursts.ripple(toX(walkTarget.x), toZ(walkTarget.y, room));
+    walkTo(clampToWalkable({ x: fromX(hit.point.x), y: fromZ(hit.point.z, room) }, room), null);
+    const end = path[path.length - 1];
+    if (end) bursts.ripple(toX(end.x), toZ(end.y, room));
   };
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('keyup', onKeyUp);

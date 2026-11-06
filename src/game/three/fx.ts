@@ -15,6 +15,10 @@ export class Bursts {
   private items: Particle[] = [];
   constructor(private readonly scene: THREE.Scene) {}
 
+  get active(): boolean {
+    return this.items.length > 0;
+  }
+
   private add(obj: THREE.Object3D, life: number, update: (k: number) => void) {
     this.scene.add(obj);
     this.items.push({ obj, age: 0, life, update });

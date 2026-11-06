@@ -19,6 +19,10 @@ export default tseslint.config(
       'no-implied-eval': 'error',
       'no-new-func': 'error',
       'no-restricted-properties': ['error', { object: 'window', property: 'open', message: 'Tashqi oyna ochish taqiqlangan.' }],
+      'no-restricted-imports': [
+        'error',
+        { paths: [{ name: '@typesafe-ai/sdk', message: 'TypeSafe faqat scripts/ da: brauzerda tarmoq so‘rovi va API kalit bo‘lmasligi kerak.' }] },
+      ],
       'no-restricted-syntax': [
         'error',
         {
@@ -29,4 +33,5 @@ export default tseslint.config(
       ],
     },
   },
+  { files: ['scripts/**'], rules: { 'no-restricted-imports': 'off' } },
 );

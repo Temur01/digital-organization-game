@@ -121,6 +121,87 @@ export const coffeeRoom: RoomDefinition = {
   ],
 };
 
+/** 6-missiya: moliya bo‘limi — gilam, salqin choy rang aksent, akustik reyka va devordagi ekran */
+export const financeRoom: RoomDefinition = {
+  id: 'finance',
+  theme: { ...base, floorStyle: 'carpet', wallColor: '#dfe7e6', accent: 0x2f7f86, wainscot: null, computer: 'monitor' },
+  wallHeight: WALL,
+  walkable: WALKABLE,
+  spawn: { x: 220, y: 460 },
+  decor: [
+    { kind: 'slats', rect: { x: 40, y: 25, width: 90, height: 145 } },
+    { kind: 'clock', rect: { x: 250, y: 48, width: 46, height: 46 } },
+    { kind: 'window', rect: { x: 320, y: 30, width: 210, height: 95 } },
+    { kind: 'tv', rect: { x: 560, y: 40, width: 170, height: 92 } },
+    { kind: 'shelf', rect: { x: 760, y: 86, width: 74, height: 84 } },
+    { kind: 'pendant', rect: { x: 420, y: 282, width: 20, height: 20 } },
+    { kind: 'pendant', rect: { x: 510, y: 282, width: 20, height: 20 } },
+    { kind: 'desk', rect: { x: 360, y: 260, width: 220, height: 64 }, solid: true },
+    { kind: 'chair', rect: { x: 450, y: 330, width: 40, height: 26 } },
+    { kind: 'rug', rect: { x: 330, y: 365, width: 280, height: 120 } },
+    { kind: 'desk', rect: { x: 660, y: 380, width: 200, height: 64 }, solid: true },
+    { kind: 'cooler', rect: { x: 296, y: 176, width: 34, height: 74 }, solid: true },
+    { kind: 'monstera', rect: { x: 878, y: 245, width: 44, height: 65 }, solid: true },
+    { kind: 'monstera', rect: { x: 45, y: 435, width: 50, height: 75 }, solid: true },
+  ],
+};
+
+/** 7-missiya: kechki ish xonasi — tosh pol, to‘q devor, shkaflar va qizil aksent */
+export const serverRoom: RoomDefinition = {
+  id: 'server',
+  theme: {
+    wall: 0x3f4656,
+    wallTrim: 0x323847,
+    floor: 0x6f7480,
+    floorLine: 0x5f6470,
+    window: 0x18203a,
+    night: true,
+    floorStyle: 'stone',
+    wallColor: '#2f3545',
+    accent: 0xd9534f,
+    wainscot: 0x262b38,
+    computer: 'monitor',
+  },
+  wallHeight: WALL,
+  walkable: WALKABLE,
+  spawn: { x: 620, y: 460 },
+  decor: [
+    { kind: 'cabinet', rect: { x: 40, y: 160, width: 70, height: 100 }, solid: true },
+    { kind: 'cabinet', rect: { x: 118, y: 160, width: 70, height: 100 }, solid: true },
+    { kind: 'clock', rect: { x: 345, y: 48, width: 46, height: 46 } },
+    { kind: 'window', rect: { x: 420, y: 25, width: 170, height: 105 } },
+    { kind: 'shelf', rect: { x: 620, y: 86, width: 74, height: 84 } },
+    { kind: 'desk', rect: { x: 360, y: 260, width: 220, height: 64 }, solid: true },
+    { kind: 'chair', rect: { x: 450, y: 330, width: 40, height: 26 } },
+    { kind: 'table', rect: { x: 740, y: 250, width: 110, height: 40 }, solid: true },
+    { kind: 'monstera', rect: { x: 878, y: 430, width: 50, height: 75 }, solid: true },
+  ],
+};
+
+/** 8-missiya: kafe — terrazzo pol, iliq qizg‘ish aksent, peshtaxta va kichik stollar */
+export const cafeRoom: RoomDefinition = {
+  id: 'cafe',
+  theme: { ...base, floorStyle: 'terrazzo', wallColor: '#f0e2d3', accent: 0xb5573a, wainscot: null, computer: 'laptop' },
+  wallHeight: WALL,
+  walkable: WALKABLE,
+  spawn: { x: 470, y: 470 },
+  decor: [
+    { kind: 'window', rect: { x: 60, y: 30, width: 180, height: 100 } },
+    { kind: 'window', rect: { x: 270, y: 30, width: 180, height: 100 } },
+    { kind: 'wallArt', rect: { x: 490, y: 45, width: 90, height: 70 } },
+    { kind: 'clock', rect: { x: 600, y: 48, width: 46, height: 46 } },
+    { kind: 'pendant', rect: { x: 200, y: 312, width: 20, height: 20 } },
+    { kind: 'pendant', rect: { x: 300, y: 312, width: 20, height: 20 } },
+    { kind: 'table', rect: { x: 120, y: 290, width: 220, height: 60 }, solid: true },
+    { kind: 'kitchen', rect: { x: 640, y: 175, width: 250, height: 75 }, solid: true },
+    { kind: 'fridge', rect: { x: 895, y: 172, width: 42, height: 88 }, solid: true },
+    { kind: 'bistro', rect: { x: 640, y: 390, width: 110, height: 50 }, solid: true },
+    { kind: 'bistro', rect: { x: 180, y: 440, width: 110, height: 50 }, solid: true },
+    { kind: 'sofa', rect: { x: 760, y: 462, width: 170, height: 55 }, solid: true },
+    { kind: 'monstera', rect: { x: 45, y: 300, width: 50, height: 70 }, solid: true },
+  ],
+};
+
 /** 5-missiya: majlis xonasi — gilam, akustik reykalar, shisha devor, bayram sharlari va televizor */
 export const meetingRoom: RoomDefinition = {
   id: 'meeting',

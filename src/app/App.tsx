@@ -1,12 +1,11 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { useEffect } from 'react';
+import { Suspense, useEffect, type ComponentType } from 'react';
 import { AuthScreen } from '../screens/AuthScreen';
 import { BriefingScreen } from '../screens/BriefingScreen';
 import { LeaderboardScreen } from '../screens/LeaderboardScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { QuizScreen } from '../screens/QuizScreen';
 import { CharacterSelectScreen } from '../screens/CharacterSelectScreen';
-import { GameScreen } from '../screens/GameScreen';
 import { MissionMapScreen } from '../screens/MissionMapScreen';
 import { ResultScreen } from '../screens/ResultScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -14,6 +13,8 @@ import { TitleScreen } from '../screens/TitleScreen';
 import type { AppScreen } from '../types/models';
 import { Toasts } from '../ui/Toasts';
 import { useReducedMotion } from './hooks';
+import { isLowPowerDevice } from './device';
+import { GameScreen, ScreenBoundary, ScreenFallback } from './lazyScreens';
 import { useAuthStore } from './auth';
 import { audioManager, installAudioLifecycle } from '../game/audio';
 import { playGameAudio } from '../game/audio/audioEvents';
@@ -22,7 +23,7 @@ import type { MusicId } from '../game/audio/audioTypes';
 import { MISSIONS } from '../missions/data';
 import { useGameStore } from './store';
 
-const SCREENS: Record<AppScreen, () => JSX.Element | null> = {
+const SCREENS: Record<AppScreen, ComponentType> = {
   title: TitleScreen,
   characterSelect: CharacterSelectScreen,
   map: MissionMapScreen,
@@ -73,6 +74,7 @@ export function App() {
     root.style.fontSize = `${settings.textScale * 100}%`;
     root.dataset.contrast = settings.highContrast ? 'high' : 'normal';
     root.dataset.reducedMotion = reducedMotion ? 'true' : 'false';
+    root.dataset.performance = isLowPowerDevice() ? 'low' : 'normal';
   }, [settings.textScale, settings.highContrast, reducedMotion]);
 
   const Screen = SCREENS[screen];
@@ -86,7 +88,11 @@ export function App() {
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
         >
-          <Screen />
+          <ScreenBoundary>
+            <Suspense fallback={<ScreenFallback />}>
+              <Screen />
+            </Suspense>
+          </ScreenBoundary>
         </motion.div>
       </AnimatePresence>
       <Toasts />

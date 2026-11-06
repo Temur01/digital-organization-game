@@ -1,5 +1,7 @@
 import { motion } from 'motion/react';
+import { useEffect } from 'react';
 import { enterFullscreen } from '../app/fullscreen';
+import { loadGameScreen } from '../app/lazyScreens';
 import { usePlayer, useScreenHeading } from '../app/hooks';
 import { useGameStore } from '../app/store';
 import { ui } from '../content/uz/ui';
@@ -16,6 +18,8 @@ export function BriefingScreen() {
   const player = usePlayer();
   const heading = useScreenHeading<HTMLHeadingElement>();
   const mission = id ? MISSIONS[id] : null;
+  // 3D sahna kodi brifing paytida oldindan yuklanadi — «Boshlash» darhol ishlaydi
+  useEffect(() => void loadGameScreen().catch(() => undefined), []);
   if (!mission) return null;
   const fact = mission.facts[Math.floor(Date.now() / 60000) % mission.facts.length];
   const storyDelay = (i: number) => 0.25 + i * 0.3;

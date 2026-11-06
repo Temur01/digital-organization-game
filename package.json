@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "db:migrate": "bun scripts/migrate.ts",
     "db:status": "bun scripts/migrate.ts --status",
-    "db:verify": "bun scripts/verify.ts"
+    "db:verify": "bun scripts/verify.ts",
+    "content:audit": "vite build --ssr scripts/content-audit.ts --outDir node_modules/.cache/content-audit --logLevel warn && node --env-file=.env node_modules/.cache/content-audit/content-audit.js"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "5.3.0",
